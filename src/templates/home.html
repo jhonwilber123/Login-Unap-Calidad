@@ -1,219 +1,107 @@
+<!-- src/templates/home.html -->
+
 {% extends './base.html' %}
 
-{% block title %}Editar Perfil{% endblock %}
+{% block title %}Inicio{% endblock %}
 
 {% block customCSS %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/edit_personal.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+<style>
+    /* Eliminamos el margen superior del contenedor principal */
+    .container {
+        margin-top: 80px; /* Ajustado para dar espacio a la navbar fija */
+    }
+    /* Estilo adicional para la barra de navegación */
+    .navbar {
+        z-index: 1030; /* Asegura que la barra esté por encima del contenido */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    /* Ajustes para móviles */
+    @media (max-width: 768px) {
+        .navbar-collapse {
+            background-color: #f8f9fa; /* Fondo claro para la barra desplegable */
+        }
+    }
+</style>
 {% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <form class="form-edit-personal" action="{{ url_for('edit_personal') }}" method="POST">
-        <div class="text-center mb-4">
-            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" width="250" height="250">
+<!-- Barra de navegación -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top shadow">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Acreditación UNAP CCS</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'home' %}active{% endif %}" href="{{ url_for('home') }}">Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'datos_personales' %}active{% endif %}" href="{{ url_for('datos_personales') }}">Datos Personales</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'grados_titulos' %}active{% endif %}" href="{{ url_for('grados_titulos') }}">Grados y Títulos</a>
+                </li>
+                {% if current_user.role == 'Administrador' %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'ver_datos_personal' %}active{% endif %}" href="{{ url_for('ver_datos_personal') }}">Datos del Personal</a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('logout') }}">Cerrar Sesión</a>
+                </li>
+            </ul>
         </div>
+    </div>
+</nav>
 
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
-        <div class="alert alert-primary alert-dismissible fade show" role="alert">
-            {% for message in messages %}
-            <strong>{{ message }}</strong>
-            {% endfor %}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        {% endif %}
-        {% endwith %}
+<!-- Contenido principal -->
+<div class="container">
+    <h1 class="h3 mb-4">Bienvenido, {{ current_user.fullname }}</h1>
 
-        <h1 class="h3 mb-4 text-center">Editar perfil de {{ current_user.fullname }}</h1>
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-        <!-- Personal Details -->
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <div class="form-floating">
-                    <input type="text" class="form-control" id="primer_nombre" name="primer_nombre" value="{{ data.primer_nombre }}" required>
-                    <label for="primer_nombre">Primer Nombre</label>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="form-floating">
-                    <input type="text" class="form-control" id="segundo_nombre" name="segundo_nombre" value="{{ data.segundo_nombre }}">
-                    <label for="segundo_nombre">Segundo Nombre</label>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <div class="form-floating">
-                    <input type="text" class="form-control" id="apellido_paterno" name="apellido_paterno" value="{{ data.apellido_paterno }}" required>
-                    <label for="apellido_paterno">Apellido Paterno</label>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="form-floating">
-                    <input type="text" class="form-control" id="apellido_materno" name="apellido_materno" value="{{ data.apellido_materno }}" required>
-                    <label for="apellido_materno">Apellido Materno</label>
+    <!-- Tarjetas informativas -->
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card text-center h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Datos Personales</h5>
+                    <p class="card-text">Administra tus datos personales y de contacto.</p>
+                    <a href="{{ url_for('datos_personales') }}" class="btn btn-primary mt-auto">Editar</a>
                 </div>
             </div>
         </div>
-
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <div class="form-floating">
-                    <input type="text" class="form-control" id="direccion" name="direccion" value="{{ data.direccion }}" required>
-                    <label for="direccion">Dirección</label>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="form-floating">
-                    <input type="text" class="form-control" id="celular" name="celular" value="{{ data.celular }}" required>
-                    <label for="celular">Celular</label>
+        <div class="col-md-4 mb-4">
+            <div class="card text-center h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Grados y Títulos</h5>
+                    <p class="card-text">Agrega o edita tu información académica.</p>
+                    <a href="{{ url_for('grados_titulos') }}" class="btn btn-primary mt-auto">Agregar</a>
                 </div>
             </div>
         </div>
-
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <div class="form-floating">
-                    <input type="email" class="form-control" id="correo_personal" name="correo_personal" value="{{ data.correo_personal }}" required>
-                    <label for="correo_personal">Correo Personal</label>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="form-floating">
-                    <input type="email" class="form-control" id="correo_institucional" name="correo_institucional" value="{{ data.correo_institucional }}">
-                    <label for="correo_institucional">Correo Institucional</label>
+        <div class="col-md-4 mb-4">
+            <div class="card text-center h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Actividades Sociales</h5>
+                    <p class="card-text">Agrega o edita tu información sobre actividades de proyección social.</p>
+                    <a href="{{ url_for('actividades_proyeccion_social') }}" class="btn btn-primary mt-auto">Agregar</a>
                 </div>
             </div>
         </div>
-
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <div class="form-floating">
-                    <input type="text" class="form-control" id="numero_colegiatura" name="numero_colegiatura" value="{{ data.numero_colegiatura }}">
-                    <label for="numero_colegiatura">Número de Colegiatura</label>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="form-floating">
-                    <input type="text" class="form-control" id="codigo" name="codigo" value="{{ data.codigo }}" required>
-                    <label for="codigo">Código</label>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <div class="form-floating">
-                    <input type="text" class="form-control" id="dni" name="dni" value="{{ data.dni }}" required>
-                    <label for="dni">DNI</label>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="form-floating">
-                    <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento" value="{{ data.fecha_nacimiento }}" required>
-                    <label for="fecha_nacimiento">Fecha de Nacimiento</label>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <div class="form-floating">
-                    <input type="text" class="form-control" id="lugar_nacimiento" name="lugar_nacimiento" value="{{ data.lugar_nacimiento }}">
-                    <label for="lugar_nacimiento">Lugar de Nacimiento</label>
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <div class="form-floating">
-                    <input type="text" class="form-control" id="departamento" name="departamento" value="{{ data.departamento }}">
-                    <label for="departamento">Departamento</label>
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <div class="form-floating">
-                    <input type="text" class="form-control" id="provincia" name="provincia" value="{{ data.provincia }}">
-                    <label for="provincia">Provincia</label>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <div class="form-floating">
-                    <input type="text" class="form-control" id="distrito" name="distrito" value="{{ data.distrito }}">
-                    <label for="distrito">Distrito</label>
-                </div>
-            </div>
-        </div>
-
-        <!-- Checkboxes -->
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="es_docente" name="es_docente" {% if data.es_docente %} checked {% endif %}>
-                    <label class="form-check-label" for="es_docente">¿Es docente?</label>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="es_administrativo" name="es_administrativo" {% if data.es_administrativo %} checked {% endif %}>
-                    <label class="form-check-label" for="es_administrativo">¿Es administrativo?</label>
-                </div>
-            </div>
-        </div>
-
-        <!-- Conditional Fields for Docente -->
-        {% if data.es_docente %}
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <div class="form-floating">
-                    <input type="text" class="form-control" id="condicion" name="condicion" value="{{ data.condicion }}">
-                    <label for="condicion">Condición (Nombrado o Contratado)</label>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="form-floating">
-                    <input type="text" class="form-control" id="categoria" name="categoria" value="{{ data.categoria }}">
-                    <label for="categoria">Categoría (solo docentes)</label>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="form-floating">
-                    <input type="text" class="form-control" id="dedicacion" name="dedicacion" value="{{ data.dedicacion }}">
-                    <label for="dedicacion">Dedicación (solo docentes)</label>
+        {% if current_user.role == 'Administrador' %}
+        <div class="col-md-4 mb-4">
+            <div class="card text-center h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Datos del Personal</h5>
+                    <p class="card-text">Verifica la información del personal registrado.</p>
+                    <a href="{{ url_for('ver_datos_personal') }}" class="btn btn-primary mt-auto">Ver</a>
                 </div>
             </div>
         </div>
         {% endif %}
-
-        <!-- Username and Password -->
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <div class="form-floating">
-                    <input type="text" class="form-control" id="username" name="username" value="{{ data.username }}" required>
-                    <label for="username">Username</label>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="form-floating">
-                    <input type="password" class="form-control" id="password" name="password" value="{{ data.password }}" required>
-                    <label for="password">Password</label>
-                </div>
-            </div>
-        </div>
-
-        <div class="row mb-3">
-            <div class="col-md-12 mb-3">
-                <div class="form-floating">
-                    <input type="text" class="form-control" id="fullname" name="fullname" value="{{ data.fullname }}" required>
-                    <label for="fullname">Fullname</label>
-                </div>
-            </div>
-        </div>
-
-        <button class="w-100 btn btn-lg btn-primary" type="submit">Guardar Cambios</button>
-    </form>
+    </div>
 </div>
 {% endblock %}

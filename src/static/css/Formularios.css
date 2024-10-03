@@ -1,0 +1,144 @@
+/* Estilos generales */
+html, body {
+  height: 100%;
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f9f9f9;
+  font-size: 18px; /* Aumentado de 16px (valor predeterminado) */
+}
+
+/* Ajustes para el contenedor principal */
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 40px; /* Aumentado el padding */
+  background-color: #fff;
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2); /* Aumentada la sombra */
+  max-width: 1200px; /* Añadido un ancho máximo mayor */
+  margin: 0 auto; /* Centrado horizontalmente */
+}
+
+/* Encabezado */
+.header {
+  background-color: #007bff;
+  color: white;
+  padding: 20px; /* Aumentado el padding */
+  text-align: center;
+  font-size: 2rem; /* Aumentado el tamaño de fuente */
+}
+
+/* Contenido principal */
+.main-content {
+  flex-grow: 1;
+  padding: 40px; /* Aumentado el padding */
+  background-color: #f0f0f0;
+  border-radius: 10px;
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2); /* Aumentada la sombra */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.main-content h2 {
+  text-align: center;
+  font-size: 2.25rem; /* Aumentado el tamaño de fuente */
+  color: #333;
+  margin-bottom: 30px; /* Aumentado el margen inferior */
+}
+
+.main-content p {
+  font-size: 1.25rem; /* Aumentado el tamaño de fuente */
+  color: #555;
+  line-height: 1.8; /* Aumentada la altura de línea */
+  margin-bottom: 20px; /* Aumentado el margen inferior */
+}
+
+/* Formularios y otros inputs */
+.form-group {
+  margin-bottom: 20px; /* Aumentado el margen inferior */
+}
+
+.form-group label {
+  display: block;
+  font-size: 1.25rem; /* Aumentado el tamaño de fuente */
+  color: #333;
+  margin-bottom: 10px; /* Aumentado el margen inferior */
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"] {
+  width: 100%;
+  padding: 15px; /* Aumentado el padding */
+  font-size: 1.25rem; /* Aumentado el tamaño de fuente */
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group input[type="password"]:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 6px rgba(0, 123, 255, 0.5);
+}
+
+/* Botones */
+button {
+  background-color: #007bff;
+  color: white;
+  padding: 15px 30px; /* Aumentado el padding */
+  font-size: 1.25rem; /* Aumentado el tamaño de fuente */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Pie de página */
+footer {
+  background-color: #007bff;
+  color: white;
+  padding: 20px; /* Aumentado el padding */
+  text-align: center;
+  font-size: 1.25rem; /* Aumentado el tamaño de fuente */
+  margin-top: auto;
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 25px;
+  }
+
+  .main-content h2 {
+    font-size: 2rem;
+  }
+
+  button {
+    padding: 12px 24px;
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .main-content {
+    padding: 20px;
+  }
+
+  .main-content h2 {
+    font-size: 1.75rem;
+  }
+
+  button {
+    padding: 10px 20px;
+    font-size: 1rem;
+  }
+}
