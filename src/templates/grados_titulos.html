@@ -73,7 +73,7 @@
             <input type="date" class="form-control" id="fecha_expedicion" name="fecha_expedicion" required>
         </div>
         <div class="mb-3">
-            <label for="archivo" class="form-label">Adjuntar Archivo (Imagen o PDF)</label>
+            <label for="archivo" class="form-label">Adjuntar Archivo (Imagen o PDF) (de preferencia PDF)</label>
             <input type="file" class="form-control" id="archivo" name="archivo" accept="image/*,.pdf" required onchange="previewFile(event)">
         </div>
 
@@ -155,7 +155,17 @@
             }
         } else {
             previewContainer.style.display = 'none'; // Ocultar si no hay archivo
+            previewImage.src = "#";
+            previewPdf.href = "#";
         }
+    }
+
+    function mostrarConfirmacion(id) {
+        document.getElementById('confirmacion-' + id).style.display = 'block';
+    }
+
+    function ocultarConfirmacion(id) {
+        document.getElementById('confirmacion-' + id).style.display = 'none';
     }
 </script>
 

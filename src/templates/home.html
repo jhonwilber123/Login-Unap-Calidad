@@ -1,10 +1,10 @@
 <!-- src/templates/home.html -->
-
-{% extends './base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}Inicio{% endblock %}
 
 {% block customCSS %}
+<!-- CSS específico para la página de inicio -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 <!-- Importación de fuentes si es necesario -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=ITC+Avant+Garde+LT+Extra+Bold&display=swap">
@@ -12,21 +12,6 @@
 {% endblock %}
 
 {% block body %}
-<!-- Barra de navegación -->
-<nav class="navbar">
-    <a class="navbar-brand" href="#">{{ 'Acreditación UNAP CCS' }}</a>
-    <button class="navbar-toggle" id="navbarToggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="navbarNav">
-        <span></span>
-        <span></span>
-        <span></span>
-    </button>
-    <ul class="navbar-nav" id="navbarNav">
-        <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('logout') }}">Cerrar Sesión</a>
-        </li>
-    </ul>
-</nav>
-
 <!-- Contenido principal -->
 <main class="container">
     <h1>Bienvenido, {{ current_user.fullname }}</h1>
@@ -135,7 +120,9 @@
         {% endif %}
     </section>
 </main>
+{% endblock %}
 
+{% block customJS %}
 <!-- Script para manejar el toggle del menú en móviles -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
