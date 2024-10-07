@@ -108,6 +108,33 @@
             </div>
         </article>
 
+        <!-- Reconocimientos -->
+        <article class="card">
+            <div class="card-body">
+                <h2 class="card-title">Reconocimientos</h2>
+                <p class="card-text">Agrega o edita tus reconocimientos y distinciones.</p>
+                <a href="{{ url_for('reconocimientos') }}" class="card-link">Agregar</a>
+            </div>
+        </article>
+
+        <!-- Software Especializado -->
+        <article class="card">
+            <div class="card-body">
+                <h2 class="card-title">Software Especializado</h2>
+                <p class="card-text">Agrega o edita tus cursos de software especializado.</p>
+                <a href="{{ url_for('softwareespecializado') }}" class="card-link">Agregar</a>
+            </div>
+        </article>
+
+        <!-- Tutorías -->
+        <article class="card">
+            <div class="card-body">
+                <h2 class="card-title">Tutorías</h2>
+                <p class="card-text">Agrega o edita tus tutorías.</p>
+                <a href="{{ url_for('tutorias') }}" class="card-link">Agregar</a>
+            </div>
+        </article>
+
         {% if current_user.role == 'Administrador' %}
         <!-- Datos del Personal (Solo para Administradores) -->
         <article class="card">

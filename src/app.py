@@ -1934,6 +1934,580 @@ def eliminar_produccion(id_produccion):
     flash('Producción Intelectual eliminada correctamente')
     return redirect(url_for('produccion_intelectual'))
 
+# --- NUEVA RUTA PARA RECONOCIMIENTOS ---
+
+# Ruta para listar y agregar reconocimientos
+@app.route('/reconocimientos', methods=['GET', 'POST'])
+@login_required
+def reconocimientos():
+    if request.method == 'POST':
+        # Capturar datos del formulario
+        tipo = request.form['tipo']
+        descripcion = request.form['descripcion']
+        institucion = request.form['institucion']
+        fecha = request.form['fecha']
+        puntaje = request.form['puntaje']
+
+        # Manejo de archivos (imagen o PDF)
+        file = request.files.get('archivo')
+        id_imagen = None
+        if file and allowed_file(file.filename):
+            # Procesar y guardar el archivo
+            filename = secure_filename(file.filename)
+            unique_filename = f"{int(time.time())}_{filename}"
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+            file.save(file_path)
+
+            # Determinar el tipo de archivo (imagen o PDF)
+            file_extension = filename.rsplit('.', 1)[1].lower()
+            if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
+                categoria = 'imagen'
+            elif file_extension == 'pdf':
+                categoria = 'pdf'
+            else:
+                flash('Debe seleccionar un archivo válido (imagen o PDF).')
+                return redirect(request.url)
+
+            cur = db.connection.cursor()
+            # Insertar el archivo y obtener su id_imagen
+            cur.execute("""
+                INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen) 
+                VALUES (%s, %s, %s, %s)
+            """, (current_user.id, categoria, descripcion, unique_filename))
+            db.connection.commit()
+            id_imagen = cur.lastrowid
+            cur.close()
+        elif file:
+            flash('Debe seleccionar un archivo válido (imagen o PDF).')
+            return redirect(request.url)
+
+        # Insertar el reconocimiento
+        cur = db.connection.cursor()
+        cur.execute("""
+            INSERT INTO reconocimientos (id_usuario, tipo, descripcion, institucion, fecha, puntaje, id_imagen)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (current_user.id, tipo, descripcion, institucion, fecha, puntaje, id_imagen))
+        db.connection.commit()
+        cur.close()
+
+        flash('Reconocimiento agregado correctamente')
+        return redirect(url_for('reconocimientos'))
+
+    # Obtener los reconocimientos del usuario actual
+    cur = db.connection.cursor()
+    cur.execute("""
+        SELECT r.id_reconocimiento, r.tipo, r.descripcion, r.institucion, r.fecha, r.puntaje, 
+               ia.ruta_imagen, ia.categoria
+        FROM reconocimientos r
+        LEFT JOIN imagenesadjuntas ia ON r.id_imagen = ia.id_imagen
+        WHERE r.id_usuario = %s
+    """, [current_user.id])
+    reconocimientos = cur.fetchall()
+    cur.close()
+
+    return render_template('reconocimientos.html', reconocimientos=reconocimientos)
+
+# Ruta para editar un reconocimiento
+@app.route('/editar_reconocimiento/<int:id_reconocimiento>', methods=['GET', 'POST'])
+@login_required
+def editar_reconocimiento(id_reconocimiento):
+    cur = db.connection.cursor()
+
+    if request.method == 'POST':
+        # Capturar datos del formulario
+        tipo = request.form['tipo']
+        descripcion = request.form['descripcion']
+        institucion = request.form['institucion']
+        fecha = request.form['fecha']
+        puntaje = request.form['puntaje']
+        file = request.files.get('archivo')
+
+        # Obtener el id_imagen actual
+        cur.execute("""
+            SELECT id_imagen FROM reconocimientos 
+            WHERE id_reconocimiento = %s AND id_usuario = %s
+        """, (id_reconocimiento, current_user.id))
+        result = cur.fetchone()
+        id_imagen_actual = result[0] if result else None
+
+        # Manejar el archivo si se sube uno nuevo
+        if file and allowed_file(file.filename):
+            # Procesar y guardar el archivo
+            filename = secure_filename(file.filename)
+            unique_filename = f"{int(time.time())}_{filename}"
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+            file.save(file_path)
+
+            # Determinar el tipo de archivo
+            file_extension = filename.rsplit('.', 1)[1].lower()
+            if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
+                categoria = 'imagen'
+            elif file_extension == 'pdf':
+                categoria = 'pdf'
+            else:
+                flash('Debe seleccionar un archivo válido (imagen o PDF).')
+                return redirect(request.url)
+
+            if id_imagen_actual:
+                # Actualizar el archivo existente
+                cur.execute("""
+                    UPDATE imagenesadjuntas 
+                    SET ruta_imagen = %s, categoria = %s, descripcion = %s, fecha_subida = NOW()
+                    WHERE id_imagen = %s
+                """, (unique_filename, categoria, descripcion, id_imagen_actual))
+            else:
+                # Insertar un nuevo archivo
+                cur.execute("""
+                    INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen) 
+                    VALUES (%s, %s, %s, %s)
+                """, (current_user.id, categoria, descripcion, unique_filename))
+                db.connection.commit()
+                id_imagen_nueva = cur.lastrowid
+
+                # Actualizar el reconocimiento con el nuevo id_imagen
+                cur.execute("""
+                    UPDATE reconocimientos 
+                    SET id_imagen = %s 
+                    WHERE id_reconocimiento = %s AND id_usuario = %s
+                """, (id_imagen_nueva, id_reconocimiento, current_user.id))
+
+        elif file:
+            flash('Debe seleccionar un archivo válido (imagen o PDF).')
+            return redirect(request.url)
+
+        # Actualizar los datos del reconocimiento
+        cur.execute("""
+            UPDATE reconocimientos 
+            SET tipo = %s, descripcion = %s, institucion = %s, fecha = %s, puntaje = %s
+            WHERE id_reconocimiento = %s AND id_usuario = %s
+        """, (tipo, descripcion, institucion, fecha, puntaje, id_reconocimiento, current_user.id))
+        db.connection.commit()
+        cur.close()
+
+        flash('Reconocimiento actualizado correctamente')
+        return redirect(url_for('reconocimientos'))
+
+    # Obtener los datos actuales del reconocimiento
+    cur.execute("""
+        SELECT r.id_reconocimiento, r.tipo, r.descripcion, r.institucion, r.fecha, r.puntaje, 
+               ia.ruta_imagen, ia.categoria
+        FROM reconocimientos r
+        LEFT JOIN imagenesadjuntas ia ON r.id_imagen = ia.id_imagen
+        WHERE r.id_reconocimiento = %s AND r.id_usuario = %s
+    """, (id_reconocimiento, current_user.id))
+    reconocimiento = cur.fetchone()
+    cur.close()
+
+    if reconocimiento:
+        return render_template('editar_reconocimiento.html', reconocimiento=reconocimiento)
+    else:
+        flash('Reconocimiento no encontrado')
+        return redirect(url_for('reconocimientos'))
+
+# Ruta para eliminar un reconocimiento
+@app.route('/eliminar_reconocimiento/<int:id_reconocimiento>', methods=['POST'])
+@login_required
+def eliminar_reconocimiento(id_reconocimiento):
+    cur = db.connection.cursor()
+    # Obtener id_imagen para eliminar la imagen adjunta si existe
+    cur.execute("""
+        SELECT id_imagen FROM reconocimientos 
+        WHERE id_reconocimiento = %s AND id_usuario = %s
+    """, (id_reconocimiento, current_user.id))
+    result = cur.fetchone()
+    if result and result[0]:
+        id_imagen = result[0]
+        # Eliminar la imagen de la tabla imagenesadjuntas
+        cur.execute("DELETE FROM imagenesadjuntas WHERE id_imagen = %s AND id_usuario = %s", (id_imagen, current_user.id))
+    # Eliminar el reconocimiento
+    cur.execute("DELETE FROM reconocimientos WHERE id_reconocimiento = %s AND id_usuario = %s", (id_reconocimiento, current_user.id))
+    db.connection.commit()
+    cur.close()
+    flash('Reconocimiento eliminado correctamente')
+    return redirect(url_for('reconocimientos'))
+
+# --- NUEVA RUTA PARA SOFTWARE ESPECIALIZADO ---
+
+@app.route('/softwareespecializado', methods=['GET', 'POST'])
+@login_required
+def softwareespecializado():
+    if request.method == 'POST':
+        # Capturar datos del formulario
+        nombre_curso = request.form['nombre_curso']
+        modalidad = request.form['modalidad']
+        horas = request.form['horas']
+        institucion = request.form['institucion']
+        fecha_publicacion = request.form['fecha']
+        puntaje = request.form['puntaje']
+
+        # Manejo de archivos (imagen o PDF)
+        file = request.files.get('archivo')
+        id_imagen = None
+        if file and allowed_file(file.filename):
+            # Procesar y guardar el archivo
+            filename = secure_filename(file.filename)
+            unique_filename = f"{int(time.time())}_{filename}"
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+            file.save(file_path)
+
+            # Determinar el tipo de archivo (imagen o PDF)
+            file_extension = filename.rsplit('.', 1)[1].lower()
+            if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
+                categoria = 'imagen'
+            elif file_extension == 'pdf':
+                categoria = 'pdf'
+            else:
+                flash('Debe seleccionar un archivo válido (imagen o PDF).')
+                return redirect(request.url)
+
+            cur = db.connection.cursor()
+            # Insertar el archivo y obtener su id_imagen
+            cur.execute("""
+                INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen) 
+                VALUES (%s, %s, %s, %s)
+            """, (current_user.id, categoria, f"Archivo para {nombre_curso}", unique_filename))
+            db.connection.commit()
+            id_imagen = cur.lastrowid
+            cur.close()
+        elif file:
+            flash('Debe seleccionar un archivo válido (imagen o PDF).')
+            return redirect(request.url)
+
+        # Insertar el software especializado
+        cur = db.connection.cursor()
+        cur.execute("""
+            INSERT INTO softwareespecializado (id_usuario, nombre_curso, modalidad, horas, institucion, fecha, puntaje, id_imagen)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """, (current_user.id, nombre_curso, modalidad, horas, institucion, fecha_publicacion, puntaje, id_imagen))
+        db.connection.commit()
+        cur.close()
+
+        flash('Software Especializado agregado correctamente')
+        return redirect(url_for('softwareespecializado'))
+
+    # Obtener los softwares especializados del usuario actual
+    cur = db.connection.cursor()
+    cur.execute("""
+        SELECT se.id_software, se.nombre_curso, se.modalidad, se.horas,
+               se.institucion, se.fecha, se.puntaje,
+               ia.ruta_imagen, ia.categoria
+        FROM softwareespecializado se
+        LEFT JOIN imagenesadjuntas ia ON se.id_imagen = ia.id_imagen
+        WHERE se.id_usuario = %s
+    """, [current_user.id])
+    softwares = cur.fetchall()
+    cur.close()
+
+    return render_template('softwareespecializado.html', softwares=softwares)
+
+# Ruta para editar un software especializado
+@app.route('/editar_softwareespecializado/<int:id_software>', methods=['GET', 'POST'])
+@login_required
+def editar_softwareespecializado(id_software):
+    cur = db.connection.cursor()
+
+    if request.method == 'POST':
+        # Capturar datos del formulario
+        nombre_curso = request.form['nombre_curso']
+        modalidad = request.form['modalidad']
+        horas = request.form['horas']
+        institucion = request.form['institucion']
+        fecha_publicacion = request.form['fecha']
+        puntaje = request.form['puntaje']
+        file = request.files.get('archivo')
+
+        # Obtener el id_imagen actual
+        cur.execute("""
+            SELECT id_imagen FROM softwareespecializado 
+            WHERE id_software = %s AND id_usuario = %s
+        """, (id_software, current_user.id))
+        result = cur.fetchone()
+        id_imagen_actual = result['id_imagen'] if result else None
+
+        # Manejar el archivo si se sube uno nuevo
+        if file and allowed_file(file.filename):
+            # Procesar y guardar el archivo
+            filename = secure_filename(file.filename)
+            unique_filename = f"{int(time.time())}_{filename}"
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+            file.save(file_path)
+
+            # Determinar el tipo de archivo
+            file_extension = filename.rsplit('.', 1)[1].lower()
+            if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
+                categoria = 'imagen'
+            elif file_extension == 'pdf':
+                categoria = 'pdf'
+            else:
+                flash('Debe seleccionar un archivo válido (imagen o PDF).')
+                return redirect(request.url)
+
+            if id_imagen_actual:
+                # Actualizar el archivo existente
+                cur.execute("""
+                    UPDATE imagenesadjuntas 
+                    SET ruta_imagen = %s, categoria = %s, descripcion = %s, fecha_subida = NOW()
+                    WHERE id_imagen = %s
+                """, (unique_filename, categoria, f"Archivo para {nombre_curso}", id_imagen_actual))
+            else:
+                # Insertar un nuevo archivo
+                cur.execute("""
+                    INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen) 
+                    VALUES (%s, %s, %s, %s)
+                """, (current_user.id, categoria, f"Archivo para {nombre_curso}", unique_filename))
+                db.connection.commit()
+                id_imagen_nueva = cur.lastrowid
+
+                # Actualizar el software especializado con el nuevo id_imagen
+                cur.execute("""
+                    UPDATE softwareespecializado 
+                    SET id_imagen = %s 
+                    WHERE id_software = %s AND id_usuario = %s
+                """, (id_imagen_nueva, id_software, current_user.id))
+
+        elif file:
+            flash('Debe seleccionar un archivo válido (imagen o PDF).')
+            return redirect(request.url)
+
+        # Actualizar los datos del software especializado
+        cur.execute("""
+            UPDATE softwareespecializado 
+            SET nombre_curso = %s, modalidad = %s, horas = %s, institucion = %s, fecha = %s, puntaje = %s
+            WHERE id_software = %s AND id_usuario = %s
+        """, (nombre_curso, modalidad, horas, institucion, fecha_publicacion, puntaje, id_software, current_user.id))
+        db.connection.commit()
+        cur.close()
+
+        flash('Software Especializado actualizado correctamente')
+        return redirect(url_for('softwareespecializado'))
+
+    # Obtener los datos actuales del software especializado
+    cur.execute("""
+        SELECT se.id_software, se.nombre_curso, se.modalidad, se.horas,
+               se.institucion, se.fecha, se.puntaje,
+               ia.ruta_imagen, ia.categoria
+        FROM softwareespecializado se
+        LEFT JOIN imagenesadjuntas ia ON se.id_imagen = ia.id_imagen
+        WHERE se.id_software = %s AND se.id_usuario = %s
+    """, (id_software, current_user.id))
+    software = cur.fetchone()
+    cur.close()
+
+    if software:
+        return render_template('editar_softwareespecializado.html', software=software)
+    else:
+        flash('Software Especializado no encontrado')
+        return redirect(url_for('softwareespecializado'))
+
+# Ruta para eliminar un software especializado
+@app.route('/eliminar_softwareespecializado/<int:id_software>', methods=['POST'])
+@login_required
+def eliminar_softwareespecializado(id_software):
+    cur = db.connection.cursor()
+    # Obtener id_imagen para eliminar la imagen adjunta si existe
+    cur.execute("""
+        SELECT id_imagen FROM softwareespecializado 
+        WHERE id_software = %s AND id_usuario = %s
+    """, (id_software, current_user.id))
+    result = cur.fetchone()
+    if result and result['id_imagen']:
+        id_imagen = result['id_imagen']
+        # Eliminar la imagen de la tabla imagenesadjuntas
+        cur.execute("DELETE FROM imagenesadjuntas WHERE id_imagen = %s AND id_usuario = %s", (id_imagen, current_user.id))
+    # Eliminar el software especializado
+    cur.execute("DELETE FROM softwareespecializado WHERE id_software = %s AND id_usuario = %s", (id_software, current_user.id))
+    db.connection.commit()
+    cur.close()
+    flash('Software Especializado eliminado correctamente')
+    return redirect(url_for('softwareespecializado'))
+
+# --- NUEVA RUTA PARA TUTORÍAS ---
+
+# Ruta para listar y agregar tutorías
+@app.route('/tutorias', methods=['GET', 'POST'])
+@login_required
+def tutorias():
+    if request.method == 'POST':
+        # Capturar datos del formulario
+        descripcion = request.form['descripcion']
+        anio = request.form['anio']
+        puntaje = request.form['puntaje']
+
+        # Manejo de archivos (imagen o PDF)
+        file = request.files.get('archivo')
+        id_imagen = None
+        if file and allowed_file(file.filename):
+            # Procesar y guardar el archivo
+            filename = secure_filename(file.filename)
+            unique_filename = f"{int(time.time())}_{filename}"
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+            file.save(file_path)
+
+            # Determinar el tipo de archivo (imagen o PDF)
+            file_extension = filename.rsplit('.', 1)[1].lower()
+            if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
+                categoria = 'imagen'
+            elif file_extension == 'pdf':
+                categoria = 'pdf'
+            else:
+                flash('Debe seleccionar un archivo válido (imagen o PDF).')
+                return redirect(request.url)
+
+            cur = db.connection.cursor()
+            # Insertar el archivo y obtener su id_imagen
+            cur.execute("""
+                INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen) 
+                VALUES (%s, %s, %s, %s)
+            """, (current_user.id, categoria, descripcion, unique_filename))
+            db.connection.commit()
+            id_imagen = cur.lastrowid
+            cur.close()
+        elif file:
+            flash('Debe seleccionar un archivo válido (imagen o PDF).')
+            return redirect(request.url)
+
+        # Insertar la tutoría
+        cur = db.connection.cursor()
+        cur.execute("""
+            INSERT INTO tutorias (id_usuario, descripcion, anio, puntaje, id_imagen)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (current_user.id, descripcion, anio, puntaje, id_imagen))
+        db.connection.commit()
+        cur.close()
+
+        flash('Tutoria agregada correctamente')
+        return redirect(url_for('tutorias'))
+
+    # Obtener las tutorías del usuario actual
+    cur = db.connection.cursor()
+    cur.execute("""
+        SELECT t.id_tutoria, t.descripcion, t.anio, t.puntaje, 
+               ia.ruta_imagen, ia.categoria
+        FROM tutorias t
+        LEFT JOIN imagenesadjuntas ia ON t.id_imagen = ia.id_imagen
+        WHERE t.id_usuario = %s
+    """, [current_user.id])
+    tutorias = cur.fetchall()
+    cur.close()
+
+    return render_template('tutorias.html', tutorias=tutorias)
+
+# Ruta para editar una tutoría
+@app.route('/editar_tutoria/<int:id_tutoria>', methods=['GET', 'POST'])
+@login_required
+def editar_tutoria(id_tutoria):
+    cur = db.connection.cursor()
+
+    if request.method == 'POST':
+        # Capturar datos del formulario
+        descripcion = request.form['descripcion']
+        anio = request.form['anio']
+        puntaje = request.form['puntaje']
+        file = request.files.get('archivo')
+
+        # Obtener el id_imagen actual
+        cur.execute("""
+            SELECT id_imagen FROM tutorias 
+            WHERE id_tutoria = %s AND id_usuario = %s
+        """, (id_tutoria, current_user.id))
+        result = cur.fetchone()
+        id_imagen_actual = result[0] if result else None
+
+        # Manejar el archivo si se sube uno nuevo
+        if file and allowed_file(file.filename):
+            # Procesar y guardar el archivo
+            filename = secure_filename(file.filename)
+            unique_filename = f"{int(time.time())}_{filename}"
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+            file.save(file_path)
+
+            # Determinar el tipo de archivo
+            file_extension = filename.rsplit('.', 1)[1].lower()
+            if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
+                categoria = 'imagen'
+            elif file_extension == 'pdf':
+                categoria = 'pdf'
+            else:
+                flash('Debe seleccionar un archivo válido (imagen o PDF).')
+                return redirect(request.url)
+
+            if id_imagen_actual:
+                # Actualizar el archivo existente
+                cur.execute("""
+                    UPDATE imagenesadjuntas 
+                    SET ruta_imagen = %s, categoria = %s, descripcion = %s, fecha_subida = NOW()
+                    WHERE id_imagen = %s
+                """, (unique_filename, categoria, descripcion, id_imagen_actual))
+            else:
+                # Insertar un nuevo archivo
+                cur.execute("""
+                    INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen) 
+                    VALUES (%s, %s, %s, %s)
+                """, (current_user.id, categoria, descripcion, unique_filename))
+                db.connection.commit()
+                id_imagen_nueva = cur.lastrowid
+
+                # Actualizar la tutoría con el nuevo id_imagen
+                cur.execute("""
+                    UPDATE tutorias 
+                    SET id_imagen = %s 
+                    WHERE id_tutoria = %s AND id_usuario = %s
+                """, (id_imagen_nueva, id_tutoria, current_user.id))
+
+        elif file:
+            flash('Debe seleccionar un archivo válido (imagen o PDF).')
+            return redirect(request.url)
+
+        # Actualizar los datos de la tutoría
+        cur.execute("""
+            UPDATE tutorias 
+            SET descripcion = %s, anio = %s, puntaje = %s
+            WHERE id_tutoria = %s AND id_usuario = %s
+        """, (descripcion, anio, puntaje, id_tutoria, current_user.id))
+        db.connection.commit()
+        cur.close()
+
+        flash('Tutoria actualizada correctamente')
+        return redirect(url_for('tutorias'))
+
+    # Obtener los datos actuales de la tutoría
+    cur.execute("""
+        SELECT t.id_tutoria, t.descripcion, t.anio, t.puntaje, 
+               ia.ruta_imagen, ia.categoria
+        FROM tutorias t
+        LEFT JOIN imagenesadjuntas ia ON t.id_imagen = ia.id_imagen
+        WHERE t.id_tutoria = %s AND t.id_usuario = %s
+    """, (id_tutoria, current_user.id))
+    tutoria = cur.fetchone()
+    cur.close()
+
+    if tutoria:
+        return render_template('editar_tutoria.html', tutoria=tutoria)
+    else:
+        flash('Tutoria no encontrada')
+        return redirect(url_for('tutorias'))
+
+# Ruta para eliminar una tutoría
+@app.route('/eliminar_tutoria/<int:id_tutoria>', methods=['POST'])
+@login_required
+def eliminar_tutoria(id_tutoria):
+    cur = db.connection.cursor()
+    # Obtener id_imagen para eliminar la imagen adjunta si existe
+    cur.execute("""
+        SELECT id_imagen FROM tutorias 
+        WHERE id_tutoria = %s AND id_usuario = %s
+    """, (id_tutoria, current_user.id))
+    result = cur.fetchone()
+    if result and result[0]:
+        id_imagen = result[0]
+        # Eliminar la imagen de la tabla imagenesadjuntas
+        cur.execute("DELETE FROM imagenesadjuntas WHERE id_imagen = %s AND id_usuario = %s", (id_imagen, current_user.id))
+    # Eliminar la tutoría
+    cur.execute("DELETE FROM tutorias WHERE id_tutoria = %s AND id_usuario = %s", (id_tutoria, current_user.id))
+    db.connection.commit()
+    cur.close()
+    flash('Tutoria eliminada correctamente')
+    return redirect(url_for('tutorias'))
 
 # Ruta para que el administrador vea los datos del personal
 @app.route('/admin/ver_datos_personal', defaults={'page': 1})
