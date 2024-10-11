@@ -1,0 +1,20 @@
+<!-- src/templates/partials/navbar.html -->
+<nav class="navbar">
+    <a class="navbar-brand" href="#">{{ 'Acreditación UNAP CCS' }}</a>
+    <button class="navbar-toggle" id="navbarToggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="navbarNav">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    <ul class="navbar-nav" id="navbarNav">
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('logout') }}">Cerrar Sesión</a>
+        </li>
+        <!-- Ejemplo de menú de navegación -->
+
+        <li><a href="{{ url_for('home') }}">Inicio</a></li>
+        <li><a href="{{ url_for('change_password') }}">Cambiar Contraseña</a></li>
+        <li><a href="{{ url_for('logout') }}">Cerrar Sesión</a></li>
+
+    </ul>
+</nav>

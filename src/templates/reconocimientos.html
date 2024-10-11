@@ -1,0 +1,202 @@
+<!-- src/templates/reconocimientos.html -->
+
+{% extends './base.html' %}
+
+{% block title %}Reconocimientos{% endblock %}
+
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+{% endblock %}
+
+{% block body %}
+<!-- Barra de navegación -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Acreditación UNAP CCS</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('home') }}">Inicio</a>
+                </li>
+                <!-- Otras rutas de navegación -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('reconocimientos') }}">Reconocimientos</a>
+                </li>
+                {% if current_user.role == 'Administrador' %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('ver_datos_personal') }}">Datos del Personal</a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('logout') }}">Cerrar Sesión</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Contenido principal -->
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center">Mis Reconocimientos</h1>
+
+    <form action="{{ url_for('reconocimientos') }}" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="mb-3">
+            <label for="tipo" class="form-label">Tipo</label>
+            <select class="form-select" id="tipo" name="tipo" required>
+                <option value="">Seleccione un tipo</option>
+                <option value="Docente Visitante">Docente Visitante</option>
+                <option value="Premio Internacional">Premio Internacional</option>
+                <option value="Premio Nacional">Premio Nacional</option>
+                <option value="Miembro de Sociedad Científica Internacional">Miembro de Sociedad Científica Internacional</option>
+                <option value="Miembro de Sociedad Científica Nacional">Miembro de Sociedad Científica Nacional</option>
+                <option value="Distinción Académica">Distinción Académica</option>
+                <option value="Resolución Rectoral">Resolución Rectoral</option>
+                <option value="Resolución Decanal">Resolución Decanal</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="descripcion" class="form-label">Descripción</label>
+            <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label for="institucion" class="form-label">Institución</label>
+            <input type="text" class="form-control" id="institucion" name="institucion" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="fecha" class="form-label">Fecha</label>
+            <input type="date" class="form-control" id="fecha" name="fecha" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="puntaje" class="form-label">Puntaje</label>
+            <input type="number" step="0.01" class="form-control" id="puntaje" name="puntaje" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="archivo" class="form-label">Adjuntar Archivo (Imagen o PDF)</label>
+            <input type="file" class="form-control" id="archivo" name="archivo" accept="image/*,.pdf" onchange="previewFile(event)">
+        </div>
+
+        <div class="mb-3" id="preview-container" style="display:none;">
+            <label for="preview" class="form-label">Previsualización de Archivo:</label>
+            <img id="preview-image" src="#" alt="Previsualización de Imagen" class="img-fluid" style="max-width: 300px; display: none;">
+            <a id="preview-pdf" href="#" target="_blank" style="display: none;">Ver PDF</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Agregar</button>
+    </form>
+
+    <h2 class="mt-5">Listado de Reconocimientos</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Tipo</th>
+                <th>Descripción</th>
+                <th>Institución</th>
+                <th>Fecha</th>
+                <th>Puntaje</th>
+                <th>Archivo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reconocimiento in reconocimientos %}
+            <tr>
+                <td>{{ reconocimiento[1] }}</td>
+                <td>{{ reconocimiento[2] }}</td>
+                <td>{{ reconocimiento[3] }}</td>
+                <td>{{ reconocimiento[4] }}</td>
+                <td>{{ reconocimiento[5] }}</td>
+                <td>
+                    {% if reconocimiento[6] %}
+                        {% if reconocimiento[7] == 'imagen' %}
+                            <img src="{{ url_for('uploaded_file', filename=reconocimiento[6]) }}" alt="Imagen" style="max-width: 100px;">
+                        {% elif reconocimiento[7] == 'pdf' %}
+                            <a href="{{ url_for('uploaded_file', filename=reconocimiento[6]) }}" target="_blank">Ver PDF</a>
+                        {% endif %}
+                    {% else %}
+                        No hay archivo
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('editar_reconocimiento', id_reconocimiento=reconocimiento[0]) }}" class="btn btn-warning">Editar</a>
+                    
+                    <!-- Botón inicial de eliminación -->
+                    <button class="btn btn-danger btn-sm" onclick="mostrarConfirmacion({{ reconocimiento[0] }}); return false;">Eliminar</button>
+
+                    <!-- Sección de confirmación de eliminación, oculta inicialmente -->
+                    <div id="confirmacion-{{ reconocimiento[0] }}" class="confirmacion-eliminacion" style="display:none;">
+                        <p>¿Está seguro de que desea eliminar este Reconocimiento?</p>
+                        <form action="{{ url_for('eliminar_reconocimiento', id_reconocimiento=reconocimiento[0]) }}" method="POST" style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Confirmar</button>
+                            <button class="btn btn-secondary btn-sm" onclick="ocultarConfirmacion({{ reconocimiento[0] }}); return false;">Cancelar</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Script para manejar la previsualización de archivos y el toggle del menú en móviles -->
+<script type="text/javascript">
+    function previewFile(event) {
+        const previewImage = document.getElementById('preview-image');
+        const previewPdf = document.getElementById('preview-pdf');
+        const previewContainer = document.getElementById('preview-container');
+        const file = event.target.files[0];
+        
+        if (file) {
+            const fileType = file.type;
+            if (fileType.includes('image')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = 'block';
+                    previewPdf.style.display = 'none';
+                    previewContainer.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else if (fileType === 'application/pdf') {
+                const fileURL = URL.createObjectURL(file);
+                previewPdf.href = fileURL;
+                previewPdf.style.display = 'block';
+                previewImage.style.display = 'none';
+                previewContainer.style.display = 'block';
+            }
+        } else {
+            previewContainer.style.display = 'none'; // Ocultar si no hay archivo
+        }
+    }
+
+    function mostrarConfirmacion(id) {
+        document.getElementById(`confirmacion-${id}`).style.display = 'block';
+    }
+
+    function ocultarConfirmacion(id) {
+        document.getElementById(`confirmacion-${id}`).style.display = 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleButton = document.getElementById('navbarToggle');
+        const navbarNav = document.getElementById('navbarNav');
+
+        toggleButton.addEventListener('click', function() {
+            navbarNav.classList.toggle('active');
+            const expanded = toggleButton.getAttribute('aria-expanded') === 'true' || false;
+            toggleButton.setAttribute('aria-expanded', !expanded);
+        });
+    });
+</script>
+{% endblock %}

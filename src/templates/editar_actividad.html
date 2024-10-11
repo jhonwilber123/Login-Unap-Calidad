@@ -1,0 +1,112 @@
+<!-- src/templates/editar_actividad.html -->
+
+{% extends './base.html' %}
+
+{% block title %}Editar Actividad{% endblock %}
+
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+<style>
+    /* Estilos adicionales para las imágenes */
+    .actividad-img {
+        width: 150px;
+        height: auto;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Acreditación UNAP CCS</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('home') }}">Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('datos_personales') }}">Datos Personales</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('grados_titulos') }}">Grados y Títulos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('actividades_proyeccion_social') }}">Actividades Sociales</a>
+                </li>
+                {% if current_user.role == 'Administrador' %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('ver_datos_personal') }}">Datos del Personal</a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('logout') }}">Cerrar Sesión</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center">Editar Actividad de Proyección Social</h1>
+
+    <form action="{{ url_for('editar_actividad', id_actividad=actividad.id) }}" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="mb-3">
+            <label for="tipo" class="form-label">Tipo</label>
+            <select class="form-select" id="tipo" name="tipo" required>
+                <option value="">Seleccione un tipo</option>
+                <option value="Organización" {% if actividad.tipo == 'Organización' %}selected{% endif %}>Organización</option>
+                <option value="Expositor" {% if actividad.tipo == 'Expositor' %}selected{% endif %}>Expositor</option>
+                <option value="Asistencia" {% if actividad.tipo == 'Asistencia' %}selected{% endif %}>Asistencia</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="evento" class="form-label">Evento</label>
+            <select class="form-select" id="evento" name="evento" required>
+                <option value="">Seleccione un evento</option>
+                <option value="Congreso" {% if actividad.evento == 'Congreso' %}selected{% endif %}>Congreso</option>
+                <option value="Convención" {% if actividad.evento == 'Convención' %}selected{% endif %}>Convención</option>
+                <option value="Simposio" {% if actividad.evento == 'Simposio' %}selected{% endif %}>Simposio</option>
+                <option value="Foro" {% if actividad.evento == 'Foro' %}selected{% endif %}>Foro</option>
+                <option value="Seminario" {% if actividad.evento == 'Seminario' %}selected{% endif %}>Seminario</option>
+                <option value="Curso Taller" {% if actividad.evento == 'Curso Taller' %}selected{% endif %}>Curso Taller</option>
+                <option value="Charla" {% if actividad.evento == 'Charla' %}selected{% endif %}>Charla</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="descripcion" class="form-label">Descripción</label>
+            <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required>{{ actividad.descripcion }}</textarea>
+        </div>
+
+        <div class="mb-3">
+            <label for="fecha" class="form-label">Fecha</label>
+            <input type="date" class="form-control" id="fecha" name="fecha" value="{{ actividad.fecha }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="imagen" class="form-label">Imagen Actual</label><br>
+            {% if actividad.imagen %}
+                <img src="{{ url_for('static', filename='images/actividades/' + actividad.imagen) }}" alt="Imagen de {{ actividad.tipo }}" class="actividad-img">
+            {% else %}
+                <p>Sin imagen actual.</p>
+            {% endif %}
+        </div>
+
+        <div class="mb-3">
+            <label for="imagen" class="form-label">Actualizar Imagen (opcional)</label>
+            <input type="file" class="form-control" id="imagen" name="imagen" accept="image/*">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Actualizar</button>
+        <a href="{{ url_for('actividades_proyeccion_social') }}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

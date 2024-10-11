@@ -1,0 +1,171 @@
+{% extends './base.html' %}
+
+{% block title %}Editar Producción Intelectual{% endblock %}
+
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+{% endblock %}
+
+{% block body %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Acreditación UNAP CCS</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('home') }}">Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('datos_personales') }}">Datos Personales</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('grados_titulos') }}">Grados y Títulos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('actividades_proyeccion_social') }}">Actividades de Proyección Social</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('actualizaciones_capacitaciones') }}">Actualizaciones y Capacitaciones</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('cargos_directivos') }}">Cargos Directivos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('experiencia_docente') }}">Experiencia Docente</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('idiomas') }}">Idiomas</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('produccion_intelectual') }}">Producción Intelectual</a>
+                </li>
+                {% if current_user.role == 'Administrador' %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('ver_datos_personal') }}">Datos del Personal</a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('logout') }}">Cerrar Sesión</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center">Editar Producción Intelectual</h1>
+
+    <form action="{{ url_for('editar_produccion', id_produccion=produccion[0]) }}" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="mb-3">
+            <label for="tipo" class="form-label">Tipo</label>
+            <select class="form-select" id="tipo" name="tipo" required>
+                <option value="">Seleccione un tipo</option>
+                <option value="Texto Universitario" {% if produccion[1] == 'Texto Universitario' %}selected{% endif %}>Texto Universitario</option>
+                <option value="Traducción de Libro" {% if produccion[1] == 'Traducción de Libro' %}selected{% endif %}>Traducción de Libro</option>
+                <option value="Capítulo de Libro" {% if produccion[1] == 'Capítulo de Libro' %}selected{% endif %}>Capítulo de Libro</option>
+                <option value="Obra Literaria" {% if produccion[1] == 'Obra Literaria' %}selected{% endif %}>Obra Literaria</option>
+                <option value="Manual de Prácticas" {% if produccion[1] == 'Manual de Prácticas' %}selected{% endif %}>Manual de Prácticas</option>
+                <option value="Guía de Enseñanza" {% if produccion[1] == 'Guía de Enseñanza' %}selected{% endif %}>Guía de Enseñanza</option>
+                <option value="Monografía" {% if produccion[1] == 'Monografía' %}selected{% endif %}>Monografía</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="titulo" class="form-label">Título</label>
+            <input type="text" class="form-control" id="titulo" name="titulo" value="{{ produccion[2] }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="isbn" class="form-label">ISBN</label>
+            <input type="text" class="form-control" id="isbn" name="isbn" value="{{ produccion[3] }}">
+        </div>
+
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="deposito_legal" name="deposito_legal" {% if produccion[4] %}checked{% endif %}>
+            <label class="form-check-label" for="deposito_legal">Depósito Legal</label>
+        </div>
+
+        <div class="mb-3">
+            <label for="fecha_publicacion" class="form-label">Fecha de Publicación</label>
+            <input type="date" class="form-control" id="fecha_publicacion" name="fecha_publicacion" value="{{ produccion[5] }}">
+        </div>
+
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="autor" name="autor" {% if produccion[6] %}checked{% endif %}>
+            <label class="form-check-label" for="autor">Autor</label>
+        </div>
+
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="coautor" name="coautor" {% if produccion[7] %}checked{% endif %}>
+            <label class="form-check-label" for="coautor">Coautor</label>
+        </div>
+
+        <div class="mb-3">
+            <label for="puntaje" class="form-label">Puntaje</label>
+            <input type="number" step="0.01" class="form-control" id="puntaje" name="puntaje" value="{{ produccion[8] }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="archivo" class="form-label">Adjuntar Archivo (Imagen o PDF)</label>
+            <input type="file" class="form-control" id="archivo" name="archivo" accept="image/*,.pdf" onchange="previewFile(event)">
+        </div>
+
+        {% if produccion[9] %}
+        <div class="mb-3">
+            <label class="form-label">Archivo Actual:</label><br>
+            {% if produccion[10] == 'imagen' %}
+                <img src="{{ url_for('uploaded_file', filename=produccion[9]) }}" alt="Imagen Actual" style="max-width: 200px;">
+            {% elif produccion[10] == 'pdf' %}
+                <a href="{{ url_for('uploaded_file', filename=produccion[9]) }}" target="_blank">Ver PDF</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="mb-3" id="preview-container" style="display:none;">
+            <label for="preview" class="form-label">Previsualización de Archivo:</label>
+            <img id="preview-image" src="#" alt="Previsualización de Imagen" class="img-fluid" style="max-width: 300px; display: none;">
+            <a id="preview-pdf" href="#" target="_blank" style="display: none;">Ver PDF</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Actualizar</button>
+    </form>
+</div>
+
+<script type="text/javascript">
+    function previewFile(event) {
+        const previewImage = document.getElementById('preview-image');
+        const previewPdf = document.getElementById('preview-pdf');
+        const previewContainer = document.getElementById('preview-container');
+        const file = event.target.files[0];
+        
+        if (file) {
+            const fileType = file.type;
+            if (fileType.includes('image')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = 'block';
+                    previewPdf.style.display = 'none';
+                    previewContainer.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else if (fileType === 'application/pdf') {
+                const fileURL = URL.createObjectURL(file);
+                previewPdf.href = fileURL;
+                previewPdf.style.display = 'block';
+                previewImage.style.display = 'none';
+                previewContainer.style.display = 'block';
+            }
+        } else {
+            previewContainer.style.display = 'none'; // Ocultar si no hay archivo
+        }
+    }
+</script>
+
+{% endblock %}

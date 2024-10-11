@@ -1,0 +1,197 @@
+{% extends './base.html' %}
+
+{% block title %}Investigaciones{% endblock %}
+
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+{% endblock %}
+
+{% block body %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Acreditación UNAP CCS</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('home') }}">Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('datos_personales') }}">Datos Personales</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('grados_titulos') }}">Grados y Títulos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('actividades_proyeccion_social') }}">Actividades de Proyección Social</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('actualizaciones_capacitaciones') }}">Actualizaciones y Capacitaciones</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('cargos_directivos') }}">Cargos Directivos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('experiencia_docente') }}">Experiencia Docente</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('idiomas') }}">Idiomas</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('investigaciones') }}">Investigaciones</a>
+                </li>
+                {% if current_user.role == 'Administrador' %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('ver_datos_personal') }}">Datos del Personal</a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('logout') }}">Cerrar Sesión</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center">Mis Investigaciones</h1>
+
+    <form action="{{ url_for('investigaciones') }}" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="mb-3">
+            <label for="titulo" class="form-label">Título</label>
+            <input type="text" class="form-control" id="titulo" name="titulo" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="descripcion" class="form-label">Descripción</label>
+            <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label for="anios" class="form-label">Años de Investigación</label>
+            <input type="number" class="form-control" id="anios" name="anios" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="tipo" class="form-label">Tipo de Investigación</label>
+            <input type="text" class="form-control" id="tipo" name="tipo" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="puntaje" class="form-label">Puntaje</label>
+            <input type="number" step="0.01" class="form-control" id="puntaje" name="puntaje" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="archivo" class="form-label">Adjuntar Archivo (Imagen o PDF)</label>
+            <input type="file" class="form-control" id="archivo" name="archivo" accept="image/*,.pdf" onchange="previewFile(event)">
+        </div>
+
+        <div class="mb-3" id="preview-container" style="display:none;">
+            <label for="preview" class="form-label">Previsualización de Archivo:</label>
+            <img id="preview-image" src="#" alt="Previsualización de Imagen" class="img-fluid" style="max-width: 300px; display: none;">
+            <a id="preview-pdf" href="#" target="_blank" style="display: none;">Ver PDF</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Agregar</button>
+    </form>
+
+    <h2 class="mt-5">Listado de Investigaciones</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Descripción</th>
+                <th>Años de Investigación</th>
+                <th>Tipo</th>
+                <th>Puntaje</th>
+                <th>Archivo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for investigacion in investigaciones %}
+            <tr>
+                <td>{{ investigacion[1] }}</td>
+                <td>{{ investigacion[2] }}</td>
+                <td>{{ investigacion[3] }}</td>
+                <td>{{ investigacion[4] }}</td>
+                <td>{{ investigacion[5] }}</td>
+                <td>
+                    {% if investigacion[6] %}
+                        {% if investigacion[7] == 'imagen' %}
+                            <img src="{{ url_for('uploaded_file', filename=investigacion[6]) }}" alt="Imagen" style="max-width: 100px;">
+                        {% elif investigacion[7] == 'pdf' %}
+                            <a href="{{ url_for('uploaded_file', filename=investigacion[6]) }}" target="_blank">Ver PDF</a>
+                        {% endif %}
+                    {% else %}
+                        No hay archivo
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('editar_investigacion', id_investigacion=investigacion[0]) }}" class="btn btn-warning">Editar</a>
+                    
+                    <!-- Botón inicial de eliminación -->
+                    <button class="btn btn-danger btn-sm" onclick="mostrarConfirmacion({{ investigacion[0] }}); return false;">Eliminar</button>
+
+                    <!-- Sección de confirmación de eliminación, oculta inicialmente -->
+                    <div id="confirmacion-{{ investigacion[0] }}" class="confirmacion-eliminacion" style="display:none;">
+                        <p>¿Está seguro de que desea eliminar esta Investigación?</p>
+                        <form action="{{ url_for('eliminar_investigacion', id_investigacion=investigacion[0]) }}" method="POST" style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Confirmar</button>
+                            <button class="btn btn-secondary btn-sm" onclick="ocultarConfirmacion({{ investigacion[0] }}); return false;">Cancelar</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script type="text/javascript">
+    function previewFile(event) {
+        const previewImage = document.getElementById('preview-image');
+        const previewPdf = document.getElementById('preview-pdf');
+        const previewContainer = document.getElementById('preview-container');
+        const file = event.target.files[0];
+        
+        if (file) {
+            const fileType = file.type;
+            if (fileType.includes('image')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = 'block';
+                    previewPdf.style.display = 'none';
+                    previewContainer.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else if (fileType === 'application/pdf') {
+                const fileURL = URL.createObjectURL(file);
+                previewPdf.href = fileURL;
+                previewPdf.style.display = 'block';
+                previewImage.style.display = 'none';
+                previewContainer.style.display = 'block';
+            }
+        } else {
+            previewContainer.style.display = 'none'; // Ocultar si no hay archivo
+        }
+    }
+
+    function mostrarConfirmacion(id) {
+        document.getElementById(`confirmacion-${id}`).style.display = 'block';
+    }
+
+    function ocultarConfirmacion(id) {
+        document.getElementById(`confirmacion-${id}`).style.display = 'none';
+    }
+</script>
+
+{% endblock %}

@@ -1,0 +1,145 @@
+<!-- src/templates/tutorias.html -->
+
+{% extends './base.html' %}
+
+{% block title %}Tutorías{% endblock %}
+
+{% block customCSS %}
+<!-- CSS específico para la página de inicio -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<!-- Importación de fuentes si es necesario -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=ITC+Avant+Garde+LT+Extra+Bold&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Arial+Rounded+MT+Bold&display=swap">
+{% endblock %}
+
+
+{% block body %}
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center">Mis Tutorías</h1>
+
+    <!-- Formulario para agregar una nueva tutoría -->
+    <form action="{{ url_for('tutorias') }}" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="mb-3">
+            <label for="descripcion" class="form-label">Descripción</label>
+            <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label for="anio" class="form-label">Año</label>
+            <input type="number" class="form-control" id="anio" name="anio" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="puntaje" class="form-label">Puntaje</label>
+            <input type="number" step="0.01" class="form-control" id="puntaje" name="puntaje" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="archivo" class="form-label">Adjuntar Archivo (Imagen o PDF)</label>
+            <input type="file" class="form-control" id="archivo" name="archivo" accept="image/*,.pdf" onchange="previewFile(event)">
+        </div>
+
+        <div class="mb-3" id="preview-container" style="display:none;">
+            <label for="preview" class="form-label">Previsualización de Archivo:</label>
+            <img id="preview-image" src="#" alt="Previsualización de Imagen" class="img-fluid" style="max-width: 300px; display: none;">
+            <a id="preview-pdf" href="#" target="_blank" style="display: none;">Ver PDF</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Agregar</button>
+    </form>
+
+    <!-- Listado de tutorías -->
+    <h2 class="mt-5">Listado de Tutorías</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Descripción</th>
+                <th>Año</th>
+                <th>Puntaje</th>
+                <th>Archivo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tutoria in tutorias %}
+            <tr>
+                <td>{{ tutoria[1] }}</td>
+                <td>{{ tutoria[2] }}</td>
+                <td>{{ tutoria[3] }}</td>
+                <td>
+                    {% if tutoria[4] %}
+                        {% if tutoria[5] == 'imagen' %}
+                            <img src="{{ url_for('uploaded_file', filename=tutoria[4]) }}" alt="Imagen" style="max-width: 100px;">
+                        {% elif tutoria[5] == 'pdf' %}
+                            <a href="{{ url_for('uploaded_file', filename=tutoria[4]) }}" target="_blank">Ver PDF</a>
+                        {% endif %}
+                    {% else %}
+                        No hay archivo
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('editar_tutoria', id_tutoria=tutoria[0]) }}" class="btn btn-warning">Editar</a>
+                    
+                    <!-- Botón inicial de eliminación -->
+                    <button class="btn btn-danger btn-sm" onclick="mostrarConfirmacion({{ tutoria[0] }}); return false;">Eliminar</button>
+
+                    <!-- Sección de confirmación de eliminación, oculta inicialmente -->
+                    <div id="confirmacion-{{ tutoria[0] }}" class="confirmacion-eliminacion" style="display:none;">
+                        <p>¿Está seguro de que desea eliminar esta Tutoria?</p>
+                        <form action="{{ url_for('eliminar_tutoria', id_tutoria=tutoria[0]) }}" method="POST" style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Confirmar</button>
+                            <button class="btn btn-secondary btn-sm" onclick="ocultarConfirmacion({{ tutoria[0] }}); return false;">Cancelar</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Script para manejar la previsualización de archivos y la confirmación de eliminación -->
+<script type="text/javascript">
+    function previewFile(event) {
+        const previewImage = document.getElementById('preview-image');
+        const previewPdf = document.getElementById('preview-pdf');
+        const previewContainer = document.getElementById('preview-container');
+        const file = event.target.files[0];
+        
+        if (file) {
+            const fileType = file.type;
+            if (fileType.includes('image')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = 'block';
+                    previewPdf.style.display = 'none';
+                    previewContainer.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else if (fileType === 'application/pdf') {
+                const fileURL = URL.createObjectURL(file);
+                previewPdf.href = fileURL;
+                previewPdf.style.display = 'block';
+                previewImage.style.display = 'none';
+                previewContainer.style.display = 'block';
+            }
+        } else {
+            previewContainer.style.display = 'none'; // Ocultar si no hay archivo
+        }
+    }
+
+    function mostrarConfirmacion(id) {
+        document.getElementById(`confirmacion-${id}`).style.display = 'block';
+    }
+
+    function ocultarConfirmacion(id) {
+        document.getElementById(`confirmacion-${id}`).style.display = 'none';
+    }
+</script>
+
+{% endblock %}

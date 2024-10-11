@@ -1,0 +1,170 @@
+/* Definición de variables para colores y tipografías */
+:root {
+  /* Colores */
+  --turquesa: #0F827F; /* Verde turquesa */
+  --turquesa-rgb: 15, 130, 127;
+  --turquesa-cmyk: 81%, 15%, 44%, 25%;
+  --fondo: #f9f9f9;
+  --blanco: #ffffff;
+  --gris-claro: #f0f0f0;
+  --gris: #555555;
+  --negro: #333333;
+  
+  /* Tipografías */
+  --fuente-principal: 'Arial Rounded MT Bold', Arial, sans-serif;
+  --fuente-secundaria: 'ITC Avant Garde LT Extra Bold', sans-serif;
+}
+
+/* Estilos generales */
+html, body {
+  height: 100%;
+  font-family: var(--fuente-principal);
+  margin: 0;
+  padding: 0;
+  background-color: var(--fondo);
+  font-size: 18px; /* Aumentado de 16px (valor predeterminado) */
+}
+
+/* Ajustes para el contenedor principal */
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 40px; /* Aumentado el padding */
+  background-color: var(--blanco);
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2); /* Aumentada la sombra */
+  max-width: 1200px; /* Ancho máximo mayor */
+  margin: 0 auto; /* Centrado horizontalmente */
+  border-radius: 10px; /* Añadido borde redondeado */
+}
+
+/* Encabezado */
+.header {
+  background-color: var(--turquesa);
+  color: var(--blanco);
+  padding: 20px; /* Aumentado el padding */
+  text-align: center;
+  font-family: var(--fuente-secundaria);
+  font-size: 2rem; /* Aumentado el tamaño de fuente */
+  border-radius: 10px 10px 0 0; /* Bordes superiores redondeados */
+}
+
+/* Contenido principal */
+.main-content {
+  flex-grow: 1;
+  padding: 40px; /* Aumentado el padding */
+  background-color: var(--gris-claro);
+  border-radius: 10px;
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2); /* Aumentada la sombra */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.main-content h2 {
+  text-align: center;
+  font-family: var(--fuente-secundaria);
+  font-size: 2.25rem; /* Aumentado el tamaño de fuente */
+  color: var(--negro);
+  margin-bottom: 30px; /* Aumentado el margen inferior */
+}
+
+.main-content p {
+  font-size: 1.25rem; /* Aumentado el tamaño de fuente */
+  color: var(--gris);
+  line-height: 1.8; /* Aumentada la altura de línea */
+  margin-bottom: 20px; /* Aumentado el margen inferior */
+}
+
+/* Formularios y otros inputs */
+.form-group {
+  margin-bottom: 20px; /* Aumentado el margen inferior */
+}
+
+.form-group label {
+  display: block;
+  font-size: 1.25rem; /* Aumentado el tamaño de fuente */
+  color: var(--negro);
+  margin-bottom: 10px; /* Aumentado el margen inferior */
+  font-family: var(--fuente-secundaria);
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"] {
+  width: 100%;
+  padding: 15px; /* Aumentado el padding */
+  font-size: 1.25rem; /* Aumentado el tamaño de fuente */
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
+  font-family: var(--fuente-principal);
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group input[type="password"]:focus {
+  border-color: var(--turquesa);
+  outline: none;
+  box-shadow: 0 0 6px rgba(var(--turquesa-rgb), 0.5);
+}
+
+/* Botones */
+button {
+  background-color: var(--turquesa);
+  color: var(--blanco);
+  padding: 15px 30px; /* Aumentado el padding */
+  font-size: 1.25rem; /* Aumentado el tamaño de fuente */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-family: var(--fuente-secundaria);
+}
+
+button:hover {
+  background-color: darken(var(--turquesa), 10%);
+}
+
+/* Pie de página */
+footer {
+  background-color: var(--turquesa);
+  color: var(--blanco);
+  padding: 20px; /* Aumentado el padding */
+  text-align: center;
+  font-size: 1.25rem; /* Aumentado el tamaño de fuente */
+  margin-top: auto;
+  font-family: var(--fuente-principal);
+  border-radius: 0 0 10px 10px; /* Bordes inferiores redondeados */
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 25px;
+  }
+
+  .main-content h2 {
+    font-size: 2rem;
+  }
+
+  button {
+    padding: 12px 24px;
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .main-content {
+    padding: 20px;
+  }
+
+  .main-content h2 {
+    font-size: 1.75rem;
+  }
+
+  button {
+    padding: 10px 20px;
+    font-size: 1rem;
+  }
+}

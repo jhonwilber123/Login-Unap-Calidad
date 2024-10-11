@@ -1,0 +1,171 @@
+{% extends './base.html' %}
+
+{% block title %}Actualizaciones y Capacitaciones{% endblock %}
+
+{% block customCSS %}
+<!-- CSS específico para la página de inicio -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<!-- Importación de fuentes si es necesario -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=ITC+Avant+Garde+LT+Extra+Bold&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Arial+Rounded+MT+Bold&display=swap">
+{% endblock %}
+
+{% block body %}
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center">Mis Actualizaciones y Capacitaciones</h1>
+
+    <form action="{{ url_for('actualizaciones_capacitaciones') }}" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="mb-3">
+            <label for="tipo" class="form-label">Tipo</label>
+            <select class="form-select" id="tipo" name="tipo" required>
+                <option value="">Seleccione un tipo</option>
+                <option value="Curso Presencial">Curso Presencial</option>
+                <option value="Curso Virtual">Curso Virtual</option>
+                <option value="Diplomado Presencial">Diplomado Presencial</option>
+                <option value="Diplomado Virtual">Diplomado Virtual</option>
+                <option value="Especialización Médica">Especialización Médica</option>
+                <option value="Segunda Especialidad">Segunda Especialidad</option>
+                <option value="Maestría">Maestría</option>
+                <option value="Doctorado">Doctorado</option>
+                <option value="Especialización en Docencia Universitaria">Especialización en Docencia Universitaria</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="descripcion" class="form-label">Descripción</label>
+            <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label for="horas" class="form-label">Horas</label>
+            <input type="number" class="form-control" id="horas" name="horas" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="creditos" class="form-label">Créditos</label>
+            <input type="number" class="form-control" id="creditos" name="creditos" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="semestres_concluidos" class="form-label">Semestres Concluidos</label>
+            <input type="number" class="form-control" id="semestres_concluidos" name="semestres_concluidos" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="puntaje" class="form-label">Puntaje</label>
+            <input type="number" step="0.01" class="form-control" id="puntaje" name="puntaje" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="archivo" class="form-label">Adjuntar Archivo (Imagen o PDF)</label>
+            <input type="file" class="form-control" id="archivo" name="archivo" accept="image/*,.pdf" onchange="previewFile(event)">
+        </div>
+
+        <div class="mb-3" id="preview-container" style="display:none;">
+            <label for="preview" class="form-label">Previsualización de Archivo:</label>
+            <img id="preview-image" src="#" alt="Previsualización de Imagen" class="img-fluid" style="max-width: 300px; display: none;">
+            <a id="preview-pdf" href="#" target="_blank" style="display: none;">Ver PDF</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Agregar</button>
+    </form>
+
+    <h2 class="mt-5">Listado de Actualizaciones y Capacitaciones</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Tipo</th>
+                <th>Descripción</th>
+                <th>Horas</th>
+                <th>Créditos</th>
+                <th>Semestres Concluidos</th>
+                <th>Puntaje</th>
+                <th>Archivo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for actualizacion in actualizaciones %}
+            <tr>
+                <td>{{ actualizacion[1] }}</td>
+                <td>{{ actualizacion[2] }}</td>
+                <td>{{ actualizacion[3] }}</td>
+                <td>{{ actualizacion[4] }}</td>
+                <td>{{ actualizacion[5] }}</td>
+                <td>{{ actualizacion[6] }}</td>
+                <td>
+                    {% if actualizacion[7] %}
+                        {% if actualizacion[8] == 'imagen' %}
+                            <img src="{{ url_for('uploaded_file', filename=actualizacion[7]) }}" alt="Imagen" style="max-width: 100px;">
+                        {% elif actualizacion[8] == 'pdf' %}
+                            <a href="{{ url_for('uploaded_file', filename=actualizacion[7]) }}" target="_blank">Ver PDF</a>
+                        {% endif %}
+                    {% else %}
+                        No hay archivo
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('editar_actualizacion', id_capacitacion=actualizacion[0]) }}" class="btn btn-warning">Editar</a>
+                    
+                    <!-- Botón inicial de eliminación -->
+                    <button class="btn btn-danger btn-sm" onclick="mostrarConfirmacion({{ actualizacion[0] }}); return false;">Eliminar</button>
+
+                    <!-- Sección de confirmación de eliminación, oculta inicialmente -->
+                    <div id="confirmacion-{{ actualizacion[0] }}" class="confirmacion-eliminacion" style="display:none;">
+                        <p>¿Está seguro de que desea eliminar esta Actualización/Capacitación?</p>
+                        <form action="{{ url_for('eliminar_actualizacion', id_capacitacion=actualizacion[0]) }}" method="POST" style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Confirmar</button>
+                            <button class="btn btn-secondary btn-sm" onclick="ocultarConfirmacion({{ actualizacion[0] }}); return false;">Cancelar</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script type="text/javascript">
+    function previewFile(event) {
+        const previewImage = document.getElementById('preview-image');
+        const previewPdf = document.getElementById('preview-pdf');
+        const previewContainer = document.getElementById('preview-container');
+        const file = event.target.files[0];
+        
+        if (file) {
+            const fileType = file.type;
+            if (fileType.includes('image')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = 'block';
+                    previewPdf.style.display = 'none';
+                    previewContainer.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else if (fileType === 'application/pdf') {
+                const fileURL = URL.createObjectURL(file);
+                previewPdf.href = fileURL;
+                previewPdf.style.display = 'block';
+                previewImage.style.display = 'none';
+                previewContainer.style.display = 'block';
+            }
+        } else {
+            previewContainer.style.display = 'none'; // Ocultar si no hay archivo
+        }
+    }
+
+    function mostrarConfirmacion(id) {
+        document.getElementById(`confirmacion-${id}`).style.display = 'block';
+    }
+
+    function ocultarConfirmacion(id) {
+        document.getElementById(`confirmacion-${id}`).style.display = 'none';
+    }
+</script>
+
+{% endblock %}

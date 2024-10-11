@@ -1,0 +1,166 @@
+{% extends './base.html' %}
+
+{% block title %}Datos Personales{% endblock %}
+
+{% block customCSS %}
+<!-- CSS específico para la página de inicio -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<!-- Importación de fuentes si es necesario -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=ITC+Avant+Garde+LT+Extra+Bold&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Arial+Rounded+MT+Bold&display=swap">
+{% endblock %}
+
+{% block body %}
+
+<!-- Contenido principal -->
+<div class="container mt-4">
+    <h1 class="h3 mb-4 text-center">Editar Datos Personales</h1>
+    
+    <form action="{{ url_for('datos_personales') }}" method="POST" class="needs-validation" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <!-- Información básica -->
+        <h2 class="h5">Información Básica</h2>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="apellido_paterno" class="form-label">Apellido Paterno</label>
+                <input type="text" class="form-control" id="apellido_paterno" name="apellido_paterno" value="{{ data.get('apellido_paterno', '') }}" required>
+            </div>
+            <div class="col-md-4">
+                <label for="apellido_materno" class="form-label">Apellido Materno</label>
+                <input type="text" class="form-control" id="apellido_materno" name="apellido_materno" value="{{ data.get('apellido_materno', '') }}" required>
+            </div>
+            <div class="col-md-4">
+                <label for="nombres" class="form-label">Nombres</label>
+                <input type="text" class="form-control" id="nombres" name="nombres" value="{{ data.get('nombres', '') }}" required>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
+                <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento" value="{{ data.get('fecha_nacimiento', '') }}" required>
+            </div>
+            <div class="col-md-6">
+                <label for="dni" class="form-label">DNI</label>
+                <input type="text" class="form-control" id="dni" name="dni" value="{{ data.get('dni', '') }}" required pattern="\d{8}">
+            </div>
+        </div>
+
+        <!-- Lugar de Nacimiento -->
+        <h2 class="h5">Lugar de Nacimiento</h2>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="lugar_nacimiento_departamento" class="form-label">Departamento</label>
+                <input type="text" class="form-control" id="lugar_nacimiento_departamento" name="lugar_nacimiento_departamento" value="{{ data.get('lugar_nacimiento_departamento', '') }}" required>
+            </div>
+            <div class="col-md-4">
+                <label for="lugar_nacimiento_provincia" class="form-label">Provincia</label>
+                <input type="text" class="form-control" id="lugar_nacimiento_provincia" name="lugar_nacimiento_provincia" value="{{ data.get('lugar_nacimiento_provincia', '') }}" required>
+            </div>
+            <div class="col-md-4">
+                <label for="lugar_nacimiento_distrito" class="form-label">Distrito</label>
+                <input type="text" class="form-control" id="lugar_nacimiento_distrito" name="lugar_nacimiento_distrito" value="{{ data.get('lugar_nacimiento_distrito', '') }}" required>
+            </div>
+        </div>
+
+        <!-- Documentos de identidad -->
+        <h2 class="h5">Documentos de Identidad</h2>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="carne_extranjeria" class="form-label">Carné de Extranjería</label>
+                <input type="text" class="form-control" id="carne_extranjeria" name="carne_extranjeria" value="{{ data.get('carne_extranjeria', '') }}">
+            </div>
+            <div class="col-md-6">
+                <label for="numero_ruc" class="form-label">Número de RUC</label>
+                <input type="text" class="form-control" id="numero_ruc" name="numero_ruc" value="{{ data.get('numero_ruc', '') }}">
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="numero_colegiatura" class="form-label">Número de Colegiatura</label>
+                <input type="text" class="form-control" id="numero_colegiatura" name="numero_colegiatura" value="{{ data.get('numero_colegiatura', '') }}">
+            </div>
+            <div class="col-md-6">
+                <label for="codigo" class="form-label">Código UNAP</label>
+                <input type="text" class="form-control" id="codigo" name="codigo" value="{{ data.get('codigo', '') }}" required>
+            </div>
+        </div>
+
+        <!-- Información laboral -->
+        <h2 class="h5">Información Laboral</h2>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="condicion" class="form-label">Condición</label>
+                <select class="form-control" id="condicion" name="condicion" required>
+                    <option value="">Seleccione...</option>
+                    <option value="Nombrado" {% if data.get('condicion') == 'Nombrado' %} selected {% endif %}>Nombrado</option>
+                    <option value="Contratado" {% if data.get('condicion') == 'Contratado' %} selected {% endif %}>Contratado</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="categoria" class="form-label">Categoría</label>
+                <select class="form-control" id="categoria" name="categoria" required>
+                    <option value="">Seleccione...</option>
+                    <option value="Principal" {% if data.get('categoria') == 'Principal' %} selected {% endif %}>Principal</option>
+                    <option value="Asociado" {% if data.get('categoria') == 'Asociado' %} selected {% endif %}>Asociado</option>
+                    <option value="Auxiliar" {% if data.get('categoria') == 'Auxiliar' %} selected {% endif %}>Auxiliar</option>
+                    <option value="A1" {% if data.get('categoria') == 'A1' %} selected {% endif %}>A1</option>
+                    <option value="B1" {% if data.get('categoria') == 'B1' %} selected {% endif %}>B1</option>
+                    <option value="B2" {% if data.get('categoria') == 'B2' %} selected {% endif %}>B2</option>
+                    <option value="B3" {% if data.get('categoria') == 'B3' %} selected {% endif %}>B3</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="dedicacion" class="form-label">Dedicación</label>
+                <select class="form-control" id="dedicacion" name="dedicacion" required>
+                    <option value="">Seleccione...</option>
+                    <option value="Exclusiva" {% if data.get('dedicacion') == 'Exclusiva' %} selected {% endif %}>Exclusiva</option>
+                    <option value="Tiempo completo" {% if data.get('dedicacion') == 'Tiempo completo' %} selected {% endif %}>Tiempo completo</option>
+                    <option value="Tiempo parcial" {% if data.get('dedicacion') == 'Tiempo parcial' %} selected {% endif %}>Tiempo parcial</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Información de contacto -->
+        <h2 class="h5">Información de Contacto</h2>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="telefono_fijo" class="form-label">Teléfono Fijo</label>
+                <input type="tel" class="form-control" id="telefono_fijo" name="telefono_fijo" value="{{ data.get('telefono_fijo', '') }}" required>
+            </div>
+            <div class="col-md-6">
+                <label for="movil" class="form-label">Teléfono Móvil</label>
+                <input type="tel" class="form-control" id="movil" name="movil" value="{{ data.get('movil', '') }}" required>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="correo_personal" class="form-label">Correo Personal</label>
+                <input type="email" class="form-control" id="correo_personal" name="correo_personal" value="{{ data.get('correo_personal', '') }}" required>
+            </div>
+            <div class="col-md-6">
+                <label for="correo_institucional" class="form-label">Correo Institucional</label>
+                <input type="email" class="form-control" id="correo_institucional" name="correo_institucional" value="{{ data.get('correo_institucional', '') }}" required>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="domicilio_actual" class="form-label">Domicilio Actual</label>
+            <input type="text" class="form-control" id="domicilio_actual" name="domicilio_actual" value="{{ data.get('domicilio_actual', '') }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="referencia" class="form-label">Referencia</label>
+            <input type="text" class="form-control" id="referencia" name="referencia" value="{{ data.get('referencia', '') }}">
+        </div>
+
+        <!-- Botón de envío -->
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

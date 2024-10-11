@@ -1,0 +1,176 @@
+<!-- src/templates/home.html -->
+{% extends 'base.html' %}
+
+{% block title %}Inicio{% endblock %}
+
+{% block customCSS %}
+<!-- CSS específico para la página de inicio -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<!-- Importación de fuentes si es necesario -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=ITC+Avant+Garde+LT+Extra+Bold&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Arial+Rounded+MT+Bold&display=swap">
+{% endblock %}
+
+{% block body %}
+<!-- Contenido principal -->
+<main class="container">
+    <h1>Bienvenido, {{ current_user.fullname }}</h1>
+
+    <!-- Tarjetas informativas -->
+    <section class="cards-container">
+        <!-- Datos Personales -->
+        <article class="card">
+            <div class="card-body">
+                <h2 class="card-title">Datos Personales</h2>
+                <p class="card-text">Administra tus datos personales y de contacto.</p>
+                <a href="{{ url_for('datos_personales') }}" class="card-link">Editar</a>
+            </div>
+        </article>
+
+        <!-- Grados y Títulos -->
+        <article class="card">
+            <div class="card-body">
+                <h2 class="card-title">Grados y Títulos</h2>
+                <p class="card-text">Agrega o edita tu información académica.</p>
+                <a href="{{ url_for('grados_titulos') }}" class="card-link">Agregar</a>
+            </div>
+        </article>
+
+        <!-- Actividades Sociales -->
+        <article class="card">
+            <div class="card-body">
+                <h2 class="card-title">Actividades Sociales</h2>
+                <p class="card-text">Agrega o edita tu información sobre actividades de proyección social.</p>
+                <a href="{{ url_for('actividades_proyeccion_social') }}" class="card-link">Agregar</a>
+            </div>
+        </article>
+
+        <!-- Actualizaciones y Capacitaciones -->
+        <article class="card">
+            <div class="card-body">
+                <h2 class="card-title">Actualizaciones y Capacitaciones</h2>
+                <p class="card-text">Agrega o edita tu información sobre actualizaciones y capacitaciones.</p>
+                <a href="{{ url_for('actualizaciones_capacitaciones') }}" class="card-link">Agregar</a>
+            </div>
+        </article>
+
+        <!-- Cargos Directivos -->
+        <article class="card">
+            <div class="card-body">
+                <h2 class="card-title">Cargos Directivos</h2>
+                <p class="card-text">Agrega o edita tu información sobre cargos directivos.</p>
+                <a href="{{ url_for('cargos_directivos') }}" class="card-link">Agregar</a>
+            </div>
+        </article>
+
+        <!-- Experiencia Docente -->
+        <article class="card">
+            <div class="card-body">
+                <h2 class="card-title">Experiencia Docente</h2>
+                <p class="card-text">Agrega o edita tu experiencia docente.</p>
+                <a href="{{ url_for('experiencia_docente') }}" class="card-link">Agregar</a>
+            </div>
+        </article>
+
+        <!-- Idiomas -->
+        <article class="card">
+            <div class="card-body">
+                <h2 class="card-title">Idiomas</h2>
+                <p class="card-text">Agrega o edita tus habilidades lingüísticas.</p>
+                <a href="{{ url_for('idiomas') }}" class="card-link">Agregar</a>
+            </div>
+        </article>
+
+        <!-- Investigaciones -->
+        <article class="card">
+            <div class="card-body">
+                <h2 class="card-title">Investigaciones</h2>
+                <p class="card-text">Agrega o edita tus investigaciones.</p>
+                <a href="{{ url_for('investigaciones') }}" class="card-link">Agregar</a>
+            </div>
+        </article>
+
+        <!-- Participación en Tesis -->
+        <article class="card">
+            <div class="card-body">
+                <h2 class="card-title">Participación en Tesis</h2>
+                <p class="card-text">Agrega o edita tu participación en tesis.</p>
+                <a href="{{ url_for('participaciontesis') }}" class="card-link">Agregar</a>
+            </div>
+        </article>
+
+        <!-- Producción Intelectual -->
+        <article class="card">
+            <div class="card-body">
+                <h2 class="card-title">Producción Intelectual</h2>
+                <p class="card-text">Agrega o edita tu producción intelectual.</p>
+                <a href="{{ url_for('produccion_intelectual') }}" class="card-link">Agregar</a>
+            </div>
+        </article>
+
+        <!-- Reconocimientos -->
+        <article class="card">
+            <div class="card-body">
+                <h2 class="card-title">Reconocimientos</h2>
+                <p class="card-text">Agrega o edita tus reconocimientos y distinciones.</p>
+                <a href="{{ url_for('reconocimientos') }}" class="card-link">Agregar</a>
+            </div>
+        </article>
+
+        <!-- Software Especializado -->
+        <article class="card">
+            <div class="card-body">
+                <h2 class="card-title">Software Especializado</h2>
+                <p class="card-text">Agrega o edita tus cursos de software especializado.</p>
+                <a href="{{ url_for('softwareespecializado') }}" class="card-link">Agregar</a>
+            </div>
+        </article>
+
+        <!-- Tutorías -->
+        <article class="card">
+            <div class="card-body">
+                <h2 class="card-title">Tutorías</h2>
+                <p class="card-text">Agrega o edita tus tutorías.</p>
+                <a href="{{ url_for('tutorias') }}" class="card-link">Agregar</a>
+            </div>
+        </article>
+
+        <!-- Ejemplo de menú de navegación -->
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('home') }}">Inicio</a></li>
+                <li><a href="{{ url_for('change_password') }}">Cambiar Contraseña</a></li>
+                <li><a href="{{ url_for('logout') }}">Cerrar Sesión</a></li>
+            </ul>
+        </nav>
+
+
+        {% if current_user.role == 'Administrador' %}
+        <!-- Datos del Personal (Solo para Administradores) -->
+        <article class="card">
+            <div class="card-body">
+                <h2 class="card-title">Datos del Personal</h2>
+                <p class="card-text">Verifica la información del personal registrado.</p>
+                <a href="{{ url_for('ver_datos_personal') }}" class="card-link">Ver</a>
+            </div>
+        </article>
+        {% endif %}
+    </section>
+</main>
+{% endblock %}
+
+{% block customJS %}
+<!-- Script para manejar el toggle del menú en móviles -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleButton = document.getElementById('navbarToggle');
+        const navbarNav = document.getElementById('navbarNav');
+
+        toggleButton.addEventListener('click', function() {
+            navbarNav.classList.toggle('active');
+            const expanded = toggleButton.getAttribute('aria-expanded') === 'true' || false;
+            toggleButton.setAttribute('aria-expanded', !expanded);
+        });
+    });
+</script>
+{% endblock %}
