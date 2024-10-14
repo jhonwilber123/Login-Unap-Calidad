@@ -5,10 +5,9 @@
 
 {% block customCSS %}
 <!-- CSS específico para la página de inicio -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
-<!-- Importación de fuentes si es necesario -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=ITC+Avant+Garde+LT+Extra+Bold&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Arial+Rounded+MT+Bold&display=swap">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
 {% endblock %}
 
 {% block body %}
@@ -134,14 +133,7 @@
                 <a href="{{ url_for('tutorias') }}" class="card-link">Agregar</a>
             </div>
         </article>
-        <!-- Ejemplo de menú de navegación -->
-        <nav>
-            <ul>
-                <li><a href="{{ url_for('home') }}">Inicio</a></li>
-                <li><a href="{{ url_for('change_password') }}">Cambiar Contraseña</a></li>
-                <li><a href="{{ url_for('logout') }}">Cerrar Sesión</a></li>
-            </ul>
-        </nav>
+        
         {% if current_user.role == 'Administrador' %}
         <!-- Datos del Personal (Solo para Administradores) -->
         <article class="card">

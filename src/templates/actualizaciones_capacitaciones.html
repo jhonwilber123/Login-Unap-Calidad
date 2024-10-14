@@ -4,10 +4,9 @@
 
 {% block customCSS %}
 <!-- CSS específico para la página de inicio -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
-<!-- Importación de fuentes si es necesario -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=ITC+Avant+Garde+LT+Extra+Bold&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Arial+Rounded+MT+Bold&display=swap">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
 {% endblock %}
 
 {% block body %}

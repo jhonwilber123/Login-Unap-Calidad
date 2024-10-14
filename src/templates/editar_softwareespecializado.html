@@ -5,39 +5,14 @@
 {% block title %}Editar Software Especializado{% endblock %}
 
 {% block customCSS %}
+<!-- CSS específico para la página de inicio -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
 {% endblock %}
 
 {% block body %}
-<!-- Barra de navegación -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="{{ url_for('home') }}">Acreditación UNAP CCS</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-                <!-- Otros enlaces de navegación -->
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('home') }}">Inicio</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('softwareespecializado') }}">Software Especializado</a>
-                </li>
-                {% if current_user.role == 'Administrador' %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('ver_datos_personal') }}">Datos del Personal</a>
-                </li>
-                {% endif %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('logout') }}">Cerrar Sesión</a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
+
 
 <div class="container mt-5 pt-5">
     <h1 class="h3 mb-4 text-center">Editar Software Especializado</h1>

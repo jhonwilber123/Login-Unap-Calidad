@@ -1,21 +1,79 @@
 <!-- src/templates/partials/navbar.html -->
-<nav class="navbar">
-    <a class="navbar-brand" href="#">{{ 'Acreditación UNAP CCS' }}</a>
-    <button class="navbar-toggle" id="navbarToggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="navbarNav">
-        <span></span>
-        <span></span>
-        <span></span>
-    </button>
-    <ul class="navbar-nav" id="navbarNav">
-        <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('logout') }}">Cerrar Sesión</a>
-        </li>
-
-        <!-- Ejemplo de menú de navegación -->
-
-        <li><a href="{{ url_for('home') }}">Inicio</a></li>
-        <li><a href="{{ url_for('change_password') }}">Cambiar Contraseña</a></li>
-        <li><a href="{{ url_for('logout') }}">Cerrar Sesión</a></li>
-
-    </ul>
+<nav class="navbar navbar-expand-lg navbar-dark navbarNav">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">{{ 'Acreditación UNAP CCS' }}</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav"> <!-- Eliminado ms-auto para alinear a la izquierda -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        Menú
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbar-text">
+                        <li><a class="dropdown-item" href="{{ url_for('home') }}">Inicio</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('change_password') }}">Cambiar Contraseña</a></li>
+                    </ul>
+                </li>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav"> <!-- Eliminado ms-auto para alinear a la izquierda -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Curriculum
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbar-text">
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('datos_personales') }}">Datos Personales</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('grados_titulos') }}">Grados y Títulos</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('actividades_proyeccion_social') }}">Actividades Sociales</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('actualizaciones_capacitaciones') }}">Actualizaciones y Capacitaciones</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('cargos_directivos') }}">Cargos Directivos</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('experiencia_docente') }}">Experiencia Docente</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('idiomas') }}">Idiomas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('investigaciones') }}">Investigaciones</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('participaciontesis') }}">Participación en Tesis</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('produccion_intelectual') }}">Producción Intelectual</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('reconocimientos') }}">Reconocimientos</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('softwareespecializado') }}">Software Especializado</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('tutorias') }}">Tutorías</a>
+                            </li>                            
+                        </ul>
+                    </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('logout') }}">Cerrar Sesión</a>
+                </li>
+            </ul>
+        </div>
+    </div>
 </nav>
+
+<!-- Al final del cuerpo de tu plantilla, antes de cerrar </body> -->
+<script src="{{ url_for('static', filename='js/navbar.js') }}"></script>

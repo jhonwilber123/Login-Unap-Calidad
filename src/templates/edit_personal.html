@@ -3,7 +3,12 @@
 {% extends './base.html' %}
 
 {% block title %}Editar Perfil{% endblock %}
-
+{% block customCSS %}
+<!-- CSS específico para la página de inicio -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+{% endblock %}
 {% block body %}
 <div class="container mt-4">
     <form action="{{ url_for('edit_personal') }}" method="POST">

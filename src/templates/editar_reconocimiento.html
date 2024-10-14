@@ -5,39 +5,14 @@
 {% block title %}Editar Reconocimiento{% endblock %}
 
 {% block customCSS %}
+<!-- CSS específico para la página de inicio -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
 {% endblock %}
 
 {% block body %}
-<!-- Barra de navegación -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#">Acreditación UNAP CCS</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('home') }}">Inicio</a>
-                </li>
-                <!-- Otras rutas de navegación -->
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('reconocimientos') }}">Reconocimientos</a>
-                </li>
-                {% if current_user.role == 'Administrador' %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('ver_datos_personal') }}">Datos del Personal</a>
-                </li>
-                {% endif %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('logout') }}">Cerrar Sesión</a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
+
 
 <!-- Contenido principal -->
 <div class="container mt-5">

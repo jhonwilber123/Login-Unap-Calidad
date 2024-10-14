@@ -1,168 +1,63 @@
-/* Importación de fuentes si es necesario */ 
-/* Nota: Asegúrate de tener las fuentes 'Arial Rounded MT Bold' e 'ITC Avant Garde LT Extra Bold' disponibles o importadas correctamente. */
+/* navbar.css */
 
-/* Variables de color específicas para la barra de navegación */
-:root {
+/* Estilos específicos de la navbar */
+.navbarNav {
+    /* Definición de variables específicas para la navbar */
     --navbar-bg: #0F827F; /* Fondo de la barra de navegación */
     --navbar-text: #ffffff; /* Texto de la barra de navegación */
     --link-hover: #0c6a6a; /* Color de los enlaces al pasar el cursor */
+
+    background-color: var(--navbar-bg) !important;
 }
 
-/* Reset de márgenes y paddings (opcional si ya lo tienes globalmente) */
-.navbar * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+/* Estilos para la marca y los enlaces de la navbar */
+.navbarNav .navbar-brand,
+.navbarNav .nav-link {
+    color: var(--navbar-text) !important;
+    transition: color 0.3s ease;
 }
 
-/* Estilos de la barra de navegación */
-.navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+/* Efecto al pasar el cursor sobre los enlaces */
+.navbarNav .nav-link:hover,
+.navbarNav .dropdown-item:hover {
+    color: var(--link-hover) !important;
+    background-color: transparent;
+}
+
+/* Estilos para el menú desplegable */
+.navbarNav .dropdown-menu {
     background-color: var(--navbar-bg);
-    padding: 1rem 2rem;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+    border: none;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
-/* Marca de la barra de navegación */
-.navbar-brand {
-    font-family: 'ITC Avant Garde LT Extra Bold', sans-serif;
-    font-size: 1.5rem;
+.navbarNav .dropdown-item {
     color: var(--navbar-text);
-    text-decoration: none;
+    transition: color 0.3s ease, background-color 0.3s ease;
 }
 
-/* Botón toggle para dispositivos móviles */
-.navbar-toggle {
-    display: none;
-    flex-direction: column;
-    cursor: pointer;
-}
-
-.navbar-toggle span {
-    height: 3px;
-    width: 25px;
-    background-color: var(--navbar-text);
-    margin: 4px 0;
-    transition: all 0.3s;
-}
-
-/* Lista principal de navegación */
-.navbar-nav {
-    list-style: none;
-    display: flex;
-    align-items: center; /* Alinea verticalmente */
-    flex: 1;
-}
-
-/* Lista de navegación alineada a la derecha (para "Datos del Personal") */
-.navbar-nav-right {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-}
-
-/* Elementos de navegación */
-.nav-item {
-    margin-left: 1.5rem;
-    position: relative;
-}
-
-/* Enlaces de navegación */
-.nav-link {
-    font-family: 'Arial Rounded MT Bold', Arial, sans-serif;
-    color: var(--navbar-text);
-    text-decoration: none;
-    font-size: 1rem;
-    transition: color 0.3s;
-    display: flex;
-    align-items: center;
-}
-
-.nav-link:hover,
-.nav-link.active {
+.navbarNav .dropdown-item:hover {
     color: var(--link-hover);
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Estilos de dropdown */
-.dropdown-menu {
-    display: none;
-    position: absolute;
-    background-color: var(--navbar-bg);
-    min-width: 200px;
-    z-index: 1;
-    top: 100%;
-    left: 0;
+/* Estilos para el botón toggler (menú móvil) */
+.navbarNav .navbar-toggler {
+    border-color: var(--navbar-text);
 }
 
-.dropdown-item {
-    color: var(--navbar-text);
-    padding: 0.5rem 1rem;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    transition: background-color 0.3s;
+.navbarNav .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
 }
 
-.dropdown-item:hover {
-    background-color: #34495e;
-}
-
-/* Mostrar el menú desplegable al pasar el cursor */
-.nav-item.dropdown:hover .dropdown-menu {
-    display: block;
-}
-
-/* Indicador de dropdown */
-.dropdown-toggle::after {
-    content: ' ▼';
-    font-size: 0.6rem;
-}
-
-/* Responsividad para la barra de navegación */
-@media (max-width: 768px) {
-    .navbar-toggle {
-        display: flex;
-    }
-
-    .navbar-nav {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
+/* Ajustes responsivos si es necesario */
+@media (max-width: 992px) {
+    .navbarNav .navbar-collapse {
         background-color: var(--navbar-bg);
-        flex-direction: column;
-        align-items: flex-start;
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease-in-out;
     }
 
-    .navbar-nav.active {
-        max-height: 500px; /* Suficiente para mostrar todos los elementos */
-    }
-
-    .nav-item {
-        width: 100%;
-        margin: 0;
-    }
-
-    .nav-link {
-        padding: 1rem 2rem;
-        width: 100%;
-        text-align: left; /* Alinea el texto a la izquierda en el menú desplegable */
-    }
-
-    /* Alineación a la derecha para "Datos del Personal" en móvil */
-    .navbar-nav-right {
-        margin-left: 0;
-    }
-
-    /* Ajuste de dropdown menus en móvil */
-    .dropdown-menu {
+    .navbarNav .dropdown-menu {
         position: static;
+        float: none;
     }
 }
