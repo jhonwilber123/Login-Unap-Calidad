@@ -7,6 +7,7 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 import os
 import time
+import bcrypt
 
 from config import config
 
@@ -68,6 +69,38 @@ def logout():
 @login_required
 def home():
     return render_template('home.html')
+
+@app.route('/change-password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    if request.method == 'POST':
+        current_password = request.form['current_password']
+        new_password = request.form['new_password']
+        confirm_password = request.form['confirm_password']
+
+        # Verificar que la nueva contraseña y la confirmación coinciden
+        if new_password != confirm_password:
+            flash('Las nuevas contraseñas no coinciden.')
+            return redirect(url_for('change_password'))
+
+        # Verificar que la contraseña actual es correcta
+        user = ModelUser.get_by_id(db, current_user.id)
+        if not User.check_password(user.password, current_password):
+            flash('La contraseña actual es incorrecta.')
+            return redirect(url_for('change_password'))
+
+        # Actualizar la contraseña en la base de datos
+        hashed_new_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        success = ModelUser.update_password(db, current_user.id, hashed_new_password)
+
+        if success:
+            flash('Tu contraseña ha sido actualizada exitosamente.')
+            return redirect(url_for('home'))
+        else:
+            flash('Hubo un error al actualizar tu contraseña. Intenta nuevamente.')
+            return redirect(url_for('change_password'))
+    else:
+        return render_template('auth/change_password.html')
 
 # --- NUEVAS RUTAS ---
 

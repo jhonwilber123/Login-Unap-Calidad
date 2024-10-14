@@ -1,6 +1,7 @@
 # src/models/entities/ModelUser.py
 
 from .entities.User import User
+import bcrypt
 
 class ModelUser():
 
@@ -42,7 +43,7 @@ class ModelUser():
         try:
             cursor = db.connection.cursor()
             sql = """
-            SELECT usuarios.id_usuario, usuarios.usuario, CONCAT(datospersonales.nombres, ' ', datospersonales.apellido_paterno, ' ', datospersonales.apellido_materno) AS fullname, usuarios.rol
+            SELECT usuarios.id_usuario, usuarios.usuario, usuarios.contraseña, CONCAT(datospersonales.nombres, ' ', datospersonales.apellido_paterno, ' ', datospersonales.apellido_materno) AS fullname, usuarios.rol
             FROM usuarios
             LEFT JOIN datospersonales ON usuarios.id_usuario = datospersonales.id_usuario
             WHERE usuarios.id_usuario = %s
@@ -51,12 +52,29 @@ class ModelUser():
             row = cursor.fetchone()
 
             if row is not None:
-                if len(row) == 4:
-                    return User(row[0], row[1], None, row[2], row[3])
+                if len(row) == 5:
+                    return User(row[0], row[1], row[2], row[3], row[4])
                 else:
-                    print("Error: La consulta no devolvió los 4 elementos esperados.")
+                    print("Error: La consulta no devolvió los 5 elementos esperados.")
                     return None
             else:
                 return None
         except Exception as ex:
             raise Exception(ex)
+
+    @classmethod
+    def update_password(cls, db, user_id, new_password):
+        try:
+            cursor = db.connection.cursor()
+            sql = "UPDATE usuarios SET contraseña = %s WHERE id_usuario = %s"
+            cursor.execute(sql, (new_password, user_id))
+            db.connection.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            return False
+        
+    @classmethod
+    def check_password(cls, hashed_password, password):
+        return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
+
