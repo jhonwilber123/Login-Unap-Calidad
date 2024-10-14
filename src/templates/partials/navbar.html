@@ -2,78 +2,62 @@
 <nav class="navbar navbar-expand-lg navbar-dark navbarNav">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">{{ 'Acreditación UNAP CCS' }}</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav"> <!-- Eliminado ms-auto para alinear a la izquierda -->
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto">
+                <!-- Menú -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                    <a class="nav-link dropdown-toggle" href="#" id="menuDropdown" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false">
                         Menú
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="navbar-text">
+                    <ul class="dropdown-menu" aria-labelledby="menuDropdown">
                         <li><a class="dropdown-item" href="{{ url_for('home') }}">Inicio</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('change_password') }}">Cambiar Contraseña</a></li>
                     </ul>
                 </li>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav"> <!-- Eliminado ms-auto para alinear a la izquierda -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            Curriculum
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbar-text">
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('datos_personales') }}">Datos Personales</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('grados_titulos') }}">Grados y Títulos</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('actividades_proyeccion_social') }}">Actividades Sociales</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('actualizaciones_capacitaciones') }}">Actualizaciones y Capacitaciones</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('cargos_directivos') }}">Cargos Directivos</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('experiencia_docente') }}">Experiencia Docente</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('idiomas') }}">Idiomas</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('investigaciones') }}">Investigaciones</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('participaciontesis') }}">Participación en Tesis</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('produccion_intelectual') }}">Producción Intelectual</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('reconocimientos') }}">Reconocimientos</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('softwareespecializado') }}">Software Especializado</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('tutorias') }}">Tutorías</a>
-                            </li>                            
-                        </ul>
-                    </li>
+                <!-- Curriculum -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="curriculumDropdown" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        Curriculum
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="curriculumDropdown">
+                        <li><a class="dropdown-item" href="{{ url_for('datos_personales') }}">Datos Personales</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('grados_titulos') }}">Grados y Títulos</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('actividades_proyeccion_social') }}">Actividades Sociales</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('actualizaciones_capacitaciones') }}">Actualizaciones y Capacitaciones</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('cargos_directivos') }}">Cargos Directivos</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('experiencia_docente') }}">Experiencia Docente</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('idiomas') }}">Idiomas</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('investigaciones') }}">Investigaciones</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('participaciontesis') }}">Participación en Tesis</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('produccion_intelectual') }}">Producción Intelectual</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('reconocimientos') }}">Reconocimientos</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('softwareespecializado') }}">Software Especializado</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('tutorias') }}">Tutorías</a></li>
+                    </ul>
+                </li>
+                {% if current_user.role == 'Administrador' %}
+                <!-- Datos del Personal (Solo para Administradores) -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('ver_datos_personal') }}">Datos del Personal</a>
+                </li>
+                {% endif %}
+                <!-- Cerrar Sesión -->
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('logout') }}">Cerrar Sesión</a>
                 </li>
+                
             </ul>
         </div>
     </div>
 </nav>
+
 
 <!-- Al final del cuerpo de tu plantilla, antes de cerrar </body> -->
 <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>

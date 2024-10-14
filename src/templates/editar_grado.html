@@ -34,14 +34,91 @@
                 <option value="Ph.D.">Ph.D.</option>
             </select>
         </div>
-        <div class="mb-3">
-            <label for="universidad" class="form-label">Universidad</label>
-            <input type="text" class="form-control" id="universidad" name="universidad" value="{{ titulo[5] }}" required>
-        </div>
+
         <div class="mb-3">
             <label for="pais" class="form-label">País</label>
-            <input type="text" class="form-control" id="pais" name="pais" value="{{ titulo[6] }}" required>
+            <select class="form-select" id="pais" name="pais" required>
+                <option value="">Seleccione un país</option>
+            </select>
         </div>
+        
+        <script>
+            fetch('https://restcountries.com/v3.1/all')
+                .then(response => response.json())
+                .then(data => {
+                    const selectPais = document.getElementById('pais');
+                    // Ordenar los países alfabéticamente
+                    data.sort((a, b) => a.name.common.localeCompare(b.name.common));
+                    data.forEach(country => {
+                        const option = document.createElement('option');
+                        option.value = country.name.common;
+                        option.textContent = country.name.common;
+                        selectPais.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error al cargar la lista de países:', error));
+        </script>
+
+<!-- Campo de selección de universidad (inicialmente visible solo si el país es Perú) -->
+<div class="mb-3" id="universidad-container" style="display: none;">
+    <label for="universidad" class="form-label">Universidad</label>
+    <select class="form-select" id="universidad" name="universidad">
+        <option value="">Seleccione una universidad</option>
+        <option value="Universidad Nacional Mayor de San Marcos">Universidad Nacional Mayor de San Marcos</option>
+        <option value="Pontificia Universidad Católica del Perú">Pontificia Universidad Católica del Perú</option>
+        <option value="Universidad Nacional de Ingeniería">Universidad Nacional de Ingeniería</option>
+        <option value="Universidad Nacional del Altiplano">Universidad Nacional del Altiplano</option>
+        <!-- ... resto de universidades de Perú ... -->
+        <option value="Otra">Otra</option>
+    </select>
+</div>
+
+<!-- Campo para ingresar la universidad manualmente (visible si el país no es Perú o si se selecciona "Otra") -->
+<div class="mb-3" id="universidad-otra-container" style="display: none;">
+    <label for="universidad_otra" class="form-label">Especifique la Universidad</label>
+    <input type="text" class="form-control" id="universidad_otra" name="universidad_otra">
+</div>
+
+<script>
+    // Obtener referencias a los elementos del DOM
+    var paisSelect = document.getElementById('pais');
+    var universidadContainer = document.getElementById('universidad-container');
+    var universidadSelect = document.getElementById('universidad');
+    var universidadOtraContainer = document.getElementById('universidad-otra-container');
+
+    // Evento que se dispara al cambiar el país
+    paisSelect.addEventListener('change', function() {
+        if (this.value === 'Peru') {
+            // Mostrar lista de universidades peruanas
+            universidadContainer.style.display = 'block';
+            universidadSelect.required = true;
+            universidadOtraContainer.style.display = 'none';
+            universidadOtraContainer.querySelector('input').required = false;
+        } else {
+            // Ocultar lista de universidades y mostrar campo para ingresar manualmente
+            universidadContainer.style.display = 'none';
+            universidadSelect.required = false;
+            universidadOtraContainer.style.display = 'block';
+            universidadOtraContainer.querySelector('input').required = true;
+        }
+    });
+
+    // Evento que se dispara al cambiar la universidad
+    universidadSelect.addEventListener('change', function() {
+        if (this.value === 'Otra') {
+            // Mostrar campo para ingresar universidad manualmente
+            universidadOtraContainer.style.display = 'block';
+            universidadOtraContainer.querySelector('input').required = true;
+        } else {
+            // Ocultar campo para ingresar universidad manualmente
+            universidadOtraContainer.style.display = 'none';
+            universidadOtraContainer.querySelector('input').required = false;
+        }
+    });
+</script>
+
+
+        
         <div class="mb-3">
             <label for="fecha_expedicion" class="form-label">Fecha de Expedición</label>
             <input type="date" class="form-control" id="fecha_expedicion" name="fecha_expedicion" value="{{ titulo[7] }}" required>
