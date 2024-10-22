@@ -1,0 +1,215 @@
+<!-- templates/partials/_form_grado.html -->
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+<div class="mb-3">
+    <label for="titulo" class="form-label">Seleccione una Mención</label>
+    <select class="form-select" id="titulo" name="titulo" required onchange="mostrarOtraCarrera()">
+        <option value="Ciencias de la Comunicación" {% if grado and grado.titulo == 'Ciencias de la Comunicación' %}selected{% endif %}>Ciencias de la Comunicación</option>
+        <option value="Periodismo" {% if grado and grado.titulo == 'Periodismo' %}selected{% endif %}>Periodismo</option>
+        <!-- Agrega todas las opciones aquí, asegurándote de marcar la seleccionada si corresponde -->
+        <option value="Otro" {% if grado and grado.titulo == 'Otro' %}selected{% endif %}>Otro</option>
+    </select>
+</div>
+
+<div class="mb-3" id="otraCarreraDiv" style="display: none;">
+    <label for="otraCarrera" class="form-label">Especificar otra carrera</label>
+    <input type="text" class="form-control" id="otraCarrera" name="otraCarrera" placeholder="Escribe tu carrera" value="{{ grado.otraCarrera if grado else '' }}">
+</div>
+
+<script>
+    function mostrarOtraCarrera() {
+        var selectCarrera = document.getElementById("titulo");
+        var otraCarreraDiv = document.getElementById("otraCarreraDiv");
+        if (selectCarrera.value === "Otro") {
+            otraCarreraDiv.style.display = "block";
+        } else {
+            otraCarreraDiv.style.display = "none";
+            document.getElementById("otraCarrera").value = "";
+        }
+    }
+
+    // Llamar a la función al cargar la página para mostrar u ocultar el campo según el valor actual
+    document.addEventListener("DOMContentLoaded", function() {
+        mostrarOtraCarrera();
+    });
+</script>
+
+<div class="mb-3">
+    <label for="tipo" class="form-label">Tipo</label>
+    <select class="form-select" id="tipo" name="tipo" required>
+        <option value="">Seleccione un tipo</option>
+        <option value="Título Profesional" {% if grado and grado.tipo == 'Título Profesional' %}selected{% endif %}>Título Profesional</option>
+        <option value="Maestría Profesional" {% if grado and grado.tipo == 'Maestría Profesional' %}selected{% endif %}>Maestría</option>
+        <option value="Doctorado" {% if grado and grado.tipo == 'Doctorado' %}selected{% endif %}>Doctorado</option>
+        <option value="Ph.D." {% if grado and grado.tipo == 'Ph.D.' %}selected{% endif %}>Ph.D.</option>
+        <option value="Título de Segunda Especialidad" {% if grado and grado.tipo == 'Título de Segunda Especialidad' %}selected{% endif %}>Título de Segunda Especialidad</option>
+    </select>
+</div>
+
+<div class="mb-3">
+    <label for="pais" class="form-label">País</label>
+    <select class="form-select" id="pais" name="pais" required>
+        <option value="">Seleccione un país</option>
+        <!-- Las opciones de países se cargan dinámicamente con JavaScript -->
+    </select>
+</div>
+
+<script>
+    fetch('https://restcountries.com/v3.1/all')
+        .then(response => response.json())
+        .then(data => {
+            const selectPais = document.getElementById('pais');
+            // Ordenar los países alfabéticamente
+            data.sort((a, b) => a.name.common.localeCompare(b.name.common));
+            data.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country.name.common;
+                option.textContent = country.name.common;
+                if (grado && grado.pais === country.name.common) {
+                    option.selected = true;
+                }
+                selectPais.appendChild(option);
+            });
+
+            // Disparar el evento change para mostrar/ocultar la universidad si es necesario
+            if (grado) {
+                var event = new Event('change');
+                selectPais.dispatchEvent(event);
+            }
+        })
+        .catch(error => console.error('Error al cargar la lista de países:', error));
+</script>
+
+<!-- Campo de selección de universidad (inicialmente visible solo si el país es Perú) -->
+<div class="mb-3" id="universidad-container" style="display: none;">
+    <label for="universidad" class="form-label">Universidad</label>
+    <select class="form-select" id="universidad" name="universidad">
+        <option value="">Seleccione una universidad</option>
+        <option value="Universidad Nacional del Altiplano" {% if grado and grado.universidad == 'Universidad Nacional del Altiplano' %}selected{% endif %}>Universidad Nacional del Altiplano</option>
+        <!-- Agrega todas las opciones de universidades aquí -->
+        <option value="Otra" {% if grado and grado.universidad == 'Otra' %}selected{% endif %}>Otra</option>
+    </select>
+</div>
+
+<!-- Campo para ingresar la universidad manualmente (visible si el país no es Perú o si se selecciona "Otra") -->
+<div class="mb-3" id="universidad-otra-container" style="display: none;">
+    <label for="universidad_otra" class="form-label">Especifique la Universidad</label>
+    <input type="text" class="form-control" id="universidad_otra" name="universidad_otra" value="{{ grado.universidad_otra if grado else '' }}">
+</div>
+
+<script>
+    // Obtener referencias a los elementos del DOM
+    var paisSelect = document.getElementById('pais');
+    var universidadContainer = document.getElementById('universidad-container');
+    var universidadSelect = document.getElementById('universidad');
+    var universidadOtraContainer = document.getElementById('universidad-otra-container');
+
+    // Evento que se dispara al cambiar el país
+    paisSelect.addEventListener('change', function() {
+        if (this.value.toLowerCase() === 'peru') {
+            // Mostrar lista de universidades peruanas
+            universidadContainer.style.display = 'block';
+            universidadSelect.required = true;
+            universidadOtraContainer.style.display = 'none';
+            universidadOtraContainer.querySelector('input').required = false;
+        } else {
+            // Ocultar lista de universidades y mostrar campo para ingresar manualmente
+            universidadContainer.style.display = 'none';
+            universidadSelect.required = false;
+            universidadOtraContainer.style.display = 'block';
+            universidadOtraContainer.querySelector('input').required = true;
+        }
+    });
+
+    // Evento que se dispara al cambiar la universidad
+    universidadSelect.addEventListener('change', function() {
+        if (this.value === 'Otra') {
+            // Mostrar campo para ingresar universidad manualmente
+            universidadOtraContainer.style.display = 'block';
+            universidadOtraContainer.querySelector('input').required = true;
+        } else {
+            // Ocultar campo para ingresar universidad manualmente
+            universidadOtraContainer.style.display = 'none';
+            universidadOtraContainer.querySelector('input').required = false;
+        }
+    });
+
+    // Inicializar la visualización correcta al cargar la página
+    document.addEventListener("DOMContentLoaded", function() {
+        // Si ya hay un valor seleccionado para el país
+        if (paisSelect.value) {
+            var event = new Event('change');
+            paisSelect.dispatchEvent(event);
+        }
+
+        // Si ya hay un valor seleccionado para la universidad
+        if (universidadSelect.value) {
+            var event = new Event('change');
+            universidadSelect.dispatchEvent(event);
+        }
+    });
+</script>
+
+<div class="mb-3">
+    <label for="fecha_expedicion" class="form-label">Fecha de Expedición</label>
+    <input type="date" class="form-control" id="fecha_expedicion" name="fecha_expedicion" value="{{ grado.fecha_expedicion.strftime('%Y-%m-%d') if grado else '' }}" required>
+</div>
+
+<div class="mb-3">
+    <label for="archivo" class="form-label">Adjuntar Archivo (Imagen o PDF) {% if grado %}(dejar vacío para no cambiar){% endif %}</label>
+    <input type="file" class="form-control" id="archivo" name="archivo" accept="image/*,.pdf" {% if not grado %}required{% endif %} onchange="previewFile(event)">
+    
+    {% if grado and grado.ruta_imagen %}
+        <small class="form-text text-muted">
+            Archivo actual:
+            {% if grado.categoria == 'pdf' %}
+                <a href="{{ url_for('uploaded_file', filename=grado.ruta_imagen) }}" target="_blank">Ver PDF</a>
+            {% else %}
+                <img src="{{ url_for('uploaded_file', filename=grado.ruta_imagen) }}" alt="Archivo actual" class="img-fluid" style="max-width: 200px;">
+            {% endif %}
+        </small>
+    {% else %}
+        <small class="form-text text-muted">No hay archivo actual.</small>
+    {% endif %}
+</div>
+
+<div class="mb-3 text-center" id="preview-container" style="display:none;">
+    <label for="preview" class="form-label">Previsualización de Archivo:</label>
+    <img id="preview-image" src="#" alt="Previsualización de Imagen" class="img-fluid" style="max-width: 200px; display: none;">
+    <a id="preview-pdf" href="#" target="_blank" style="display: none;">Ver PDF</a>
+</div>
+
+<button type="submit" class="btn btn-primary">{{ boton_texto }}</button>
+
+<script>
+function previewFile(event) {
+    const previewImage = document.getElementById('preview-image');
+    const previewPdf = document.getElementById('preview-pdf');
+    const previewContainer = document.getElementById('preview-container');
+    const file = event.target.files[0];
+    
+    if (file) {
+        const fileType = file.type;
+        if (fileType.includes('image')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+                previewPdf.style.display = 'none';
+                previewContainer.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        } else if (fileType === 'application/pdf') {
+            const fileURL = URL.createObjectURL(file);
+            previewPdf.href = fileURL;
+            previewPdf.style.display = 'block';
+            previewImage.style.display = 'none';
+            previewContainer.style.display = 'block';
+        }
+    } else {
+        previewContainer.style.display = 'none'; // Ocultar si no hay archivo
+        previewImage.src = "#";
+        previewPdf.href = "#";
+    }
+}
+</script>

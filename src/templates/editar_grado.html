@@ -1,3 +1,4 @@
+<!--  -->
 {% extends './base.html' %}
 
 {% block title %}Editar Grado/Título{% endblock %}
@@ -58,14 +59,12 @@
         <div class="mb-3">
             <label for="tipo" class="form-label">Tipo</label>
             <select class="form-select" id="tipo" name="tipo" required>
-                <option value="{{ titulo[3] }}">{{ titulo[3] }}</option>
-                <option value="Título Profesional">Seleccione un tipo de Título</option>
-                <option value="Título de Segunda Especialidad">Título de Segunda Especialidad</option>
-                <option value="Especialidad Médica">Especialidad Médica</option>
-                <option value="Maestría Profesional">Maestría Profesional</option>
-                <option value="Maestría en Ciencias">Maestría en Ciencias</option>
+                <option value="">Seleccione un tipo</option>
+                <option value="Título Profesional">Título Profesional</option>
+                <option value="Maestría Profesional">Maestría</option>
                 <option value="Doctorado">Doctorado</option>
                 <option value="Ph.D.">Ph.D.</option>
+                <option value="Título de Segunda Especialidad">Título de Segunda Especialidad</option>
             </select>
         </div>
 

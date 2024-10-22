@@ -1,11 +1,11 @@
 <!-- src/templates/softwareespecializado.html -->
 
-{% extends 'base.html' %}
+{% extends './base.html' %}
 
 {% block title %}Software Especializado{% endblock %}
 
 {% block customCSS %}
-<!-- CSS específico para la página de inicio -->
+<!-- CSS específico para la página de Software Especializado -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
@@ -13,60 +13,87 @@
 
 {% block body %}
 
-
 <div class="container mt-5">
     <h1 class="h3 mb-4 text-center">Mis Software Especializado</h1>
 
-    <!-- Formulario para agregar un nuevo software especializado -->
-    <form action="{{ url_for('softwareespecializado') }}" method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <!-- Formulario para agregar un nuevo software especializado utilizando Flask-WTF -->
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
 
         <div class="mb-3">
-            <label for="nombre_curso" class="form-label">Nombre del Curso</label>
-            <input type="text" class="form-control" id="nombre_curso" name="nombre_curso" required>
+            {{ form.nombre_curso.label(class="form-label") }}
+            {{ form.nombre_curso(class="form-control", placeholder="Ingrese el nombre del curso") }}
+            {% for error in form.nombre_curso.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
         <div class="mb-3">
-            <label for="modalidad" class="form-label">Modalidad</label>
-            <select class="form-select" id="modalidad" name="modalidad" required>
-                <option value="">Seleccione...</option>
-                <option value="Presencial">Presencial</option>
-                <option value="Virtual">Virtual</option>
-            </select>
+            {{ form.modalidad.label(class="form-label") }}
+            {{ form.modalidad(class="form-select") }}
+            {% for error in form.modalidad.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
         <div class="mb-3">
-            <label for="horas" class="form-label">Horas</label>
-            <input type="number" class="form-control" id="horas" name="horas" required>
+            {{ form.horas.label(class="form-label") }}
+            {{ form.horas(class="form-control", placeholder="Ingrese el número de horas") }}
+            {% for error in form.horas.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Campo 'Tipo de Institución' -->
+        <div class="mb-3">
+            {{ form.institucion.label(class="form-label") }}
+            {{ form.institucion(class="form-select", id="institucion") }}
+            {% for error in form.institucion.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Campo 'Nombre de la Institución' -->
+        <div class="mb-3">
+            {{ form.nombre_institucion.label(class="form-label") }}
+            {{ form.nombre_institucion(class="form-control", id="nombre_institucion") }}
+            {% for error in form.nombre_institucion.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Campo '¿Fue en una de las 1000 mejores universidades del mundo?' -->
+        <div class="mb-3 form-check">
+            {{ form.top_1000(class="form-check-input", id="top_1000", disabled=true) }}
+            {{ form.top_1000.label(class="form-check-label") }}
+            {% for error in form.top_1000.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
         <div class="mb-3">
-            <label for="institucion" class="form-label">Institución</label>
-            <input type="text" class="form-control" id="institucion" name="institucion" required>
+            {{ form.fecha.label(class="form-label") }}
+            {{ form.fecha(class="form-control") }}
+            {% for error in form.fecha.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
         <div class="mb-3">
-            <label for="fecha" class="form-label">Fecha de Publicación</label>
-            <input type="date" class="form-control" id="fecha" name="fecha" required>
-        </div>
-
-        <div class="mb-3">
-            <label for="puntaje" class="form-label">Puntaje</label>
-            <input type="number" step="0.01" class="form-control" id="puntaje" name="puntaje" required>
-        </div>
-
-        <div class="mb-3">
-            <label for="archivo" class="form-label">Adjuntar Archivo (Imagen o PDF)</label>
-            <input type="file" class="form-control" id="archivo" name="archivo" accept="image/*,.pdf" onchange="previewFile(event)">
+            {{ form.archivo.label(class="form-label") }}
+            {{ form.archivo(class="form-control") }}
+            {% for error in form.archivo.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
         <div class="mb-3" id="preview-container" style="display:none;">
-            <label for="preview" class="form-label">Previsualización de Archivo:</label>
+            <label class="form-label">Previsualización de Archivo:</label><br>
             <img id="preview-image" src="#" alt="Previsualización de Imagen" class="img-fluid" style="max-width: 300px; display: none;">
             <a id="preview-pdf" href="#" target="_blank" style="display: none;">Ver PDF</a>
         </div>
 
-        <button type="submit" class="btn btn-primary">Agregar</button>
+        {{ form.submit(class="btn btn-primary") }}
     </form>
 
     <!-- Listado de software especializado -->
@@ -78,45 +105,43 @@
                 <th>Modalidad</th>
                 <th>Horas</th>
                 <th>Institución</th>
-                <th>Fecha de Publicación</th>
-                <th>Puntaje</th>
+                <th>Fecha de Finalización</th>
                 <th>Archivo</th>
                 <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
-            {% for software in softwares %}
+            {% for software in softwareespecializados %}
             <tr>
-                <td>{{ software['nombre_curso'] }}</td>
-                <td>{{ software['modalidad'] }}</td>
-                <td>{{ software['horas'] }}</td>
-                <td>{{ software['institucion'] }}</td>
-                <td>{{ software['fecha'] }}</td>
-                <td>{{ software['puntaje'] }}</td>
+                <td>{{ software.nombre_curso }}</td>
+                <td>{{ software.modalidad }}</td>
+                <td>{{ software.horas }}</td>
+                <td>{{ software.institucion }}</td>
+                <td>{{ software.fecha.strftime('%Y-%m-%d') }}</td>
                 <td>
-                    {% if software['ruta_imagen'] %}
-                        {% if software['categoria'] == 'imagen' %}
-                            <img src="{{ url_for('uploaded_file', filename=software['ruta_imagen']) }}" alt="Imagen" style="max-width: 100px;">
-                        {% elif software['categoria'] == 'pdf' %}
-                            <a href="{{ url_for('uploaded_file', filename=software['ruta_imagen']) }}" target="_blank">Ver PDF</a>
+                    {% if software.ruta_imagen %}
+                        {% if software.categoria == 'imagen' %}
+                            <img src="{{ url_for('uploaded_file', filename=software.ruta_imagen) }}" alt="Imagen" style="max-width: 100px;">
+                        {% elif software.categoria == 'pdf' %}
+                            <a href="{{ url_for('uploaded_file', filename=software.ruta_imagen) }}" target="_blank">Ver PDF</a>
                         {% endif %}
                     {% else %}
                         No hay archivo
                     {% endif %}
                 </td>
                 <td>
-                    <a href="{{ url_for('editar_softwareespecializado', id_software=software['id_software']) }}" class="btn btn-warning">Editar</a>
+                    <a href="{{ url_for('editar_softwareespecializado', id_software=software.id_software) }}" class="btn btn-warning btn-sm">Editar</a>
                     
-                    <!-- Botón de eliminación -->
-                    <button class="btn btn-danger btn-sm" onclick="mostrarConfirmacion({{ software['id_software'] }}); return false;">Eliminar</button>
+                    <!-- Botón inicial de eliminación -->
+                    <button class="btn btn-danger btn-sm" onclick="mostrarConfirmacion({{ software.id_software }}); return false;">Eliminar</button>
 
-                    <!-- Confirmación de eliminación -->
-                    <div id="confirmacion-{{ software['id_software'] }}" class="confirmacion-eliminacion" style="display:none;">
+                    <!-- Sección de confirmación de eliminación, oculta inicialmente -->
+                    <div id="confirmacion-{{ software.id_software }}" class="confirmacion-eliminacion" style="display:none; margin-top: 5px;">
                         <p>¿Está seguro de que desea eliminar este Software Especializado?</p>
-                        <form action="{{ url_for('eliminar_softwareespecializado', id_software=software['id_software']) }}" method="POST" style="display:inline;">
+                        <form action="{{ url_for('eliminar_softwareespecializado', id_software=software.id_software) }}" method="POST" style="display:inline;">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-danger btn-sm">Confirmar</button>
-                            <button class="btn btn-secondary btn-sm" onclick="ocultarConfirmacion({{ software['id_software'] }}); return false;">Cancelar</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="ocultarConfirmacion({{ software.id_software }}); return false;">Cancelar</button>
                         </form>
                     </div>
                 </td>
@@ -125,6 +150,29 @@
         </tbody>
     </table>
 </div>
+
+<!-- Script para manejar la habilitación del campo 'top_1000' -->
+<script type="text/javascript">
+    function toggleTop1000() {
+        const institucion = document.getElementById('institucion');
+        const top1000 = document.getElementById('top_1000');
+
+        if (institucion.value === 'Universidad') {
+            top1000.disabled = false;
+        } else {
+            top1000.checked = false;
+            top1000.disabled = true;
+        }
+    }
+
+    // Ejecutar al cargar la página
+    window.onload = function() {
+        toggleTop1000();
+    };
+
+    // Asignar el evento onchange al campo 'institucion'
+    document.getElementById('institucion').addEventListener('change', toggleTop1000);
+</script>
 
 <!-- Script para manejar la previsualización de archivos y la confirmación de eliminación -->
 <script type="text/javascript">
@@ -164,6 +212,11 @@
     function ocultarConfirmacion(id) {
         document.getElementById(`confirmacion-${id}`).style.display = 'none';
     }
+
+    // Asignar el evento onchange al campo de archivo
+    document.querySelector('input[name="archivo"]').addEventListener('change', previewFile);
 </script>
+
+
 
 {% endblock %}
