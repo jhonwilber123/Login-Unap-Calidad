@@ -72,8 +72,12 @@ class SoftwareEspecializadoForm(FlaskForm):
         'Tipo de Institución', 
         choices=[
             ('', 'Seleccione una opción'),
-            ('Universidad', 'Universidad'), 
-            ('Instituto', 'Instituto'), 
+            ('Universidad', 'Universidad'),
+            ('Sociedad Científica', 'Sociedad Científica'),
+            ('Organización Internacional', 'Organización Internacional'),
+            ('Organización Nacional', 'Organización Nacional'),
+            ('Gobierno', 'Gobierno'),
+            ('Empresa Privada', 'Empresa Privada'),
             ('Otra', 'Otra')
         ], 
         validators=[
@@ -168,6 +172,130 @@ class ReconocimientosForm(FlaskForm):
         ]
     )
     submit = SubmitField('Guardar')
+
+class ProduccionIntelectualForm(FlaskForm):
+    tipo = SelectField(
+        'Tipo de Producción Intelectual',
+        choices=[
+            ('', 'Seleccione una opción'),
+            ('Texto Universitario', 'Texto Universitario'),
+            ('Traducción de Libro', 'Traducción de Libro'),
+            ('Capítulo de Libro', 'Capítulo de Libro'),
+            ('Obra Literaria', 'Obra Literaria'),
+            ('Manual de Prácticas', 'Manual de Prácticas'),
+            ('Guía de Enseñanza', 'Guía de Enseñanza'),
+            ('Monografía', 'Monografía')
+        ],
+        validators=[DataRequired(message='Debe seleccionar un tipo de producción intelectual.')]
+    )
+    titulo = StringField(
+        'Título',
+        validators=[
+            DataRequired(message='Este campo es obligatorio.'),
+            Length(max=255, message='Máximo 255 caracteres.')
+        ]
+    )
+    isbn = StringField(
+        'ISBN',
+        validators=[
+            Optional(),
+            Length(max=50, message='Máximo 50 caracteres.')
+        ]
+    )
+    deposito_legal = BooleanField('Depósito Legal')
+    fecha_publicacion = DateField(
+        'Fecha de Publicación',
+        format='%Y-%m-%d',
+        validators=[
+            DataRequired(message='Este campo es obligatorio.')
+        ]
+    )
+    autor = BooleanField('Autor')
+    coautor = BooleanField('Coautor')
+    archivo = FileField(
+        'Adjuntar Archivo (Imagen o PDF)',
+        validators=[
+            Optional(),
+            FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'pdf'], 'Solo se permiten imágenes y archivos PDF.'),
+            file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
+        ]
+    )
+    editorial_prestigiosa = SelectField(
+        'Editorial de Reconocido Prestigio',
+        choices=[
+            ('No', 'No'),
+            ('Scopus', 'Scopus'),
+            ('Web of Science', 'Web of Science'),
+            ('SciELO', 'SciELO')
+        ],
+        validators=[DataRequired(message='Debe seleccionar una opción para la editorial.')]
+    )
+    submit = SubmitField('Guardar')
+
+class ParticipacionTesisForm(FlaskForm):
+    tipo = SelectField(
+        'Tipo de Participación',
+        choices=[
+            ('', 'Seleccione una opción'),
+            ('Director', 'Director'),
+            ('Asesor', 'Asesor'),
+            ('Jurado', 'Jurado')
+        ],
+        validators=[DataRequired(message='Debe seleccionar un tipo de participación.')]
+    )
+    nivel = SelectField(
+        'Nivel de Participación',
+        choices=[
+            ('', 'Seleccione una opción'),
+            ('Pregrado', 'Pregrado'),
+            ('Posgrado', 'Posgrado')
+        ],
+        validators=[DataRequired(message='Debe seleccionar un nivel de participación.')]
+    )
+    descripcion = StringField(
+        'Descripción',
+        validators=[
+            DataRequired(message='Este campo es obligatorio.'),
+            Length(max=255, message='Máximo 255 caracteres.')
+        ]
+    )
+    fecha = DateField(
+        'Fecha',
+        format='%Y-%m-%d',
+        validators=[
+            DataRequired(message='Este campo es obligatorio.')
+        ]
+    )
+    universidad = StringField(
+        'Universidad',
+        validators=[
+            DataRequired(message='Este campo es obligatorio.'),
+            Length(max=255, message='Máximo 255 caracteres.')
+        ]
+    )
+    archivo = FileField(
+        'Adjuntar Archivo (Imagen o PDF)',
+        validators=[
+            Optional(),
+            FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'pdf'], 'Solo se permiten imágenes y archivos PDF.'),
+            file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
+        ]
+    )
+    submit = SubmitField('Guardar')
+
+    # Validador para que la fecha no sea en el futuro
+    def validate_fecha_publicacion(self, field):
+        if field.data > date.today():
+            raise ValidationError('La fecha no puede ser en el futuro.')
+
+    # Validador para asegurar que al menos uno de autor o coautor esté marcado
+    def validate(self):
+        if not super().validate():
+            return False
+        if not self.autor.data and not self.coautor.data:
+            self.autor.errors.append('Debe seleccionar al menos una opción: Autor o Coautor.')
+            return False
+        return True
 
 
     # Validadores personalizados

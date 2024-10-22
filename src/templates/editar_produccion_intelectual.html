@@ -1,9 +1,11 @@
+<!-- templates/editar_produccion_intelectual.html -->
+
 {% extends './base.html' %}
 
 {% block title %}Editar Producción Intelectual{% endblock %}
 
 {% block customCSS %}
-<!-- CSS específico para la página de inicio -->
+<!-- CSS específico para la página de Editar Producción Intelectual -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
@@ -11,116 +13,101 @@
 
 {% block body %}
 
-<div class="container mt-5">
+<div class="container mt-5 pt-5">
     <h1 class="h3 mb-4 text-center">Editar Producción Intelectual</h1>
 
-    <form action="{{ url_for('editar_produccion', id_produccion=produccion[0]) }}" method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <!-- Formulario para editar la producción intelectual -->
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
 
+        <!-- Tipo -->
         <div class="mb-3">
-            <label for="tipo" class="form-label">Tipo</label>
-            <select class="form-select" id="tipo" name="tipo" required>
-                <option value="">Seleccione un tipo</option>
-                <option value="Texto Universitario" {% if produccion[1] == 'Texto Universitario' %}selected{% endif %}>Texto Universitario</option>
-                <option value="Traducción de Libro" {% if produccion[1] == 'Traducción de Libro' %}selected{% endif %}>Traducción de Libro</option>
-                <option value="Capítulo de Libro" {% if produccion[1] == 'Capítulo de Libro' %}selected{% endif %}>Capítulo de Libro</option>
-                <option value="Obra Literaria" {% if produccion[1] == 'Obra Literaria' %}selected{% endif %}>Obra Literaria</option>
-                <option value="Manual de Prácticas" {% if produccion[1] == 'Manual de Prácticas' %}selected{% endif %}>Manual de Prácticas</option>
-                <option value="Guía de Enseñanza" {% if produccion[1] == 'Guía de Enseñanza' %}selected{% endif %}>Guía de Enseñanza</option>
-                <option value="Monografía" {% if produccion[1] == 'Monografía' %}selected{% endif %}>Monografía</option>
-            </select>
+            {{ form.tipo.label(class="form-label") }}
+            {{ form.tipo(class="form-select") }}
+            {% for error in form.tipo.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
+        <!-- Título -->
         <div class="mb-3">
-            <label for="titulo" class="form-label">Título</label>
-            <input type="text" class="form-control" id="titulo" name="titulo" value="{{ produccion[2] }}" required>
+            {{ form.titulo.label(class="form-label") }}
+            {{ form.titulo(class="form-control", maxlength="255") }}
+            {% for error in form.titulo.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
+        <!-- ISBN -->
         <div class="mb-3">
-            <label for="isbn" class="form-label">ISBN</label>
-            <input type="text" class="form-control" id="isbn" name="isbn" value="{{ produccion[3] }}">
+            {{ form.isbn.label(class="form-label") }}
+            {{ form.isbn(class="form-control", maxlength="50") }}
+            {% for error in form.isbn.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
+        <!-- Depósito Legal -->
         <div class="mb-3 form-check">
-            <input type="checkbox" class="form-check-input" id="deposito_legal" name="deposito_legal" {% if produccion[4] %}checked{% endif %}>
-            <label class="form-check-label" for="deposito_legal">Depósito Legal</label>
+            {{ form.deposito_legal(class="form-check-input") }}
+            {{ form.deposito_legal.label(class="form-check-label") }}
+            {% for error in form.deposito_legal.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
+        <!-- Fecha de Publicación -->
         <div class="mb-3">
-            <label for="fecha_publicacion" class="form-label">Fecha de Publicación</label>
-            <input type="date" class="form-control" id="fecha_publicacion" name="fecha_publicacion" value="{{ produccion[5] }}">
+            {{ form.fecha_publicacion.label(class="form-label") }}
+            {{ form.fecha_publicacion(class="form-control") }}
+            {% for error in form.fecha_publicacion.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
-        <div class="mb-3 form-check">
-            <input type="checkbox" class="form-check-input" id="autor" name="autor" {% if produccion[6] %}checked{% endif %}>
-            <label class="form-check-label" for="autor">Autor</label>
-        </div>
-
-        <div class="mb-3 form-check">
-            <input type="checkbox" class="form-check-input" id="coautor" name="coautor" {% if produccion[7] %}checked{% endif %}>
-            <label class="form-check-label" for="coautor">Coautor</label>
-        </div>
-
+        <!-- Autor y Coautor -->
         <div class="mb-3">
-            <label for="puntaje" class="form-label">Puntaje</label>
-            <input type="number" step="0.01" class="form-control" id="puntaje" name="puntaje" value="{{ produccion[8] }}" required>
+            {{ form.autor(class="form-check-input", id="autor") }}
+            {{ form.autor.label(class="form-check-label", for="autor") }}
+            {{ form.coautor(class="form-check-input ms-3", id="coautor") }}
+            {{ form.coautor.label(class="form-check-label", for="coautor") }}
+            {% for error in form.autor.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
+        <!-- Editorial Prestigiosa -->
         <div class="mb-3">
-            <label for="archivo" class="form-label">Adjuntar Archivo (Imagen o PDF)</label>
-            <input type="file" class="form-control" id="archivo" name="archivo" accept="image/*,.pdf" onchange="previewFile(event)">
+            {{ form.editorial_prestigiosa.label(class="form-label") }}
+            {{ form.editorial_prestigiosa(class="form-select") }}
+            {% for error in form.editorial_prestigiosa.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
-        {% if produccion[9] %}
+        <!-- Archivo Actual -->
+        {% if produccion.ruta_imagen %}
         <div class="mb-3">
             <label class="form-label">Archivo Actual:</label><br>
-            {% if produccion[10] == 'imagen' %}
-                <img src="{{ url_for('uploaded_file', filename=produccion[9]) }}" alt="Imagen Actual" style="max-width: 200px;">
-            {% elif produccion[10] == 'pdf' %}
-                <a href="{{ url_for('uploaded_file', filename=produccion[9]) }}" target="_blank">Ver PDF</a>
+            {% if produccion.categoria == 'imagen' %}
+                <img src="{{ url_for('uploaded_file', filename=produccion.ruta_imagen) }}" alt="Imagen Actual" style="max-width: 200px;">
+            {% elif produccion.categoria == 'pdf' %}
+                <a href="{{ url_for('uploaded_file', filename=produccion.ruta_imagen) }}" target="_blank">Ver PDF</a>
             {% endif %}
         </div>
         {% endif %}
 
-        <div class="mb-3" id="preview-container" style="display:none;">
-            <label for="preview" class="form-label">Previsualización de Archivo:</label>
-            <img id="preview-image" src="#" alt="Previsualización de Imagen" class="img-fluid" style="max-width: 300px; display: none;">
-            <a id="preview-pdf" href="#" target="_blank" style="display: none;">Ver PDF</a>
+        <!-- Archivo -->
+        <div class="mb-3">
+            {{ form.archivo.label(class="form-label") }}
+            {{ form.archivo(class="form-control") }}
+            {% for error in form.archivo.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
-        <button type="submit" class="btn btn-primary">Actualizar</button>
+        {{ form.submit(class="btn btn-primary") }}
     </form>
 </div>
-
-<script type="text/javascript">
-    function previewFile(event) {
-        const previewImage = document.getElementById('preview-image');
-        const previewPdf = document.getElementById('preview-pdf');
-        const previewContainer = document.getElementById('preview-container');
-        const file = event.target.files[0];
-        
-        if (file) {
-            const fileType = file.type;
-            if (fileType.includes('image')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImage.src = e.target.result;
-                    previewImage.style.display = 'block';
-                    previewPdf.style.display = 'none';
-                    previewContainer.style.display = 'block';
-                }
-                reader.readAsDataURL(file);
-            } else if (fileType === 'application/pdf') {
-                const fileURL = URL.createObjectURL(file);
-                previewPdf.href = fileURL;
-                previewPdf.style.display = 'block';
-                previewImage.style.display = 'none';
-                previewContainer.style.display = 'block';
-            }
-        } else {
-            previewContainer.style.display = 'none'; // Ocultar si no hay archivo
-        }
-    }
-</script>
 
 {% endblock %}
