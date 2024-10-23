@@ -1,0 +1,195 @@
+<!-- templates/gradostitulos.html -->
+
+{% extends './base.html' %}
+
+{% block title %}Títulos Académicos{% endblock %}
+
+{% block customCSS %}
+<!-- CSS específico para la página de Títulos Académicos -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+{% endblock %}
+
+{% block body %}
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center">Mis Títulos Académicos</h1>
+
+    <!-- Formulario para agregar un nuevo título -->
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <!-- Título -->
+        <div class="mb-3">
+            {{ form.titulo.label(class="form-label") }}
+            {{ form.titulo(class="form-control", maxlength="255") }}
+            {% for error in form.titulo.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Tipo de Título -->
+        <div class="mb-3">
+            {{ form.tipo.label(class="form-label") }}
+            {{ form.tipo(class="form-select") }}
+            {% for error in form.tipo.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Universidad -->
+        <div class="mb-3">
+            {{ form.universidad.label(class="form-label") }}
+            {{ form.universidad(class="form-select", id="universidad") }}
+            {% for error in form.universidad.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Campo "Otra Universidad" -->
+        <div class="mb-3" id="otro_universidad_div" style="display: none;">
+            {{ form.otro_universidad.label(class="form-label") }}
+            {{ form.otro_universidad(class="form-control", maxlength="255") }}
+            {% for error in form.otro_universidad.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- País -->
+        <div class="mb-3">
+            {{ form.pais.label(class="form-label") }}
+            {{ form.pais(class="form-select", id="pais") }}
+            {% for error in form.pais.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Campo "Otro País" -->
+        <div class="mb-3" id="otro_pais_div" style="display: none;">
+            {{ form.otro_pais.label(class="form-label") }}
+            {{ form.otro_pais(class="form-control", maxlength="255") }}
+            {% for error in form.otro_pais.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Fecha de Expedición -->
+        <div class="mb-3">
+            {{ form.fecha_expedicion.label(class="form-label") }}
+            {{ form.fecha_expedicion(class="form-control") }}
+            {% for error in form.fecha_expedicion.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Archivo -->
+        <div class="mb-3">
+            {{ form.archivo.label(class="form-label") }}
+            {{ form.archivo(class="form-control") }}
+            {% for error in form.archivo.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        {{ form.submit(class="btn btn-primary") }}
+    </form>
+
+    <!-- Lista de títulos académicos -->
+    <h2 class="h4 mt-5">Lista de Títulos Académicos</h2>
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Tipo de Título</th>
+                <th>Universidad</th>
+                <th>País</th>
+                <th>Fecha de Expedición</th>
+                <th>Archivo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for grado in gradostitulos %}
+            <tr>
+                <td>{{ grado.titulo }}</td>
+                <td>{{ grado.tipo }}</td>
+                <td>{{ grado.universidad }}</td>
+                <td>{{ grado.pais }}</td>
+                <td>{{ grado.fecha_expedicion.strftime('%Y-%m-%d') }}</td>
+                <td>
+                    {% if grado.ruta_imagen %}
+                        {% if grado.categoria == 'imagen' %}
+                            <img src="{{ url_for('uploaded_file', filename=grado.ruta_imagen) }}" alt="Imagen" style="max-width: 100px;">
+                        {% elif grado.categoria == 'pdf' %}
+                            <a href="{{ url_for('uploaded_file', filename=grado.ruta_imagen) }}" target="_blank">Ver PDF</a>
+                        {% endif %}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('editar_gradostitulos', id_grado=grado.id_grado) }}" class="btn btn-warning btn-sm">Editar</a>
+
+                    <!-- Botón inicial de eliminación -->
+                    <button class="btn btn-danger btn-sm" onclick="mostrarConfirmacion({{ grado.id_grado }}); return false;">Eliminar</button>
+
+                    <!-- Sección de confirmación de eliminación, oculta inicialmente -->
+                    <div id="confirmacion-{{ grado.id_grado }}" class="confirmacion-eliminacion" style="display:none; margin-top: 5px;">
+                        <p>¿Está seguro de que desea eliminar este título académico?</p>
+                        <form action="{{ url_for('eliminar_gradostitulos', id_grado=grado.id_grado) }}" method="POST" style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Confirmar</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="ocultarConfirmacion({{ grado.id_grado }}); return false;">Cancelar</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- JavaScript para controlar la confirmación de eliminación y la opción "Otra" -->
+<script type="text/javascript">
+    function mostrarConfirmacion(id) {
+        document.getElementById('confirmacion-' + id).style.display = 'block';
+    }
+
+    function ocultarConfirmacion(id) {
+        document.getElementById('confirmacion-' + id).style.display = 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const universidadSelect = document.getElementById('universidad');
+        const otroUniversidadDiv = document.getElementById('otro_universidad_div');
+        const paisSelect = document.getElementById('pais');
+        const otroPaisDiv = document.getElementById('otro_pais_div');
+
+        function toggleOtroUniversidad() {
+            if (universidadSelect.value === 'Otra') {
+                otroUniversidadDiv.style.display = 'block';
+            } else {
+                otroUniversidadDiv.style.display = 'none';
+            }
+        }
+
+        function toggleOtroPais() {
+            if (paisSelect.value === 'Otro') {
+                otroPaisDiv.style.display = 'block';
+            } else {
+                otroPaisDiv.style.display = 'none';
+            }
+        }
+
+        // Ejecutar al cargar la página
+        toggleOtroUniversidad();
+        toggleOtroPais();
+
+        // Asignar el evento onchange a los select fields
+        universidadSelect.addEventListener('change', toggleOtroUniversidad);
+        paisSelect.addEventListener('change', toggleOtroPais);
+    });
+</script>
+
+{% endblock %}

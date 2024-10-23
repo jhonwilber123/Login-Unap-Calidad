@@ -1,15 +1,17 @@
 <!-- src/templates/partials/navbar.html -->
 <nav class="navbar navbar-expand-lg navbar-dark navbarNav">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">{{ 'Acreditación UNAP CCS' }}</a>
+        <!-- Marca de la Navbar que redirige a la página de inicio -->
+        <a class="navbar-brand" href="{{ url_for('home') }}">Acreditación UNAP CCS</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
             aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
+        <!-- Contenido colapsable de la Navbar -->
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto">
-                <!-- Menú -->
+                <!-- Menú Principal -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="menuDropdown" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false">
@@ -20,7 +22,8 @@
                         <li><a class="dropdown-item" href="{{ url_for('change_password') }}">Cambiar Contraseña</a></li>
                     </ul>
                 </li>
-                <!-- Curriculum -->
+
+                <!-- Menú Curriculum -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="curriculumDropdown" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false">
@@ -28,7 +31,7 @@
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="curriculumDropdown">
                         <li><a class="dropdown-item" href="{{ url_for('datos_personales') }}">Datos Personales</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('grados_titulos') }}">Grados y Títulos</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('gradostitulos') }}">Grados y Títulos</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('actividades_proyeccion_social') }}">Actividades Sociales</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('actualizaciones_capacitaciones') }}">Actualizaciones y Capacitaciones</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('cargos_directivos') }}">Cargos Directivos</a></li>
@@ -42,22 +45,26 @@
                         <li><a class="dropdown-item" href="{{ url_for('tutorias') }}">Tutorías</a></li>
                     </ul>
                 </li>
+
                 {% if current_user.role == 'Administrador' %}
                 <!-- Datos del Personal (Solo para Administradores) -->
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('ver_datos_personal') }}">Datos del Personal</a>
                 </li>
                 {% endif %}
-                <!-- Cerrar Sesión -->
+            </ul>
+
+            <!-- Enlace de Cerrar Sesión alineado a la derecha -->
+            <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('logout') }}">Cerrar Sesión</a>
+                    <a class="nav-link d-flex align-items-center" href="{{ url_for('logout') }}">
+                        <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
+                    </a>
                 </li>
-                
             </ul>
         </div>
     </div>
 </nav>
-
 
 <!-- Al final del cuerpo de tu plantilla, antes de cerrar </body> -->
 <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>

@@ -1,9 +1,11 @@
+<!-- templates/investigaciones.html -->
+
 {% extends './base.html' %}
 
 {% block title %}Investigaciones{% endblock %}
 
 {% block customCSS %}
-<!-- CSS específico para la página de inicio -->
+<!-- CSS específico para la página de Investigaciones -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
@@ -11,61 +13,124 @@
 
 {% block body %}
 
-
 <div class="container mt-5">
     <h1 class="h3 mb-4 text-center">Mis Investigaciones</h1>
 
-    <form action="{{ url_for('investigaciones') }}" method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <!-- Formulario para agregar una nueva investigación -->
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
 
+        <!-- Tipo de Investigación -->
         <div class="mb-3">
-            <label for="titulo" class="form-label">Título</label>
-            <input type="text" class="form-control" id="titulo" name="titulo" required>
+            {{ form.tipo.label(class="form-label") }}
+            {{ form.tipo(class="form-select") }}
+            {% for error in form.tipo.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
+        <!-- Título -->
         <div class="mb-3">
-            <label for="descripcion" class="form-label">Descripción</label>
-            <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required></textarea>
+            {{ form.titulo.label(class="form-label") }}
+            {{ form.titulo(class="form-control", maxlength="255") }}
+            {% for error in form.titulo.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
+        <!-- Descripción -->
         <div class="mb-3">
-            <label for="anios" class="form-label">Años de Investigación</label>
-            <input type="number" class="form-control" id="anios" name="anios" required>
+            {{ form.descripcion.label(class="form-label") }}
+            {{ form.descripcion(class="form-control", rows="4") }}
+            {% for error in form.descripcion.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
+        <!-- Fecha de Inicio -->
         <div class="mb-3">
-            <label for="tipo" class="form-label">Tipo de Investigación</label>
-            <input type="text" class="form-control" id="tipo" name="tipo" required>
+            {{ form.fecha_inicio.label(class="form-label") }}
+            {{ form.fecha_inicio(class="form-control") }}
+            {% for error in form.fecha_inicio.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
+        <!-- Fecha de Fin -->
         <div class="mb-3">
-            <label for="puntaje" class="form-label">Puntaje</label>
-            <input type="number" step="0.01" class="form-control" id="puntaje" name="puntaje" required>
+            {{ form.fecha_fin.label(class="form-label") }}
+            {{ form.fecha_fin(class="form-control") }}
+            {% for error in form.fecha_fin.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
+        <!-- Revista -->
         <div class="mb-3">
-            <label for="archivo" class="form-label">Adjuntar Archivo (Imagen o PDF)</label>
-            <input type="file" class="form-control" id="archivo" name="archivo" accept="image/*,.pdf" onchange="previewFile(event)">
+            {{ form.revista.label(class="form-label") }}
+            {{ form.revista(class="form-control", maxlength="255") }}
+            {% for error in form.revista.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
-        <div class="mb-3" id="preview-container" style="display:none;">
-            <label for="preview" class="form-label">Previsualización de Archivo:</label>
-            <img id="preview-image" src="#" alt="Previsualización de Imagen" class="img-fluid" style="max-width: 300px; display: none;">
-            <a id="preview-pdf" href="#" target="_blank" style="display: none;">Ver PDF</a>
+        <!-- Índice -->
+        <div class="mb-3">
+            {{ form.indice.label(class="form-label") }}
+            {{ form.indice(class="form-select") }}
+            {% for error in form.indice.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
-        <button type="submit" class="btn btn-primary">Agregar</button>
+        <!-- Fecha de Publicación -->
+        <div class="mb-3">
+            {{ form.fecha_publicacion.label(class="form-label") }}
+            {{ form.fecha_publicacion(class="form-control") }}
+            {% for error in form.fecha_publicacion.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Autor -->
+        <div class="mb-3 form-check">
+            {{ form.autor(class="form-check-input") }}
+            {{ form.autor.label(class="form-check-label") }}
+        </div>
+
+        <!-- Coautor -->
+        <div class="mb-3 form-check">
+            {{ form.coautor(class="form-check-input") }}
+            {{ form.coautor.label(class="form-check-label") }}
+        </div>
+
+        <!-- Archivo -->
+        <div class="mb-3">
+            {{ form.archivo.label(class="form-label") }}
+            {{ form.archivo(class="form-control") }}
+            {% for error in form.archivo.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        {{ form.submit(class="btn btn-primary") }}
     </form>
 
-    <h2 class="mt-5">Listado de Investigaciones</h2>
-    <table class="table table-striped">
+    <!-- Lista de investigaciones -->
+    <h2 class="h4 mt-5">Lista de Investigaciones</h2>
+    <table class="table table-bordered mt-3">
         <thead>
             <tr>
+                <th>Tipo</th>
                 <th>Título</th>
                 <th>Descripción</th>
-                <th>Años de Investigación</th>
-                <th>Tipo</th>
-                <th>Puntaje</th>
+                <th>Fecha de Inicio</th>
+                <th>Fecha de Fin</th>
+                <th>Revista</th>
+                <th>Índice</th>
+                <th>Fecha de Publicación</th>
+                <th>Autor</th>
+                <th>Coautor</th>
                 <th>Archivo</th>
                 <th>Acciones</th>
             </tr>
@@ -73,35 +138,52 @@
         <tbody>
             {% for investigacion in investigaciones %}
             <tr>
-                <td>{{ investigacion[1] }}</td>
-                <td>{{ investigacion[2] }}</td>
-                <td>{{ investigacion[3] }}</td>
-                <td>{{ investigacion[4] }}</td>
-                <td>{{ investigacion[5] }}</td>
+                <td>{{ investigacion.tipo }}</td>
+                <td>{{ investigacion.titulo }}</td>
+                <td>{{ investigacion.descripcion }}</td>
+                <td>{{ investigacion.fecha_inicio.strftime('%Y-%m-%d') }}</td>
                 <td>
-                    {% if investigacion[6] %}
-                        {% if investigacion[7] == 'imagen' %}
-                            <img src="{{ url_for('uploaded_file', filename=investigacion[6]) }}" alt="Imagen" style="max-width: 100px;">
-                        {% elif investigacion[7] == 'pdf' %}
-                            <a href="{{ url_for('uploaded_file', filename=investigacion[6]) }}" target="_blank">Ver PDF</a>
+                    {% if investigacion.fecha_fin %}
+                        {{ investigacion.fecha_fin.strftime('%Y-%m-%d') }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+                <td>{{ investigacion.revista or 'N/A' }}</td>
+                <td>{{ investigacion.indice or 'N/A' }}</td>
+                <td>
+                    {% if investigacion.fecha_publicacion %}
+                        {{ investigacion.fecha_publicacion.strftime('%Y-%m-%d') }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+                <td>{{ 'Sí' if investigacion.autor else 'No' }}</td>
+                <td>{{ 'Sí' if investigacion.coautor else 'No' }}</td>
+                <td>
+                    {% if investigacion.ruta_imagen %}
+                        {% if investigacion.categoria == 'imagen' %}
+                            <img src="{{ url_for('uploaded_file', filename=investigacion.ruta_imagen) }}" alt="Imagen" style="max-width: 100px;">
+                        {% elif investigacion.categoria == 'pdf' %}
+                            <a href="{{ url_for('uploaded_file', filename=investigacion.ruta_imagen) }}" target="_blank">Ver PDF</a>
                         {% endif %}
                     {% else %}
-                        No hay archivo
+                        N/A
                     {% endif %}
                 </td>
                 <td>
-                    <a href="{{ url_for('editar_investigacion', id_investigacion=investigacion[0]) }}" class="btn btn-warning">Editar</a>
-                    
+                    <a href="{{ url_for('editar_investigacion', id_investigacion=investigacion.id_investigacion) }}" class="btn btn-warning btn-sm">Editar</a>
+
                     <!-- Botón inicial de eliminación -->
-                    <button class="btn btn-danger btn-sm" onclick="mostrarConfirmacion({{ investigacion[0] }}); return false;">Eliminar</button>
+                    <button class="btn btn-danger btn-sm" onclick="mostrarConfirmacion({{ investigacion.id_investigacion }}); return false;">Eliminar</button>
 
                     <!-- Sección de confirmación de eliminación, oculta inicialmente -->
-                    <div id="confirmacion-{{ investigacion[0] }}" class="confirmacion-eliminacion" style="display:none;">
-                        <p>¿Está seguro de que desea eliminar esta Investigación?</p>
-                        <form action="{{ url_for('eliminar_investigacion', id_investigacion=investigacion[0]) }}" method="POST" style="display:inline;">
+                    <div id="confirmacion-{{ investigacion.id_investigacion }}" class="confirmacion-eliminacion" style="display:none; margin-top: 5px;">
+                        <p>¿Está seguro de que desea eliminar esta investigación?</p>
+                        <form action="{{ url_for('eliminar_investigacion', id_investigacion=investigacion.id_investigacion) }}" method="POST" style="display:inline;">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-danger btn-sm">Confirmar</button>
-                            <button class="btn btn-secondary btn-sm" onclick="ocultarConfirmacion({{ investigacion[0] }}); return false;">Cancelar</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="ocultarConfirmacion({{ investigacion.id_investigacion }}); return false;">Cancelar</button>
                         </form>
                     </div>
                 </td>
@@ -111,42 +193,14 @@
     </table>
 </div>
 
+<!-- JavaScript para controlar la confirmación de eliminación -->
 <script type="text/javascript">
-    function previewFile(event) {
-        const previewImage = document.getElementById('preview-image');
-        const previewPdf = document.getElementById('preview-pdf');
-        const previewContainer = document.getElementById('preview-container');
-        const file = event.target.files[0];
-        
-        if (file) {
-            const fileType = file.type;
-            if (fileType.includes('image')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImage.src = e.target.result;
-                    previewImage.style.display = 'block';
-                    previewPdf.style.display = 'none';
-                    previewContainer.style.display = 'block';
-                }
-                reader.readAsDataURL(file);
-            } else if (fileType === 'application/pdf') {
-                const fileURL = URL.createObjectURL(file);
-                previewPdf.href = fileURL;
-                previewPdf.style.display = 'block';
-                previewImage.style.display = 'none';
-                previewContainer.style.display = 'block';
-            }
-        } else {
-            previewContainer.style.display = 'none'; // Ocultar si no hay archivo
-        }
-    }
-
     function mostrarConfirmacion(id) {
-        document.getElementById(`confirmacion-${id}`).style.display = 'block';
+        document.getElementById('confirmacion-' + id).style.display = 'block';
     }
 
     function ocultarConfirmacion(id) {
-        document.getElementById(`confirmacion-${id}`).style.display = 'none';
+        document.getElementById('confirmacion-' + id).style.display = 'none';
     }
 </script>
 

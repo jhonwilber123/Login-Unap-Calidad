@@ -1,9 +1,11 @@
+<!-- templates/idiomas.html -->
+
 {% extends './base.html' %}
 
 {% block title %}Idiomas{% endblock %}
 
 {% block customCSS %}
-<!-- CSS específico para la página de inicio -->
+<!-- CSS específico para la página de Idiomas -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
@@ -14,57 +16,66 @@
 <div class="container mt-5">
     <h1 class="h3 mb-4 text-center">Mis Idiomas</h1>
 
-    <form action="{{ url_for('idiomas') }}" method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <!-- Formulario para agregar un nuevo idioma -->
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
 
+        <!-- Idioma -->
         <div class="mb-3">
-            <label for="idioma" class="form-label">Idioma</label>
-            <input type="text" class="form-control" id="idioma" name="idioma" required>
+            {{ form.idioma.label(class="form-label") }}
+            {{ form.idioma(class="form-select", id="idioma-select") }}
+            {% for error in form.idioma.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
+        <!-- Otro Idioma (visible solo si se selecciona "Otro") -->
+        <div class="mb-3" id="otro-idioma-field" style="display: none;">
+            {{ form.otro_idioma.label(class="form-label") }}
+            {{ form.otro_idioma(class="form-control", maxlength="50") }}
+            {% for error in form.otro_idioma.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Nivel -->
         <div class="mb-3">
-            <label for="nivel" class="form-label">Nivel</label>
-            <select class="form-select" id="nivel" name="nivel" required>
-                <option value="">Seleccione un nivel</option>
-                <option value="Básico">Básico</option>
-                <option value="Intermedio">Intermedio</option>
-                <option value="Avanzado">Avanzado</option>
-                <option value="Nativo">Nativo</option>
-            </select>
+            {{ form.nivel.label(class="form-label") }}
+            {{ form.nivel(class="form-select") }}
+            {% for error in form.nivel.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
-        <div class="mb-3">
-            <label for="certificado" class="form-label">Certificado</label>
-            <input type="text" class="form-control" id="certificado" name="certificado" required>
+        <!-- Certificado -->
+        <div class="mb-3 form-check">
+            {{ form.certificado(class="form-check-input", id="certificado-checkbox") }}
+            {{ form.certificado.label(class="form-check-label") }}
+            {% for error in form.certificado.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
-        <div class="mb-3">
-            <label for="puntaje" class="form-label">Puntaje</label>
-            <input type="number" step="0.01" class="form-control" id="puntaje" name="puntaje" required>
+        <!-- Archivo -->
+        <div class="mb-3" id="archivo-field" style="display: none;">
+            {{ form.archivo.label(class="form-label") }}
+            {{ form.archivo(class="form-control") }}
+            {% for error in form.archivo.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
-        <div class="mb-3">
-            <label for="archivo" class="form-label">Adjuntar Archivo (Imagen o PDF)</label>
-            <input type="file" class="form-control" id="archivo" name="archivo" accept="image/*,.pdf" onchange="previewFile(event)">
-        </div>
-
-        <div class="mb-3" id="preview-container" style="display:none;">
-            <label for="preview" class="form-label">Previsualización de Archivo:</label>
-            <img id="preview-image" src="#" alt="Previsualización de Imagen" class="img-fluid" style="max-width: 300px; display: none;">
-            <a id="preview-pdf" href="#" target="_blank" style="display: none;">Ver PDF</a>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Agregar</button>
+        {{ form.submit(class="btn btn-primary") }}
     </form>
 
-    <h2 class="mt-5">Listado de Idiomas</h2>
-    <table class="table table-striped">
+    <!-- Lista de idiomas -->
+    <h2 class="h4 mt-5">Lista de Idiomas</h2>
+    <table class="table table-bordered mt-3">
         <thead>
             <tr>
                 <th>Idioma</th>
                 <th>Nivel</th>
                 <th>Certificado</th>
-                <th>Puntaje</th>
                 <th>Archivo</th>
                 <th>Acciones</th>
             </tr>
@@ -72,34 +83,33 @@
         <tbody>
             {% for idioma in idiomas %}
             <tr>
-                <td>{{ idioma[1] }}</td>
-                <td>{{ idioma[2] }}</td>
-                <td>{{ idioma[3] }}</td>
-                <td>{{ idioma[4] }}</td>
+                <td>{{ idioma.idioma }}</td>
+                <td>{{ idioma.nivel }}</td>
+                <td>{{ 'Sí' if idioma.certificado else 'No' }}</td>
                 <td>
-                    {% if idioma[5] %}
-                        {% if idioma[6] == 'imagen' %}
-                            <img src="{{ url_for('uploaded_file', filename=idioma[5]) }}" alt="Imagen" style="max-width: 100px;">
-                        {% elif idioma[6] == 'pdf' %}
-                            <a href="{{ url_for('uploaded_file', filename=idioma[5]) }}" target="_blank">Ver PDF</a>
+                    {% if idioma.ruta_imagen %}
+                        {% if idioma.categoria == 'imagen' %}
+                            <img src="{{ url_for('uploaded_file', filename=idioma.ruta_imagen) }}" alt="Imagen" style="max-width: 100px;">
+                        {% elif idioma.categoria == 'pdf' %}
+                            <a href="{{ url_for('uploaded_file', filename=idioma.ruta_imagen) }}" target="_blank">Ver PDF</a>
                         {% endif %}
                     {% else %}
-                        No hay archivo
+                        N/A
                     {% endif %}
                 </td>
                 <td>
-                    <a href="{{ url_for('editar_idioma', id_idioma=idioma[0]) }}" class="btn btn-warning">Editar</a>
-                    
+                    <a href="{{ url_for('editar_idioma', id_idioma=idioma.id_idioma) }}" class="btn btn-warning btn-sm">Editar</a>
+
                     <!-- Botón inicial de eliminación -->
-                    <button class="btn btn-danger btn-sm" onclick="mostrarConfirmacion({{ idioma[0] }}); return false;">Eliminar</button>
+                    <button class="btn btn-danger btn-sm" onclick="mostrarConfirmacion({{ idioma.id_idioma }}); return false;">Eliminar</button>
 
                     <!-- Sección de confirmación de eliminación, oculta inicialmente -->
-                    <div id="confirmacion-{{ idioma[0] }}" class="confirmacion-eliminacion" style="display:none;">
-                        <p>¿Está seguro de que desea eliminar este Idioma?</p>
-                        <form action="{{ url_for('eliminar_idioma', id_idioma=idioma[0]) }}" method="POST" style="display:inline;">
+                    <div id="confirmacion-{{ idioma.id_idioma }}" class="confirmacion-eliminacion" style="display:none; margin-top: 5px;">
+                        <p>¿Está seguro de que desea eliminar este idioma?</p>
+                        <form action="{{ url_for('eliminar_idioma', id_idioma=idioma.id_idioma) }}" method="POST" style="display:inline;">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-danger btn-sm">Confirmar</button>
-                            <button class="btn btn-secondary btn-sm" onclick="ocultarConfirmacion({{ idioma[0] }}); return false;">Cancelar</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="ocultarConfirmacion({{ idioma.id_idioma }}); return false;">Cancelar</button>
                         </form>
                     </div>
                 </td>
@@ -109,42 +119,49 @@
     </table>
 </div>
 
+<!-- JavaScript para controlar la visibilidad de campos adicionales -->
 <script type="text/javascript">
-    function previewFile(event) {
-        const previewImage = document.getElementById('preview-image');
-        const previewPdf = document.getElementById('preview-pdf');
-        const previewContainer = document.getElementById('preview-container');
-        const file = event.target.files[0];
-        
-        if (file) {
-            const fileType = file.type;
-            if (fileType.includes('image')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImage.src = e.target.result;
-                    previewImage.style.display = 'block';
-                    previewPdf.style.display = 'none';
-                    previewContainer.style.display = 'block';
-                }
-                reader.readAsDataURL(file);
-            } else if (fileType === 'application/pdf') {
-                const fileURL = URL.createObjectURL(file);
-                previewPdf.href = fileURL;
-                previewPdf.style.display = 'block';
-                previewImage.style.display = 'none';
-                previewContainer.style.display = 'block';
+    document.addEventListener('DOMContentLoaded', function() {
+        const idiomaSelect = document.getElementById('idioma-select');
+        const otroIdiomaField = document.getElementById('otro-idioma-field');
+        const certificadoCheckbox = document.getElementById('certificado-checkbox');
+        const archivoField = document.getElementById('archivo-field');
+
+        function toggleOtroIdioma() {
+            if (idiomaSelect.value === 'Otro') {
+                otroIdiomaField.style.display = 'block';
+            } else {
+                otroIdiomaField.style.display = 'none';
+                // Limpiar el valor del campo 'otro_idioma' si no se selecciona 'Otro'
+                document.getElementById('otro_idioma').value = '';
             }
-        } else {
-            previewContainer.style.display = 'none'; // Ocultar si no hay archivo
         }
-    }
+
+        function toggleArchivo() {
+            if (certificadoCheckbox.checked) {
+                archivoField.style.display = 'block';
+            } else {
+                archivoField.style.display = 'none';
+                // Limpiar el archivo si no se adjunta certificado
+                document.getElementById('archivo').value = '';
+            }
+        }
+
+        // Ejecutar al cargar la página
+        toggleOtroIdioma();
+        toggleArchivo();
+
+        // Asignar eventos
+        idiomaSelect.addEventListener('change', toggleOtroIdioma);
+        certificadoCheckbox.addEventListener('change', toggleArchivo);
+    });
 
     function mostrarConfirmacion(id) {
-        document.getElementById(`confirmacion-${id}`).style.display = 'block';
+        document.getElementById('confirmacion-' + id).style.display = 'block';
     }
 
     function ocultarConfirmacion(id) {
-        document.getElementById(`confirmacion-${id}`).style.display = 'none';
+        document.getElementById('confirmacion-' + id).style.display = 'none';
     }
 </script>
 

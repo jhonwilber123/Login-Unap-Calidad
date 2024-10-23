@@ -13,81 +13,77 @@
 
 {% block body %}
 
-<div class="container mt-5 pt-5">
-    <h1 class="h3 mb-4 text-center">Editar Participación en Tesis</h1>
+<!-- Formulario para editar la participación -->
+<form method="POST" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
 
-    <!-- Formulario para editar la participación en tesis -->
-    <form method="POST" enctype="multipart/form-data">
-        {{ form.hidden_tag() }}
+    <!-- Tipo de Participación -->
+    <div class="mb-3">
+        {{ form.tipo.label(class="form-label") }}
+        {{ form.tipo(class="form-select") }}
+        {% for error in form.tipo.errors %}
+            <div class="text-danger">{{ error }}</div>
+        {% endfor %}
+    </div>
 
-        <!-- Tipo -->
-        <div class="mb-3">
-            {{ form.tipo.label(class="form-label") }}
-            {{ form.tipo(class="form-select") }}
-            {% for error in form.tipo.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+    <!-- Nivel -->
+    <div class="mb-3">
+        {{ form.nivel.label(class="form-label") }}
+        {{ form.nivel(class="form-select") }}
+        {% for error in form.nivel.errors %}
+            <div class="text-danger">{{ error }}</div>
+        {% endfor %}
+    </div>
 
-        <!-- Nivel -->
-        <div class="mb-3">
-            {{ form.nivel.label(class="form-label") }}
-            {{ form.nivel(class="form-select") }}
-            {% for error in form.nivel.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+    <!-- Universidad -->
+    <div class="mb-3">
+        {{ form.universidad.label(class="form-label") }}
+        {{ form.universidad(class="form-control", maxlength="255") }}
+        {% for error in form.universidad.errors %}
+            <div class="text-danger">{{ error }}</div>
+        {% endfor %}
+    </div>
 
-        <!-- Descripción -->
-        <div class="mb-3">
-            {{ form.descripcion.label(class="form-label") }}
-            {{ form.descripcion(class="form-control", maxlength="255") }}
-            {% for error in form.descripcion.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+    <!-- Descripción -->
+    <div class="mb-3">
+        {{ form.descripcion.label(class="form-label") }}
+        {{ form.descripcion(class="form-control", maxlength="255") }}
+        {% for error in form.descripcion.errors %}
+            <div class="text-danger">{{ error }}</div>
+        {% endfor %}
+    </div>
 
-        <!-- Fecha -->
-        <div class="mb-3">
-            {{ form.fecha.label(class="form-label") }}
-            {{ form.fecha(class="form-control") }}
-            {% for error in form.fecha.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+    <!-- Fecha -->
+    <div class="mb-3">
+        {{ form.fecha.label(class="form-label") }}
+        {{ form.fecha(class="form-control") }}
+        {% for error in form.fecha.errors %}
+            <div class="text-danger">{{ error }}</div>
+        {% endfor %}
+    </div>
 
-        <!-- Universidad -->
-        <div class="mb-3">
-            {{ form.universidad.label(class="form-label") }}
-            {{ form.universidad(class="form-control", maxlength="255") }}
-            {% for error in form.universidad.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
-
-        <!-- Archivo Actual -->
-        {% if participacion.ruta_imagen %}
-        <div class="mb-3">
-            <label class="form-label">Archivo Actual:</label><br>
-            {% if participacion.categoria == 'imagen' %}
-                <img src="{{ url_for('uploaded_file', filename=participacion.ruta_imagen) }}" alt="Imagen Actual" style="max-width: 200px;">
-            {% elif participacion.categoria == 'pdf' %}
-                <a href="{{ url_for('uploaded_file', filename=participacion.ruta_imagen) }}" target="_blank">Ver PDF</a>
-            {% endif %}
-        </div>
+    <!-- Archivo Actual -->
+    {% if participacion and participacion.ruta_imagen %}
+    <div class="mb-3">
+        <label class="form-label">Archivo Actual:</label><br>
+        {% if participacion.categoria == 'imagen' %}
+        <img src="{{ url_for('uploaded_file', filename=participacion.ruta_imagen) }}" alt="Imagen" style="max-width: 1080px;">
+        {% elif participacion.categoria == 'pdf' %}
+            <a href="{{ url_for('static', filename='uploads/' + participacion.ruta_imagen) }}" target="_blank">Ver PDF</a>
         {% endif %}
+    </div>
+    {% endif %}
 
-        <!-- Archivo -->
-        <div class="mb-3">
-            {{ form.archivo.label(class="form-label") }}
-            {{ form.archivo(class="form-control") }}
-            {% for error in form.archivo.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+    <!-- Archivo -->
+    <div class="mb-3">
+        {{ form.archivo.label(class="form-label") }}
+        {{ form.archivo(class="form-control") }}
+        {% for error in form.archivo.errors %}
+            <div class="text-danger">{{ error }}</div>
+        {% endfor %}
+    </div>
 
-        {{ form.submit(class="btn btn-primary") }}
-    </form>
-</div>
+    {{ form.submit(class="btn btn-primary") }}
+</form>
 
 {% endblock %}

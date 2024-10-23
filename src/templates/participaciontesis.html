@@ -2,10 +2,10 @@
 
 {% extends './base.html' %}
 
-{% block title %}Participaciones en Tesis{% endblock %}
+{% block title %}Participación en Tesis{% endblock %}
 
 {% block customCSS %}
-<!-- CSS específico para la página de Participaciones en Tesis -->
+<!-- CSS específico para la página de Participación en Tesis -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
@@ -14,16 +14,16 @@
 {% block body %}
 
 <div class="container mt-5">
-    <h1 class="h3 mb-4 text-center">Participaciones en Tesis</h1>
+    <h1 class="h3 mb-4 text-center">Mis Participaciones en Tesis</h1>
 
-    <!-- Formulario para agregar una nueva participación en tesis -->
+    <!-- Formulario para agregar una nueva participación -->
     <form method="POST" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
 
-        <!-- Tipo -->
+        <!-- Tipo de Participación -->
         <div class="mb-3">
-            {{ form.tipo.label(class="form-label") }}
-            {{ form.tipo(class="form-select") }}
+            {{ form.tipo.label(class_="form-label") }}
+            {{ form.tipo(class_="form-select") }}
             {% for error in form.tipo.errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
@@ -31,17 +31,26 @@
 
         <!-- Nivel -->
         <div class="mb-3">
-            {{ form.nivel.label(class="form-label") }}
-            {{ form.nivel(class="form-select") }}
+            {{ form.nivel.label(class_="form-label") }}
+            {{ form.nivel(class_="form-select") }}
             {% for error in form.nivel.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Universidad -->
+        <div class="mb-3">
+            {{ form.universidad.label(class_="form-label") }}
+            {{ form.universidad(class_="form-control", maxlength=255) }}
+            {% for error in form.universidad.errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
         </div>
 
         <!-- Descripción -->
         <div class="mb-3">
-            {{ form.descripcion.label(class="form-label") }}
-            {{ form.descripcion(class="form-control", maxlength="255") }}
+            {{ form.descripcion.label(class_="form-label") }}
+            {{ form.descripcion(class_="form-control", maxlength=255) }}
             {% for error in form.descripcion.errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
@@ -49,32 +58,23 @@
 
         <!-- Fecha -->
         <div class="mb-3">
-            {{ form.fecha.label(class="form-label") }}
-            {{ form.fecha(class="form-control") }}
+            {{ form.fecha.label(class_="form-label") }}
+            {{ form.fecha(class_="form-control") }}
             {% for error in form.fecha.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
-
-        <!-- Universidad -->
-        <div class="mb-3">
-            {{ form.universidad.label(class="form-label") }}
-            {{ form.universidad(class="form-control", maxlength="255") }}
-            {% for error in form.universidad.errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
         </div>
 
         <!-- Archivo -->
         <div class="mb-3">
-            {{ form.archivo.label(class="form-label") }}
-            {{ form.archivo(class="form-control") }}
+            {{ form.archivo.label(class_="form-label") }}
+            {{ form.archivo(class_="form-control") }}
             {% for error in form.archivo.errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
         </div>
 
-        {{ form.submit(class="btn btn-primary") }}
+        {{ form.submit(class_="btn btn-primary") }}
     </form>
 
     <!-- Lista de participaciones en tesis -->
@@ -84,21 +84,21 @@
             <tr>
                 <th>Tipo</th>
                 <th>Nivel</th>
+                <th>Universidad</th>
                 <th>Descripción</th>
                 <th>Fecha</th>
-                <th>Universidad</th>
                 <th>Archivo</th>
                 <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
-            {% for participacion in participaciones %}
+            {% for participacion in participaciontesis %}
             <tr>
                 <td>{{ participacion.tipo }}</td>
                 <td>{{ participacion.nivel }}</td>
+                <td>{{ participacion.universidad }}</td>
                 <td>{{ participacion.descripcion }}</td>
                 <td>{{ participacion.fecha.strftime('%Y-%m-%d') }}</td>
-                <td>{{ participacion.universidad }}</td>
                 <td>
                     {% if participacion.ruta_imagen %}
                         {% if participacion.categoria == 'imagen' %}
@@ -107,7 +107,7 @@
                             <a href="{{ url_for('uploaded_file', filename=participacion.ruta_imagen) }}" target="_blank">Ver PDF</a>
                         {% endif %}
                     {% else %}
-                        N/A
+                        N/A 
                     {% endif %}
                 </td>
                 <td>
