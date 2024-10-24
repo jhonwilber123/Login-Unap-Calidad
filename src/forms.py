@@ -1,7 +1,5 @@
 # forms.py
 
-# forms.py
-
 from flask_wtf import FlaskForm
 from wtforms import (
     TextAreaField, 
@@ -243,7 +241,7 @@ class ProduccionIntelectualForm(FlaskForm):
         'Editorial de Reconocido Prestigio',
         choices=[
             ('', '--- Seleccione una opción ---'),
-            ('No', 'No'),
+            ('No', 'Otro'),
             ('Scopus', 'Scopus'),
             ('Web of Science', 'Web of Science'),
             ('SciELO', 'SciELO')

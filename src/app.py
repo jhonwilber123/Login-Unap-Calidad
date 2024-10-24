@@ -47,12 +47,16 @@ def allowed_file(filename):
 def load_user(id):
     return ModelUser.get_by_id(db, id)
 
-@app.route('/')
+@app.route('/', methods=['GET'])
 def index():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
     return redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
     if request.method == 'POST':
         user = User(0, request.form['username'], request.form['password'])
         logged_user = ModelUser.login(db, user)
@@ -141,7 +145,6 @@ def validate_password():
         reasons.append("La contraseña debe tener al menos una letra minúscula.")
     if not re.search(r'\d', password):
         reasons.append("La contraseña debe tener al menos un número.")
-
     
     return jsonify({'valid': len(reasons) == 0, 'reasons': reasons})
 
