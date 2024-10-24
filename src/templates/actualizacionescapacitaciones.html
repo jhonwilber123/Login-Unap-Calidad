@@ -1,0 +1,191 @@
+<!-- templates/actualizacionescapacitaciones.html -->
+
+{% extends './base.html' %}
+
+{% block title %}Actualizaciones de Capacitaciones{% endblock %}
+
+{% block customCSS %}
+<!-- CSS específico para la página de Actualizaciones de Capacitaciones -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+{% endblock %}
+
+{% block body %}
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center">Mis Actualizaciones de Capacitaciones</h1>
+
+    <!-- Formulario para agregar una nueva actualización -->
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <!-- Tipo de Capacitación -->
+        <div class="mb-3">
+            {{ form.tipo.label(class="form-label") }}
+            {{ form.tipo(class="form-select", id="tipo") }}
+            {% for error in form.tipo.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Descripción -->
+        <div class="mb-3">
+            {{ form.descripcion.label(class="form-label") }}
+            {{ form.descripcion(class="form-control", maxlength="255") }}
+            {% for error in form.descripcion.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Horas -->
+        <div class="mb-3" id="div-horas" style="display: none;">
+            {{ form.horas.label(class="form-label") }}
+            {{ form.horas(class="form-control", min="1") }}
+            {% for error in form.horas.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Créditos -->
+        <div class="mb-3" id="div-creditos" style="display: none;">
+            {{ form.creditos.label(class="form-label") }}
+            {{ form.creditos(class="form-control", min="0") }}
+            {% for error in form.creditos.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Semestres Concluidos -->
+        <div class="mb-3" id="div-semestres" style="display: none;">
+            {{ form.semestres_concluidos.label(class="form-label") }}
+            {{ form.semestres_concluidos(class="form-control", min="0") }}
+            {% for error in form.semestres_concluidos.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Archivo -->
+        <div class="mb-3">
+            {{ form.archivo.label(class="form-label") }}
+            {{ form.archivo(class="form-control") }}
+            {% for error in form.archivo.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        {{ form.submit(class="btn btn-primary") }}
+    </form>
+
+    <!-- Lista de actualizaciones de capacitaciones -->
+    <h2 class="h4 mt-5">Lista de Actualizaciones de Capacitaciones</h2>
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>Tipo</th>
+                <th>Descripción</th>
+                <th>Detalles</th>
+                <th>Archivo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for actualizacion in actualizaciones %}
+            <tr>
+                <td>{{ actualizacion.tipo }}</td>
+                <td>{{ actualizacion.descripcion }}</td>
+                <td>
+                    {% set tipos_por_semestres = ['Segunda Especialidad', 'Maestría', 'Doctorado', 'Especialización en Docencia Universitaria'] %}
+                    {% set tipos_por_horas_creditos = ['Curso Presencial', 'Curso Virtual', 'Diplomado Presencial', 'Diplomado Virtual'] %}
+                    
+                    {% if actualizacion.tipo in tipos_por_semestres %}
+                        Semestres Concluidos: {{ actualizacion.semestres_concluidos if actualizacion.semestres_concluidos is not none else 'N/A' }}
+                    {% elif actualizacion.tipo in tipos_por_horas_creditos %}
+                        Horas: {{ actualizacion.horas if actualizacion.horas is not none else 'N/A' }}, 
+                        Créditos: {{ actualizacion.creditos if actualizacion.creditos is not none else 'N/A' }}
+                    {% else %}
+                        Información no disponible
+                    {% endif %}
+                </td>
+                <td>
+                    {% if actualizacion.ruta_imagen %}
+                        {% if actualizacion.categoria == 'imagen' %}
+                            <img src="{{ url_for('uploaded_file', filename=actualizacion.ruta_imagen) }}" alt="Imagen" style="max-width: 100px;">
+                        {% elif actualizacion.categoria == 'pdf' %}
+                            <a href="{{ url_for('uploaded_file', filename=actualizacion.ruta_imagen) }}" target="_blank">Ver PDF</a>
+                        {% endif %}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('editar_actualizacioncapacitacion', id_capacitacion=actualizacion.id_capacitacion) }}" class="btn btn-warning btn-sm">Editar</a>
+
+                    <!-- Botón inicial de eliminación -->
+                    <button class="btn btn-danger btn-sm" onclick="mostrarConfirmacion({{ actualizacion.id_capacitacion }}); return false;">Eliminar</button>
+
+                    <!-- Sección de confirmación de eliminación, oculta inicialmente -->
+                    <div id="confirmacion-{{ actualizacion.id_capacitacion }}" class="confirmacion-eliminacion" style="display:none; margin-top: 5px;">
+                        <p>¿Está seguro de que desea eliminar esta actualización de capacitación?</p>
+                        <form action="{{ url_for('eliminar_actualizacioncapacitacion', id_capacitacion=actualizacion.id_capacitacion) }}" method="POST" style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Confirmar</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="ocultarConfirmacion({{ actualizacion.id_capacitacion }}); return false;">Cancelar</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- JavaScript para controlar la visibilidad de los campos según el tipo de capacitación -->
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        const tipoSelect = document.getElementById('tipo');
+        const divHoras = document.getElementById('div-horas');
+        const divCreditos = document.getElementById('div-creditos');
+        const divSemestres = document.getElementById('div-semestres');
+
+        function actualizarCampos() {
+            const tipo = tipoSelect.value;
+            const tiposPorSemestres = ['Segunda Especialidad', 'Maestría', 'Doctorado', 'Especialización en Docencia Universitaria'];
+            const tiposPorHorasCreditos = ['Curso Presencial', 'Curso Virtual', 'Diplomado Presencial', 'Diplomado Virtual'];
+
+            if (tiposPorSemestres.includes(tipo)) {
+                divHoras.style.display = 'none';
+                divCreditos.style.display = 'none';
+                divSemestres.style.display = 'block';
+            } else if (tiposPorHorasCreditos.includes(tipo)) {
+                divHoras.style.display = 'block';
+                divCreditos.style.display = 'block';
+                divSemestres.style.display = 'none';
+            } else {
+                // Si no se ha seleccionado un tipo válido, ocultar todos
+                divHoras.style.display = 'none';
+                divCreditos.style.display = 'none';
+                divSemestres.style.display = 'none';
+            }
+        }
+
+        // Ejecutar al cargar la página
+        actualizarCampos();
+
+        // Asignar el evento onchange al campo 'tipo'
+        tipoSelect.addEventListener('change', actualizarCampos);
+    });
+</script>
+
+<!-- JavaScript para controlar la confirmación de eliminación -->
+<script type="text/javascript">
+    function mostrarConfirmacion(id) {
+        document.getElementById('confirmacion-' + id).style.display = 'block';
+    }
+
+    function ocultarConfirmacion(id) {
+        document.getElementById('confirmacion-' + id).style.display = 'none';
+    }
+</script>
+
+{% endblock %}

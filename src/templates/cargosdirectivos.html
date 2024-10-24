@@ -1,0 +1,124 @@
+<!-- templates/cargosdirectivos.html -->
+
+{% extends './base.html' %}
+
+{% block title %}Cargos Directivos{% endblock %}
+
+{% block customCSS %}
+<!-- CSS específico para la página de Cargos Directivos -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+{% endblock %}
+
+{% block body %}
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center">Mis Cargos Directivos</h1>
+
+    <!-- Formulario para agregar un nuevo cargo directivo -->
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <!-- Cargo -->
+        <div class="mb-3">
+            {{ form.cargo.label(class="form-label") }}
+            {{ form.cargo(class="form-control", maxlength="100") }}
+            {% for error in form.cargo.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Años en el Cargo -->
+        <div class="mb-3">
+            {{ form.anios.label(class="form-label") }}
+            {{ form.anios(class="form-control") }}
+            {% for error in form.anios.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Descripción -->
+        <div class="mb-3">
+            {{ form.descripcion.label(class="form-label") }}
+            {{ form.descripcion(class="form-control", maxlength="255") }}
+            {% for error in form.descripcion.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Archivo -->
+        <div class="mb-3">
+            {{ form.archivo.label(class="form-label") }}
+            {{ form.archivo(class="form-control") }}
+            {% for error in form.archivo.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        {{ form.submit(class="btn btn-primary") }}
+    </form>
+
+    <!-- Lista de cargos directivos -->
+    <h2 class="h4 mt-5">Lista de Cargos Directivos</h2>
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>Cargo</th>
+                <th>Años en el Cargo</th>
+                <th>Descripción</th>
+                <th>Archivo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cargo in cargos %}
+            <tr>
+                <td>{{ cargo.cargo }}</td>
+                <td>{{ cargo.anios }}</td>
+                <td>{{ cargo.descripcion or 'N/A' }}</td>
+                <td>
+                    {% if cargo.ruta_imagen %}
+                        {% if cargo.categoria == 'imagen' %}
+                            <img src="{{ url_for('uploaded_file', filename=cargo.ruta_imagen) }}" alt="Imagen" style="max-width: 100px;">
+                        {% elif cargo.categoria == 'pdf' %}
+                            <a href="{{ url_for('uploaded_file', filename=cargo.ruta_imagen) }}" target="_blank">Ver PDF</a>
+                        {% endif %}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('editar_cargo', id_cargo=cargo.id_cargo) }}" class="btn btn-warning btn-sm">Editar</a>
+
+                    <!-- Botón inicial de eliminación -->
+                    <button class="btn btn-danger btn-sm" onclick="mostrarConfirmacion({{ cargo.id_cargo }}); return false;">Eliminar</button>
+
+                    <!-- Sección de confirmación de eliminación, oculta inicialmente -->
+                    <div id="confirmacion-{{ cargo.id_cargo }}" class="confirmacion-eliminacion" style="display:none; margin-top: 5px;">
+                        <p>¿Está seguro de que desea eliminar este cargo directivo?</p>
+                        <form action="{{ url_for('eliminar_cargo', id_cargo=cargo.id_cargo) }}" method="POST" style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Confirmar</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="ocultarConfirmacion({{ cargo.id_cargo }}); return false;">Cancelar</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- JavaScript para controlar la confirmación de eliminación -->
+<script type="text/javascript">
+    function mostrarConfirmacion(id) {
+        document.getElementById('confirmacion-' + id).style.display = 'block';
+    }
+
+    function ocultarConfirmacion(id) {
+        document.getElementById('confirmacion-' + id).style.display = 'none';
+    }
+</script>
+
+{% endblock %}

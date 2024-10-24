@@ -1,12 +1,12 @@
-# src/models/entities/ModelUser.py
-
 from .entities.User import User
 import bcrypt
+import re
+from flask import flash
 
 class ModelUser():
 
     @classmethod
-    def login(self, db, user):
+    def login(cls, db, user):
         try:
             cursor = db.connection.cursor()
             sql = """
@@ -28,18 +28,22 @@ class ModelUser():
                         else:
                             return None
                     else:
-                        print("Error: La contraseña almacenada es inválida.")
+                        with open('errores.log', 'a') as f:
+                            print("Error: La contraseña almacenada es inválida.", file=f)
                         return None
                 else:
-                    print("Error: La consulta no devolvió los 5 elementos esperados.")
+                    with open('errores.log', 'a') as f:
+                        print("Error: La consulta no devolvió los 5 elementos esperados.", file=f)
                     return None
             else:
                 return None
         except Exception as ex:
+            with open('errores.log', 'a') as f:
+                print(ex, file=f)
             raise Exception(ex)
 
     @classmethod
-    def get_by_id(self, db, id):
+    def get_by_id(cls, db, id):
         try:
             cursor = db.connection.cursor()
             sql = """
@@ -55,11 +59,14 @@ class ModelUser():
                 if len(row) == 5:
                     return User(row[0], row[1], row[2], row[3], row[4])
                 else:
-                    print("Error: La consulta no devolvió los 5 elementos esperados.")
+                    with open('errores.log', 'a') as f:
+                        print("Error: La consulta no devolvió los 5 elementos esperados.", file=f)
                     return None
             else:
                 return None
         except Exception as ex:
+            with open('errores.log', 'a') as f:
+                print(ex, file=f)
             raise Exception(ex)
 
     @classmethod
@@ -71,10 +78,16 @@ class ModelUser():
             db.connection.commit()
             return True
         except Exception as ex:
-            print(ex)
+            with open('errores.log', 'a') as f:
+                print(ex, file=f)
             return False
-        
+
     @classmethod
     def check_password(cls, hashed_password, password):
         return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
 
+    @classmethod
+    def is_password_strong(cls, password):
+        # La contraseña debe tener al menos 8 caracteres, una letra mayúscula, una minúscula, un número y un símbolo especial
+        pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
+        return re.match(pattern, password) is not None

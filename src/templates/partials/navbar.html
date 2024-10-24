@@ -32,10 +32,10 @@
                     <ul class="dropdown-menu" aria-labelledby="curriculumDropdown">
                         <li><a class="dropdown-item" href="{{ url_for('datos_personales') }}">Datos Personales</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('gradostitulos') }}">Grados y Títulos</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('actividades_proyeccion_social') }}">Actividades Sociales</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('actualizaciones_capacitaciones') }}">Actualizaciones y Capacitaciones</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('cargos_directivos') }}">Cargos Directivos</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('experiencia_docente') }}">Experiencia Docente</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('actividadesproyeccionsocial') }}">Actividades de Proyección Social</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('actualizacionescapacitaciones') }}">Actualizaciones y Capacitaciones</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('cargosdirectivos') }}">Cargos Directivos</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('experienciadocente') }}">Experiencia Docente</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('idiomas') }}">Idiomas</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('investigaciones') }}">Investigaciones</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('participaciontesis') }}">Participación en Tesis</a></li>
@@ -49,7 +49,7 @@
                 {% if current_user.role == 'Administrador' %}
                 <!-- Datos del Personal (Solo para Administradores) -->
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('ver_datos_personal') }}">Datos del Personal</a>
+                    <a class="nav-link" href="{{ url_for('ver_datos_personal') }}">Reporte</a>
                 </li>
                 {% endif %}
             </ul>
@@ -67,4 +67,4 @@
 </nav>
 
 <!-- Al final del cuerpo de tu plantilla, antes de cerrar </body> -->
-<script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+<script src="{{ url_for('static', filename='js/navbar.js') }}"></script>    

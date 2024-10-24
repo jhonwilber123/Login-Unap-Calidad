@@ -1,0 +1,84 @@
+<!-- templates/editar_actividadesproyeccionsocial.html -->
+
+{% extends './base.html' %}
+
+{% block title %}Editar Actividad de Proyección Social{% endblock %}
+
+{% block customCSS %}
+<!-- CSS específico para la página de Editar Actividad de Proyección Social -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+{% endblock %}
+
+{% block body %}
+
+<div class="container mt-5 pt-5">
+    <h1 class="h3 mb-4 text-center">Editar Actividad de Proyección Social</h1>
+
+    <!-- Formulario para editar la actividad -->
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <!-- Tipo de Actividad -->
+        <div class="mb-3">
+            {{ form.tipo.label(class="form-label") }}
+            {{ form.tipo(class="form-select") }}
+            {% for error in form.tipo.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Evento -->
+        <div class="mb-3">
+            {{ form.evento.label(class="form-label") }}
+            {{ form.evento(class="form-select") }}
+            {% for error in form.evento.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Descripción -->
+        <div class="mb-3">
+            {{ form.descripcion.label(class="form-label") }}
+            {{ form.descripcion(class="form-control", maxlength="255") }}
+            {% for error in form.descripcion.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Fecha -->
+        <div class="mb-3">
+            {{ form.fecha.label(class="form-label") }}
+            {{ form.fecha(class="form-control") }}
+            {% for error in form.fecha.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Archivo Actual -->
+        {% if actividad.ruta_imagen %}
+        <div class="mb-3">
+            <label class="form-label">Archivo Actual:</label><br>
+            {% if actividad.categoria == 'imagen' %}
+                <img src="{{ url_for('uploaded_file', filename=actividad.ruta_imagen) }}" alt="Imagen Actual" style="max-width: 200px;">
+            {% elif actividad.categoria == 'pdf' %}
+                <a href="{{ url_for('uploaded_file', filename=actividad.ruta_imagen) }}" target="_blank">Ver PDF</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Archivo -->
+        <div class="mb-3">
+            {{ form.archivo.label(class="form-label") }}
+            {{ form.archivo(class="form-control") }}
+            {% for error in form.archivo.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        {{ form.submit(class="btn btn-primary") }}
+    </form>
+</div>
+
+{% endblock %}
