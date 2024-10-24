@@ -1,4 +1,4 @@
-<!-- templates/produccion_intelectual.html -->
+<!-- templates/produccion_intelectual.html --> 
 
 {% extends './base.html' %}
 
@@ -9,6 +9,21 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+
+<!-- Estilos adicionales para campos deshabilitados -->
+<style>
+    /* Asegura que las etiquetas de checkboxes deshabilitados no sean transparentes */
+    .form-check-input:disabled + .form-check-label {
+        color: #6c757d; /* Color gris para indicar deshabilitado */
+        cursor: not-allowed;
+        opacity: 1; /* Mantiene la opacidad completa */
+    }
+
+    /* Opcional: Evita que todo el contenedor del checkbox se vuelva transparente */
+    .form-check-input:disabled {
+        opacity: 1; /* Mantiene la opacidad completa del checkbox */
+    }
+</style>
 {% endblock %}
 
 {% block body %}
@@ -67,10 +82,14 @@
 
         <!-- Autor y Coautor -->
         <div class="mb-3">
-            {{ form.autor(class="form-check-input", id="autor") }}
-            {{ form.autor.label(class="form-check-label", for="autor") }}
-            {{ form.coautor(class="form-check-input ms-3", id="coautor") }}
-            {{ form.coautor.label(class="form-check-label", for="coautor") }}
+            <div class="form-check form-check-inline">
+                {{ form.autor(class="form-check-input", id="autor") }}
+                {{ form.autor.label(class="form-check-label", for="autor") }}
+            </div>
+            <div class="form-check form-check-inline ms-3">
+                {{ form.coautor(class="form-check-input", id="coautor") }}
+                {{ form.coautor.label(class="form-check-label", for="coautor") }}
+            </div>
             {% for error in form.autor.errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
@@ -164,8 +183,9 @@
     </table>
 </div>
 
-<!-- JavaScript para controlar la confirmación de eliminación -->
+<!-- JavaScript para controlar la confirmación de eliminación y la lógica de Autor/Coautor -->
 <script type="text/javascript">
+    // Funciones existentes para la confirmación de eliminación
     function mostrarConfirmacion(id) {
         document.getElementById('confirmacion-' + id).style.display = 'block';
     }
@@ -173,6 +193,33 @@
     function ocultarConfirmacion(id) {
         document.getElementById('confirmacion-' + id).style.display = 'none';
     }
+
+    // Nueva funcionalidad para Autor y Coautor
+    document.addEventListener('DOMContentLoaded', function() {
+        const autorCheckbox = document.getElementById('autor');
+        const coautorCheckbox = document.getElementById('coautor');
+
+        function toggleCheckboxes() {
+            if (autorCheckbox.checked) {
+                coautorCheckbox.disabled = true;
+            } else {
+                coautorCheckbox.disabled = false;
+            }
+
+            if (coautorCheckbox.checked) {
+                autorCheckbox.disabled = true;
+            } else {
+                autorCheckbox.disabled = false;
+            }
+        }
+
+        // Inicializar el estado al cargar la página
+        toggleCheckboxes();
+
+        // Agregar event listeners a ambos checkboxes
+        autorCheckbox.addEventListener('change', toggleCheckboxes);
+        coautorCheckbox.addEventListener('change', toggleCheckboxes);
+    });
 </script>
 
 {% endblock %}

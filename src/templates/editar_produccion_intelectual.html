@@ -9,6 +9,21 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+
+<!-- Estilos adicionales para campos deshabilitados -->
+<style>
+    /* Asegura que las etiquetas de checkboxes deshabilitados no sean transparentes */
+    .form-check-input:disabled + .form-check-label {
+        color: #6c757d; /* Color gris para indicar deshabilitado */
+        cursor: not-allowed;
+        opacity: 1; /* Mantiene la opacidad completa */
+    }
+
+    /* Opcional: Evita que todo el contenedor del checkbox se vuelva transparente */
+    .form-check-input:disabled {
+        opacity: 1; /* Mantiene la opacidad completa del checkbox */
+    }
+</style>
 {% endblock %}
 
 {% block body %}
@@ -109,5 +124,38 @@
         {{ form.submit(class="btn btn-primary") }}
     </form>
 </div>
+
+<!-- JavaScript para controlar la confirmación de eliminación y la lógica de Autor/Coautor -->
+<script type="text/javascript">
+
+
+    // Nueva funcionalidad para Autor y Coautor
+    document.addEventListener('DOMContentLoaded', function() {
+        const autorCheckbox = document.getElementById('autor');
+        const coautorCheckbox = document.getElementById('coautor');
+
+        function toggleCheckboxes() {
+            if (autorCheckbox.checked) {
+                coautorCheckbox.disabled = true;
+            } else {
+                coautorCheckbox.disabled = false;
+            }
+
+            if (coautorCheckbox.checked) {
+                autorCheckbox.disabled = true;
+            } else {
+                autorCheckbox.disabled = false;
+            }
+        }
+
+        // Inicializar el estado al cargar la página
+        toggleCheckboxes();
+
+        // Agregar event listeners a ambos checkboxes
+        autorCheckbox.addEventListener('change', toggleCheckboxes);
+        coautorCheckbox.addEventListener('change', toggleCheckboxes);
+    });
+</script>
+
 
 {% endblock %}
