@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 24-10-2024 a las 00:19:13
+-- Tiempo de generación: 22-11-2024 a las 18:13:04
 -- Versión del servidor: 8.0.39
 -- Versión de PHP: 8.1.10
 
@@ -30,10 +30,10 @@ SET time_zone = "+00:00";
 CREATE TABLE `actividadesproyeccionsocial` (
   `id_actividad` int NOT NULL,
   `id_usuario` int NOT NULL,
-  `tipo` enum('Organización','Expositor','Asistencia') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tipo` enum('Organización','Expositor','Asistencia') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `nivel` enum('Pregrado','Posgrado') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `evento` enum('Congreso','Convención','Simposio','Foro','Seminario','Curso Taller','Charla') COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `descripcion` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `evento` enum('Congreso','Convención','Simposio','Foro','Seminario','Curso Taller','Charla') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `descripcion` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `fecha` date DEFAULT NULL,
   `puntaje` decimal(5,2) DEFAULT NULL,
   `id_imagen` int DEFAULT NULL
@@ -55,8 +55,8 @@ INSERT INTO `actividadesproyeccionsocial` (`id_actividad`, `id_usuario`, `tipo`,
 CREATE TABLE `actualizacionescapacitaciones` (
   `id_capacitacion` int NOT NULL,
   `id_usuario` int NOT NULL,
-  `tipo` enum('Curso Presencial','Curso Virtual','Diplomado Presencial','Diplomado Virtual','Especialización Médica','Segunda Especialidad','Maestría','Doctorado','Especialización en Docencia Universitaria') COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `descripcion` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tipo` enum('Curso Presencial','Curso Virtual','Diplomado Presencial','Diplomado Virtual','Especialización Médica','Segunda Especialidad','Maestría','Doctorado','Especialización en Docencia Universitaria') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `descripcion` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `horas` int DEFAULT NULL,
   `creditos` int DEFAULT NULL,
   `semestres_concluidos` int DEFAULT NULL,
@@ -83,7 +83,7 @@ INSERT INTO `actualizacionescapacitaciones` (`id_capacitacion`, `id_usuario`, `t
 CREATE TABLE `administrativosinfoadicional` (
   `id_administrativo_info` int NOT NULL,
   `id_usuario` int NOT NULL,
-  `informacion_relevante` text COLLATE utf8mb4_general_ci
+  `informacion_relevante` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -95,9 +95,9 @@ CREATE TABLE `administrativosinfoadicional` (
 CREATE TABLE `archivosevidencias` (
   `id_archivo` int NOT NULL,
   `id_usuario` int NOT NULL,
-  `categoria` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `descripcion` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ruta_archivo` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `categoria` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `descripcion` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ruta_archivo` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `fecha_subida` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -123,7 +123,7 @@ CREATE TABLE `cargalectiva` (
 CREATE TABLE `cargosdirectivos` (
   `id_cargo` int NOT NULL,
   `id_usuario` int NOT NULL,
-  `cargo` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `cargo` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `anios` int DEFAULT NULL,
   `descripcion` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `puntaje` decimal(5,2) DEFAULT NULL,
@@ -139,36 +139,38 @@ CREATE TABLE `cargosdirectivos` (
 CREATE TABLE `datospersonales` (
   `id_datos` int NOT NULL,
   `id_usuario` int NOT NULL,
-  `apellido_paterno` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `apellido_materno` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `nombres` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `apellido_paterno` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `apellido_materno` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nombres` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `fecha_nacimiento` date DEFAULT NULL,
-  `lugar_nacimiento_departamento` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `lugar_nacimiento_provincia` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `lugar_nacimiento_distrito` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `dni` varchar(15) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `carne_extranjeria` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `numero_colegiatura` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `numero_ruc` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `codigo` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `condicion` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `categoria` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `dedicacion` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `telefono_fijo` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `movil` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `correo_personal` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `correo_institucional` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `domicilio_actual` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `referencia` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL
+  `lugar_nacimiento_departamento` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `lugar_nacimiento_provincia` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `lugar_nacimiento_distrito` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `dni` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `carne_extranjeria` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `numero_colegiatura` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `numero_ruc` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `codigo` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `condicion` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `categoria` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `dedicacion` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `telefono_fijo` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `movil` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `correo_personal` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `correo_institucional` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `domicilio_actual` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `referencia` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `id_foto_docente` int DEFAULT NULL,
+  `id_constancia_habilitacion` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `datospersonales`
 --
 
-INSERT INTO `datospersonales` (`id_datos`, `id_usuario`, `apellido_paterno`, `apellido_materno`, `nombres`, `fecha_nacimiento`, `lugar_nacimiento_departamento`, `lugar_nacimiento_provincia`, `lugar_nacimiento_distrito`, `dni`, `carne_extranjeria`, `numero_colegiatura`, `numero_ruc`, `codigo`, `condicion`, `categoria`, `dedicacion`, `telefono_fijo`, `movil`, `correo_personal`, `correo_institucional`, `domicilio_actual`, `referencia`) VALUES
-(1, 4, 'AJATA', 'ASCARRUNZ', 'JHON WILBER ', '2002-03-06', 'PUNO', 'PUNO', 'PUNO', '77799463', 'no', '112263', '000000', '191962', 'Nombrado', 'Si', 'Total', '191962', '900235387', 'jhonwaa123@gmail.com', 'jajataa@est.unap.edu.pe', 'salcedo tepro', 'a una cuadra del peda'),
-(2, 1, 'AJATA', 'Ascarrunz', 'Jhon Wilber', '2020-03-06', 'PUNO', 'PUNO', 'PUNO', '77799463', 'na', 'na', 'na', '191962', 'Nombrado', 'Asociado', 'Exclusiva', '900235387', '900235387', 'jhonwaa123@gmail.com', 'jajataa@est.unap.edu.pe', 'salcedo tepro', 'a una cuadra del peda');
+INSERT INTO `datospersonales` (`id_datos`, `id_usuario`, `apellido_paterno`, `apellido_materno`, `nombres`, `fecha_nacimiento`, `lugar_nacimiento_departamento`, `lugar_nacimiento_provincia`, `lugar_nacimiento_distrito`, `dni`, `carne_extranjeria`, `numero_colegiatura`, `numero_ruc`, `codigo`, `condicion`, `categoria`, `dedicacion`, `telefono_fijo`, `movil`, `correo_personal`, `correo_institucional`, `domicilio_actual`, `referencia`, `id_foto_docente`, `id_constancia_habilitacion`) VALUES
+(1, 4, 'AJATA', 'ASCARRUNZ', 'JHON WILBER ', '2002-03-06', 'PUNO', 'PUNO', 'PUNO', '77799463', 'no', '112263', '000000', '191962', 'Nombrado', 'Si', 'Total', '191962', '900235387', 'jhonwaa123@gmail.com', 'jajataa@est.unap.edu.pe', 'salcedo tepro', 'a una cuadra del peda', NULL, NULL),
+(2, 1, 'Ajata', 'Ascarrunz', 'Jhon Wilber', '2020-03-06', 'PUNO', 'PUNO', 'PUNO', '77799463', 'na', 'na', 'na', '191962', 'Nombrado', 'Asociado', 'Exclusiva', '900235387', '900235387', 'jhonwaa123@gmail.com', 'jajataa@est.unap.edu.pe', 'salcedo tepro', 'a una cuadra del pedagogico', 85, 86);
 
 -- --------------------------------------------------------
 
@@ -179,8 +181,8 @@ INSERT INTO `datospersonales` (`id_datos`, `id_usuario`, `apellido_paterno`, `ap
 CREATE TABLE `docentesinfoadicional` (
   `id_docente_info` int NOT NULL,
   `id_usuario` int NOT NULL,
-  `sineace` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `orcid` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL
+  `sineace` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `orcid` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -192,11 +194,11 @@ CREATE TABLE `docentesinfoadicional` (
 CREATE TABLE `evaluacionesdesempeno` (
   `id_evaluacion` int NOT NULL,
   `id_usuario` int NOT NULL,
-  `semestre` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `semestre` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `evaluacion_autoridades` decimal(5,2) DEFAULT NULL,
   `evaluacion_estudiantes` decimal(5,2) DEFAULT NULL,
   `promedio` decimal(5,2) DEFAULT NULL,
-  `nivel` enum('Excelente','Muy Bueno','Bueno','Regular','Deficiente') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nivel` enum('Excelente','Muy Bueno','Bueno','Regular','Deficiente') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `puntaje` decimal(5,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -209,8 +211,8 @@ CREATE TABLE `evaluacionesdesempeno` (
 CREATE TABLE `experienciadocente` (
   `id_experiencia` int NOT NULL,
   `id_usuario` int NOT NULL,
-  `tipo` enum('Movilidad Docente','Posgrado','Docencia en Categoría') COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `descripcion` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tipo` enum('Movilidad Docente','Posgrado','Docencia en Categoría') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `descripcion` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `anios` int DEFAULT NULL,
   `cursos` int DEFAULT NULL,
   `puntaje` decimal(5,2) DEFAULT NULL,
@@ -234,11 +236,11 @@ INSERT INTO `experienciadocente` (`id_experiencia`, `id_usuario`, `tipo`, `descr
 CREATE TABLE `gradostitulos` (
   `id_grado` int NOT NULL,
   `id_usuario` int NOT NULL,
-  `titulo` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `tipo` enum('Título Profesional','Título de Segunda Especialidad Profesional','Especialidad Médica','Maestría (un año de duración)','Maestría (dos años de duración)','Doctorado o Ph.D.') COLLATE utf8mb4_general_ci NOT NULL,
+  `titulo` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tipo` enum('Título Profesional','Título de Segunda Especialidad Profesional','Especialidad Médica','Maestría (un año de duración)','Maestría (dos años de duración)','Doctorado o Ph.D.','Grado de Bachiller') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `puntaje` decimal(5,2) DEFAULT NULL,
-  `universidad` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `pais` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `universidad` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `pais` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `fecha_expedicion` date DEFAULT NULL,
   `id_imagen` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -260,8 +262,8 @@ INSERT INTO `gradostitulos` (`id_grado`, `id_usuario`, `titulo`, `tipo`, `puntaj
 CREATE TABLE `idiomas` (
   `id_idioma` int NOT NULL,
   `id_usuario` int NOT NULL,
-  `idioma` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `nivel` enum('Básico','Intermedio','Avanzado') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `idioma` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nivel` enum('Básico','Intermedio','Avanzado') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `certificado` tinyint(1) DEFAULT NULL,
   `puntaje` decimal(5,2) DEFAULT NULL,
   `id_imagen` int DEFAULT NULL
@@ -284,9 +286,9 @@ INSERT INTO `idiomas` (`id_idioma`, `id_usuario`, `idioma`, `nivel`, `certificad
 CREATE TABLE `imagenesadjuntas` (
   `id_imagen` int NOT NULL,
   `id_usuario` int NOT NULL,
-  `categoria` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `descripcion` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ruta_imagen` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `categoria` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `descripcion` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ruta_imagen` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `fecha_subida` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -331,7 +333,9 @@ INSERT INTO `imagenesadjuntas` (`id_imagen`, `id_usuario`, `categoria`, `descrip
 (79, 1, 'pdf', 'ssss', '1729717335_LE_WAGON__El_contrato_llego_Vamos_a_firm.pdf', '2024-10-23 16:02:15'),
 (80, 1, 'pdf', 'hola', '1729717398_EstaNoParame-ARDILA-OK.pdf', '2024-10-23 16:03:18'),
 (81, 1, 'pdf', 'ssss', '1729717660_LE_WAGON__El_contrato_llego_Vamos_a_firm.pdf', '2024-10-23 16:07:40'),
-(84, 1, 'pdf', 'dssdds', '1729724796_LE_WAGON__El_contrato_llego_Vamos_a_firm.pdf', '2024-10-23 18:06:36');
+(84, 1, 'pdf', 'dssdds', '1729724796_LE_WAGON__El_contrato_llego_Vamos_a_firm.pdf', '2024-10-23 18:06:36'),
+(85, 1, 'imagen', 'Foto de Docente', '1732291095_Prueba.PNG', '2024-11-22 10:58:15'),
+(86, 1, 'documento', 'Constancia de Habilitación', '1732291095_EstaNoParame-ARDILA-OK.pdf', '2024-11-22 10:58:15');
 
 -- --------------------------------------------------------
 
@@ -342,13 +346,13 @@ INSERT INTO `imagenesadjuntas` (`id_imagen`, `id_usuario`, `categoria`, `descrip
 CREATE TABLE `investigaciones` (
   `id_investigacion` int NOT NULL,
   `id_usuario` int NOT NULL,
-  `tipo` enum('Artículo Científico','Artículo Aceptado','Artículo en Congreso','Registro de Patente','Informe de Investigación','Participación en Publicación Científica') COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `titulo` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `descripcion` text COLLATE utf8mb4_general_ci,
+  `tipo` enum('Artículo Científico','Artículo Aceptado','Artículo en Congreso','Registro de Patente','Informe de Investigación','Participación en Publicación Científica') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `titulo` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `descripcion` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `fecha_inicio` date DEFAULT NULL,
   `fecha_fin` date DEFAULT NULL,
-  `revista` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `indice` enum('Thomson Reuters','Scopus','Web of Science','Scielo','Latin Index','Otro') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `revista` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `indice` enum('Thomson Reuters','Scopus','Web of Science','Scielo','Latin Index','Otro') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `fecha_publicacion` date DEFAULT NULL,
   `autor` tinyint(1) DEFAULT NULL,
   `coautor` tinyint(1) DEFAULT NULL,
@@ -361,7 +365,6 @@ CREATE TABLE `investigaciones` (
 --
 
 INSERT INTO `investigaciones` (`id_investigacion`, `id_usuario`, `tipo`, `titulo`, `descripcion`, `fecha_inicio`, `fecha_fin`, `revista`, `indice`, `fecha_publicacion`, `autor`, `coautor`, `puntaje`, `id_imagen`) VALUES
-(1, 1, 'Artículo Científico', 'Jhon Wilber', 'sads', '2020-02-06', '2020-02-06', 'science', 'Latin Index', '2025-03-06', 1, 1, NULL, NULL),
 (3, 1, 'Artículo Aceptado', 'dfd', 'dfsdf', '2020-03-06', '2022-03-06', 'science', 'Scopus', '2023-03-06', 1, 0, NULL, 64);
 
 -- --------------------------------------------------------
@@ -373,11 +376,11 @@ INSERT INTO `investigaciones` (`id_investigacion`, `id_usuario`, `tipo`, `titulo
 CREATE TABLE `participaciontesis` (
   `id_participaciontesis` int NOT NULL,
   `id_usuario` int NOT NULL,
-  `tipo` enum('Director','Asesor','Jurado') COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `nivel` enum('Pregrado','Posgrado') COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `descripcion` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tipo` enum('Director','Asesor','Jurado') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nivel` enum('Pregrado','Posgrado') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `descripcion` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `fecha` date DEFAULT NULL,
-  `universidad` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `universidad` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `puntaje` decimal(5,2) DEFAULT NULL,
   `id_imagen` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -398,16 +401,16 @@ INSERT INTO `participaciontesis` (`id_participaciontesis`, `id_usuario`, `tipo`,
 CREATE TABLE `produccionintelectual` (
   `id_produccion` int NOT NULL,
   `id_usuario` int NOT NULL,
-  `tipo` enum('Texto Universitario','Traducción de Libro','Capítulo de Libro','Obra Literaria','Manual de Prácticas','Guía de Enseñanza','Monografía') COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `titulo` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `isbn` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tipo` enum('Texto Universitario','Traducción de Libro','Capítulo de Libro','Obra Literaria','Manual de Prácticas','Guía de Enseñanza','Monografía') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `titulo` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `isbn` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `deposito_legal` tinyint(1) DEFAULT NULL,
   `fecha_publicacion` date DEFAULT NULL,
   `autor` tinyint(1) DEFAULT NULL,
   `coautor` tinyint(1) DEFAULT NULL,
   `puntaje` decimal(5,2) DEFAULT NULL,
   `id_imagen` int DEFAULT NULL,
-  `editorial_prestigiosa` enum('No','Scopus','Web of Science','SciELO') COLLATE utf8mb4_general_ci DEFAULT 'No'
+  `editorial_prestigiosa` enum('No','Scopus','Web of Science','SciELO') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'No'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -426,9 +429,9 @@ INSERT INTO `produccionintelectual` (`id_produccion`, `id_usuario`, `tipo`, `tit
 CREATE TABLE `ratificacionpuntos` (
   `id_puntaje` int NOT NULL,
   `id_usuario` int NOT NULL,
-  `criterio` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `criterio` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `puntaje_obtenido` decimal(5,2) NOT NULL,
-  `detalles` text COLLATE utf8mb4_general_ci
+  `detalles` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -440,13 +443,13 @@ CREATE TABLE `ratificacionpuntos` (
 CREATE TABLE `reconocimientos` (
   `id_reconocimiento` int NOT NULL,
   `id_usuario` int NOT NULL,
-  `tipo` enum('Docente Visitante','Premio Internacional','Premio Nacional','Miembro de Sociedad Científica Internacional','Miembro de Sociedad Científica Nacional','Distinción Académica','Resolución Rectoral','Resolución Decanal') COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `descripcion` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `institucion` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tipo` enum('Docente Visitante','Premio Internacional','Premio Nacional','Miembro de Sociedad Científica Internacional','Miembro de Sociedad Científica Nacional','Distinción Académica','Resolución Rectoral','Resolución Decanal') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `descripcion` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `institucion` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `fecha` date DEFAULT NULL,
   `puntaje` decimal(5,2) DEFAULT NULL,
   `id_imagen` int DEFAULT NULL,
-  `tipo_institucion` enum('Universidad','Sociedad Científica','Organización Internacional','Organización Nacional','Gobierno','Empresa Privada','Otra') COLLATE utf8mb4_general_ci DEFAULT NULL
+  `tipo_institucion` enum('Universidad','Sociedad Científica','Organización Internacional','Organización Nacional','Gobierno','Empresa Privada','Otra') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -465,15 +468,15 @@ INSERT INTO `reconocimientos` (`id_reconocimiento`, `id_usuario`, `tipo`, `descr
 CREATE TABLE `softwareespecializado` (
   `id_software` int NOT NULL,
   `id_usuario` int NOT NULL,
-  `nombre_curso` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `modalidad` enum('Presencial','Virtual') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nombre_curso` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `modalidad` enum('Presencial','Virtual') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `horas` int DEFAULT NULL,
-  `institucion` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `institucion` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `fecha` date DEFAULT NULL,
   `puntaje` decimal(5,2) DEFAULT NULL,
   `id_imagen` int DEFAULT NULL,
   `top_1000` tinyint(1) DEFAULT '0',
-  `nombre_institucion` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL
+  `nombre_institucion` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -492,7 +495,7 @@ INSERT INTO `softwareespecializado` (`id_software`, `id_usuario`, `nombre_curso`
 CREATE TABLE `tutorias` (
   `id_tutoria` int NOT NULL,
   `id_usuario` int NOT NULL,
-  `descripcion` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `descripcion` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `anio` int DEFAULT NULL,
   `puntaje` decimal(5,2) DEFAULT NULL,
   `id_imagen` int DEFAULT NULL
@@ -506,9 +509,9 @@ CREATE TABLE `tutorias` (
 
 CREATE TABLE `usuarios` (
   `id_usuario` int NOT NULL,
-  `usuario` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
-  `contraseña` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `rol` enum('Administrador','Docente','Administrativo') COLLATE utf8mb4_general_ci NOT NULL
+  `usuario` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `contraseña` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `rol` enum('Administrador','Docente','Administrativo') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -573,7 +576,9 @@ ALTER TABLE `cargosdirectivos`
 --
 ALTER TABLE `datospersonales`
   ADD PRIMARY KEY (`id_datos`),
-  ADD KEY `id_usuario` (`id_usuario`);
+  ADD KEY `id_usuario` (`id_usuario`),
+  ADD KEY `fk_foto_docente` (`id_foto_docente`),
+  ADD KEY `fk_constancia_habilitacion` (`id_constancia_habilitacion`);
 
 --
 -- Indices de la tabla `docentesinfoadicional`
@@ -762,7 +767,7 @@ ALTER TABLE `idiomas`
 -- AUTO_INCREMENT de la tabla `imagenesadjuntas`
 --
 ALTER TABLE `imagenesadjuntas`
-  MODIFY `id_imagen` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=85;
+  MODIFY `id_imagen` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=87;
 
 --
 -- AUTO_INCREMENT de la tabla `investigaciones`
@@ -859,7 +864,9 @@ ALTER TABLE `cargosdirectivos`
 -- Filtros para la tabla `datospersonales`
 --
 ALTER TABLE `datospersonales`
-  ADD CONSTRAINT `datospersonales_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`) ON DELETE CASCADE;
+  ADD CONSTRAINT `datospersonales_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_constancia_habilitacion` FOREIGN KEY (`id_constancia_habilitacion`) REFERENCES `imagenesadjuntas` (`id_imagen`),
+  ADD CONSTRAINT `fk_foto_docente` FOREIGN KEY (`id_foto_docente`) REFERENCES `imagenesadjuntas` (`id_imagen`);
 
 --
 -- Filtros para la tabla `docentesinfoadicional`
