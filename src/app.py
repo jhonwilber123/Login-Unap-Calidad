@@ -16,7 +16,7 @@ from config import config
 # Importar el formulario
 from forms import TutoriaForm, SoftwareEspecializadoForm, ReconocimientosForm, ProduccionIntelectualForm, ParticipacionTesisForm 
 from forms import InvestigacionesForm, IdiomasForm, GradostitulosForm, ActividadesProyeccionSocialForm 
-from forms import ActualizacionesCapacitacionesForm, CargosDirectivosForm, ExperienciaDocenteForm
+from forms import ActualizacionesCapacitacionesForm, CargosDirectivosForm, ExperienciaDocenteForm, InformacionPersonalForm
 
 # Models:
 from models.ModelUser import ModelUser
@@ -151,72 +151,108 @@ def validate_password():
 # --- NUEVAS RUTAS ---
 
 # Ruta para editar datos personales
-@app.route('/datos_personales', methods=['GET', 'POST'])
+@app.route('/informacion_personal', methods=['GET', 'POST'])
 @login_required
-def datos_personales():
-    if request.method == 'POST':
+def informacion_personal():
+    form = InformacionPersonalForm()
+    
+    if form.validate_on_submit():
+        # Manejar la carga de foto de docente
+        id_foto_docente = None
+        foto_docente = form.foto_docente.data
+        if foto_docente:
+            filename = secure_filename(foto_docente.filename)
+            unique_filename = f"{int(time.time())}_{filename}"
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+            foto_docente.save(file_path)
+            
+            cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+            cur.execute("""
+                INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
+                VALUES (%s, 'imagen', 'Foto de Docente', %s)
+            """, (current_user.id, unique_filename))
+            db.connection.commit()
+            id_foto_docente = cur.lastrowid
+            cur.close()
+
+        # Manejar la carga de constancia de habilitación
+        id_constancia_habilitacion = None
+        constancia_habilitacion = form.constancia_habilitacion.data
+        if constancia_habilitacion:
+            filename = secure_filename(constancia_habilitacion.filename)
+            unique_filename = f"{int(time.time())}_{filename}"
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+            constancia_habilitacion.save(file_path)
+            
+            cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+            cur.execute("""
+                INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
+                VALUES (%s, 'documento', 'Constancia de Habilitación', %s)
+            """, (current_user.id, unique_filename))
+            db.connection.commit()
+            id_constancia_habilitacion = cur.lastrowid
+            cur.close()
+
         # Capturar datos del formulario
-        apellido_paterno = request.form['apellido_paterno']
-        apellido_materno = request.form['apellido_materno']
-        nombres = request.form['nombres']
-        fecha_nacimiento = request.form['fecha_nacimiento']
-        lugar_nacimiento_departamento = request.form['lugar_nacimiento_departamento']
-        lugar_nacimiento_provincia = request.form['lugar_nacimiento_provincia']
-        lugar_nacimiento_distrito = request.form['lugar_nacimiento_distrito']
-        dni = request.form['dni']
-        carne_extranjeria = request.form.get('carne_extranjeria', '')  # Campo opcional
-        numero_colegiatura = request.form.get('numero_colegiatura', '')  # Campo opcional
-        numero_ruc = request.form.get('numero_ruc', '')  # Campo opcional
-        codigo = request.form['codigo']
-        condicion = request.form['condicion']
-        categoria = request.form['categoria']
-        dedicacion = request.form['dedicacion']
-        telefono_fijo = request.form['telefono_fijo']
-        movil = request.form['movil']
-        correo_personal = request.form['correo_personal']
-        correo_institucional = request.form['correo_institucional']
-        domicilio_actual = request.form['domicilio_actual']
-        referencia = request.form.get('referencia', '')  # Campo opcional
+        data = {
+            'apellido_paterno': form.apellido_paterno.data,
+            'apellido_materno': form.apellido_materno.data,
+            'nombres': form.nombres.data,
+            'fecha_nacimiento': form.fecha_nacimiento.data,
+            'lugar_nacimiento_departamento': form.lugar_nacimiento_departamento.data,
+            'lugar_nacimiento_provincia': form.lugar_nacimiento_provincia.data,
+            'lugar_nacimiento_distrito': form.lugar_nacimiento_distrito.data,
+            'dni': form.dni.data,
+            'numero_colegiatura': form.numero_colegiatura.data or '',
+            'codigo': form.codigo.data,
+            'condicion': form.condicion.data,
+            'categoria': form.categoria.data,
+            'dedicacion': form.dedicacion.data,
+            'telefono_fijo': form.telefono_fijo.data,
+            'movil': form.movil.data,
+            'correo_personal': form.correo_personal.data,
+            'correo_institucional': form.correo_institucional.data,
+            'domicilio_actual': form.domicilio_actual.data,
+            'referencia': form.referencia.data or '',
+            'id_foto_docente': id_foto_docente,
+            'id_constancia_habilitacion': id_constancia_habilitacion
+        }
 
         # Verificar si ya existen datos personales para el usuario
-        cur = db.connection.cursor()
+        cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("SELECT id_datos FROM datospersonales WHERE id_usuario = %s", [current_user.id])
-        data = cur.fetchone()
+        existing_data = cur.fetchone()
 
-        if data:
+        if existing_data:
             # Actualizar datos existentes
-            cur.execute(""" 
+            cur.execute("""
                 UPDATE datospersonales SET 
-                    apellido_paterno=%s, 
-                    apellido_materno=%s, 
-                    nombres=%s, 
-                    fecha_nacimiento=%s,
-                    lugar_nacimiento_departamento=%s, 
-                    lugar_nacimiento_provincia=%s, 
-                    lugar_nacimiento_distrito=%s, 
-                    dni=%s,
-                    carne_extranjeria=%s, 
-                    numero_colegiatura=%s, 
-                    numero_ruc=%s, 
-                    codigo=%s, 
-                    condicion=%s, 
-                    categoria=%s,
-                    dedicacion=%s, 
-                    telefono_fijo=%s, 
-                    movil=%s, 
-                    correo_personal=%s, 
-                    correo_institucional=%s,
-                    domicilio_actual=%s, 
-                    referencia=%s 
-                WHERE id_usuario=%s
-            """, (apellido_paterno, apellido_materno, nombres, fecha_nacimiento,
-                  lugar_nacimiento_departamento, lugar_nacimiento_provincia, lugar_nacimiento_distrito, dni,
-                  carne_extranjeria, numero_colegiatura, numero_ruc, codigo, condicion, categoria,
-                  dedicacion, telefono_fijo, movil, correo_personal, correo_institucional,
-                  domicilio_actual, referencia, current_user.id))
+                    apellido_paterno=%(apellido_paterno)s, 
+                    apellido_materno=%(apellido_materno)s, 
+                    nombres=%(nombres)s, 
+                    fecha_nacimiento=%(fecha_nacimiento)s,
+                    lugar_nacimiento_departamento=%(lugar_nacimiento_departamento)s, 
+                    lugar_nacimiento_provincia=%(lugar_nacimiento_provincia)s, 
+                    lugar_nacimiento_distrito=%(lugar_nacimiento_distrito)s, 
+                    dni=%(dni)s,
+                    numero_colegiatura=%(numero_colegiatura)s, 
+                    codigo=%(codigo)s, 
+                    condicion=%(condicion)s, 
+                    categoria=%(categoria)s,
+                    dedicacion=%(dedicacion)s, 
+                    telefono_fijo=%(telefono_fijo)s, 
+                    movil=%(movil)s, 
+                    correo_personal=%(correo_personal)s, 
+                    correo_institucional=%(correo_institucional)s,
+                    domicilio_actual=%(domicilio_actual)s, 
+                    referencia=%(referencia)s,
+                    id_foto_docente=%(id_foto_docente)s,
+                    id_constancia_habilitacion=%(id_constancia_habilitacion)s
+                WHERE id_usuario=%(id_usuario)s
+            """, {**data, 'id_usuario': current_user.id})
         else:
             # Insertar nuevos datos
-            cur.execute(""" 
+            cur.execute("""
                 INSERT INTO datospersonales (
                     id_usuario, 
                     apellido_paterno, 
@@ -227,9 +263,7 @@ def datos_personales():
                     lugar_nacimiento_provincia, 
                     lugar_nacimiento_distrito, 
                     dni,
-                    carne_extranjeria, 
                     numero_colegiatura, 
-                    numero_ruc, 
                     codigo, 
                     condicion, 
                     categoria,
@@ -239,51 +273,79 @@ def datos_personales():
                     correo_personal, 
                     correo_institucional,
                     domicilio_actual, 
-                    referencia
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, (current_user.id, apellido_paterno, apellido_materno, nombres, fecha_nacimiento,
-                  lugar_nacimiento_departamento, lugar_nacimiento_provincia, lugar_nacimiento_distrito, dni,
-                  carne_extranjeria, numero_colegiatura, numero_ruc, codigo, condicion, categoria,
-                  dedicacion, telefono_fijo, movil, correo_personal, correo_institucional,
-                  domicilio_actual, referencia))
-
+                    referencia,
+                    id_foto_docente,
+                    id_constancia_habilitacion
+                ) VALUES (
+                    %(id_usuario)s, 
+                    %(apellido_paterno)s, 
+                    %(apellido_materno)s, 
+                    %(nombres)s, 
+                    %(fecha_nacimiento)s,
+                    %(lugar_nacimiento_departamento)s, 
+                    %(lugar_nacimiento_provincia)s, 
+                    %(lugar_nacimiento_distrito)s, 
+                    %(dni)s,
+                    %(numero_colegiatura)s, 
+                    %(codigo)s, 
+                    %(condicion)s, 
+                    %(categoria)s,
+                    %(dedicacion)s, 
+                    %(telefono_fijo)s, 
+                    %(movil)s, 
+                    %(correo_personal)s, 
+                    %(correo_institucional)s,
+                    %(domicilio_actual)s, 
+                    %(referencia)s,
+                    %(id_foto_docente)s,
+                    %(id_constancia_habilitacion)s
+                )
+            """, {**data, 'id_usuario': current_user.id})
+        
         db.connection.commit()
         cur.close()
-        flash('Datos personales actualizados correctamente')
+        flash('Información personal actualizada correctamente', 'success')
         return redirect(url_for('home'))
-
-    # Obtener datos personales actuales
-    cur = db.connection.cursor()
-    cur.execute("SELECT * FROM datospersonales WHERE id_usuario = %s", [current_user.id])
-    data = cur.fetchone()
+    
+    # Obtener datos personales actuales para prellenar el formulario
+    cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+    cur.execute("""
+        SELECT dp.*, 
+        foto.ruta_imagen AS foto_ruta, 
+        constancia.ruta_imagen AS constancia_ruta 
+        FROM datospersonales dp
+        LEFT JOIN imagenesadjuntas foto ON dp.id_foto_docente = foto.id_imagen
+        LEFT JOIN imagenesadjuntas constancia ON dp.id_constancia_habilitacion = constancia.id_imagen
+        WHERE dp.id_usuario = %s
+    """, [current_user.id])
+    existing_data = cur.fetchone()
     cur.close()
 
-    # Preparar los datos para ser renderizados en el formulario
-    data_dict = {
-        'apellido_paterno': data[2] if data else '',
-        'apellido_materno': data[3] if data else '',
-        'nombres': data[4] if data else '',
-        'fecha_nacimiento': data[5] if data else '',
-        'lugar_nacimiento_departamento': data[6] if data else '',
-        'lugar_nacimiento_provincia': data[7] if data else '',
-        'lugar_nacimiento_distrito': data[8] if data else '',
-        'dni': data[9] if data else '',
-        'carne_extranjeria': data[10] if data else '',
-        'numero_colegiatura': data[11] if data else '',
-        'numero_ruc': data[12] if data else '',
-        'codigo': data[13] if data else '',
-        'condicion': data[14] if data else '',
-        'categoria': data[15] if data else '',
-        'dedicacion': data[16] if data else '',
-        'telefono_fijo': data[17] if data else '',
-        'movil': data[18] if data else '',
-        'correo_personal': data[19] if data else '',
-        'correo_institucional': data[20] if data else '',
-        'domicilio_actual': data[21] if data else '',
-        'referencia': data[22] if data else ''
-    }
+    if existing_data and request.method == 'GET':
+        # Prellenar datos del formulario
+        form.apellido_paterno.data = existing_data['apellido_paterno']
+        form.apellido_materno.data = existing_data['apellido_materno']
+        form.nombres.data = existing_data['nombres']
+        form.fecha_nacimiento.data = existing_data['fecha_nacimiento']
+        form.lugar_nacimiento_departamento.data = existing_data['lugar_nacimiento_departamento']
+        form.lugar_nacimiento_provincia.data = existing_data['lugar_nacimiento_provincia']
+        form.lugar_nacimiento_distrito.data = existing_data['lugar_nacimiento_distrito']
+        form.dni.data = existing_data['dni']
+        form.numero_colegiatura.data = existing_data['numero_colegiatura']
+        form.codigo.data = existing_data['codigo']
+        form.condicion.data = existing_data['condicion']
+        form.categoria.data = existing_data['categoria']
+        form.dedicacion.data = existing_data['dedicacion']
+        form.telefono_fijo.data = existing_data['telefono_fijo']
+        form.movil.data = existing_data['movil']
+        form.correo_personal.data = existing_data['correo_personal']
+        form.correo_institucional.data = existing_data['correo_institucional']
+        form.domicilio_actual.data = existing_data['domicilio_actual']
+        form.referencia.data = existing_data['referencia']
 
-    return render_template('datos_personales.html', data=data_dict)
+    return render_template('informacion_personal.html', form=form, 
+                           foto_url=existing_data.get('foto_ruta') if existing_data else None,
+                           constancia_url=existing_data.get('constancia_ruta') if existing_data else None)
 
 
 @app.route('/uploads/<filename>')
@@ -2892,9 +2954,15 @@ def ver_datos_personal(page):
 
         # Obtener los datos de los usuarios con paginación, incluyendo el código de la comuna
         cur.execute(f"""
-            SELECT usuarios.id_usuario, usuarios.usuario, usuarios.rol,
-            datospersonales.nombres, datospersonales.apellido_paterno, datospersonales.apellido_materno,
-            datospersonales.dni, datospersonales.correo_personal, datospersonales.movil, datospersonales.codigo
+            SELECT 
+                usuarios.id_usuario, usuarios.usuario, usuarios.rol,
+                datospersonales.nombres, 
+                datospersonales.apellido_paterno, 
+                datospersonales.apellido_materno,
+                datospersonales.dni, 
+                datospersonales.correo_personal, 
+                datospersonales.movil, 
+                datospersonales.codigo
             FROM usuarios
             LEFT JOIN datospersonales ON usuarios.id_usuario = datospersonales.id_usuario
             LIMIT %s OFFSET %s
@@ -2906,12 +2974,61 @@ def ver_datos_personal(page):
         flash('Ocurrió un error al obtener los datos del personal: {}'.format(str(e)), 'error')
         return redirect(url_for('home'))
 
-    return render_template('admin_ver_datos_personal.html', usuarios=usuarios, page=page, total_paginas=total_paginas)
+    return render_template('admin_ver_datos_personal.html', 
+                           usuarios=usuarios, 
+                           page=page, 
+                           total_paginas=total_paginas)
+
+@app.route('/personal_details/<int:user_id>')
+@login_required
+def ver_detalles_personales(user_id):
+    # Verificar si el usuario es administrador
+    if current_user.role != 'Administrador':
+        flash('No tienes permisos para acceder a esta página', 'error')
+        return redirect(url_for('home'))
+
+    try:
+        cur = db.connection.cursor()
+        # Fetch comprehensive personal details for the specific user
+        cur.execute("""
+            SELECT 
+                dp.id_datos, dp.id_usuario, 
+                dp.apellido_paterno, dp.apellido_materno, dp.nombres,
+                dp.fecha_nacimiento, 
+                dp.lugar_nacimiento_departamento, 
+                dp.lugar_nacimiento_provincia, 
+                dp.lugar_nacimiento_distrito,
+                dp.dni, dp.carne_extranjeria, 
+                dp.numero_colegiatura, dp.numero_ruc,
+                dp.codigo, dp.condicion, 
+                dp.categoria, dp.dedicacion,
+                dp.telefono_fijo, dp.movil,
+                dp.correo_personal, dp.correo_institucional,
+                dp.domicilio_actual, dp.referencia,
+                u.usuario, u.rol
+            FROM datospersonales dp
+            JOIN usuarios u ON dp.id_usuario = u.id_usuario
+            WHERE dp.id_usuario = %s
+        """, (user_id,))
+        
+        detalles = cur.fetchone()
+        cur.close()
+
+        if not detalles:
+            flash('No se encontraron detalles para este usuario', 'error')
+            return redirect(url_for('ver_datos_personal'))
+
+        return render_template('detalles_personales.html', detalles=detalles)
+
+    except Exception as e:
+        flash(f'Error al obtener detalles personales: {str(e)}', 'error')
+        return redirect(url_for('ver_datos_personal'))
+
 
 # --- FIN DE NUEVAS RUTAS ---
 
 # Manejo de errores y configuración final
 if __name__ == '__main__':
-    app.config.from_object(config['development'])
-    csrf.init_app(app)
-    app.run()
+        app.config.from_object(config['development'])
+        csrf.init_app(app)
+        app.run()

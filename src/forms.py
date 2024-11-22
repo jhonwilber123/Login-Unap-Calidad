@@ -11,6 +11,9 @@ from wtforms import (
     SubmitField,
     BooleanField,
 )
+
+from wtforms import StringField, DateField, SelectField, TelField, EmailField, SubmitField
+from wtforms.validators import DataRequired, Length, Optional, Regexp, Email
 from wtforms.validators import DataRequired, NumberRange, Optional, ValidationError, Length
 from flask_wtf.file import FileAllowed
 from datetime import datetime, date
@@ -26,6 +29,64 @@ def file_size_limit(max_size):
             if file_size > max_size:
                 raise ValidationError(f"El archivo no puede exceder los {max_size / (1024 * 1024)} MB.")
     return _file_size_limit
+
+class InformacionPersonalForm(FlaskForm):
+    foto_docente = FileField('Foto del Docente', validators=[
+        FileAllowed(['jpg', 'jpeg', 'png'], 'Solo se permiten imágenes.')
+    ])
+    constancia_habilitacion = FileField('Constancia de Habilitación', validators=[
+        FileAllowed(['pdf'], 'Solo se permiten archivos PDF.')
+    ])
+    # Personal Information
+    apellido_paterno = StringField('Apellido Paterno', validators=[DataRequired(), Length(max=50)])
+    apellido_materno = StringField('Apellido Materno', validators=[DataRequired(), Length(max=50)])
+    nombres = StringField('Nombres', validators=[DataRequired(), Length(max=100)])
+    fecha_nacimiento = DateField('Fecha de Nacimiento', validators=[DataRequired()], format='%Y-%m-%d')
+    lugar_nacimiento_departamento = StringField('Departamento de Nacimiento', validators=[DataRequired(), Length(max=50)])
+    lugar_nacimiento_provincia = StringField('Provincia de Nacimiento', validators=[DataRequired(), Length(max=50)])
+    lugar_nacimiento_distrito = StringField('Distrito de Nacimiento', validators=[DataRequired(), Length(max=50)])
+    dni = StringField('DNI', validators=[DataRequired(), Regexp(r'^\d{8}$', message="El DNI debe tener 8 dígitos.")])
+    
+    # Professional Information
+    numero_colegiatura = StringField('Número de Colegiatura', validators=[Optional(), Length(max=20)])
+    codigo = StringField('Código UNAP', validators=[DataRequired(), Length(max=20)])
+    condicion = SelectField('Condición', choices=[('', 'Seleccione...'), ('Nombrado', 'Nombrado'), ('Contratado', 'Contratado')], validators=[DataRequired()])
+    categoria = SelectField('Categoría', choices=[
+        ('', 'Seleccione...'),
+        ('Principal', 'Principal'),
+        ('Asociado', 'Asociado'),
+        ('Auxiliar', 'Auxiliar'),
+        ('A1', 'A1'),
+        ('B1', 'B1'),
+        ('B2', 'B2'),
+        ('B3', 'B3')
+    ], validators=[DataRequired()])
+    dedicacion = SelectField('Dedicación', choices=[
+        ('', 'Seleccione...'),
+        ('Exclusiva', 'Exclusiva'),
+        ('Tiempo completo', 'Tiempo completo'),
+        ('Tiempo parcial', 'Tiempo parcial')
+    ], validators=[DataRequired()])
+    
+    # Contact Information
+    telefono_fijo = TelField('Teléfono Fijo', validators=[DataRequired(), Regexp(r'^\d{6,15}$', message="Ingrese un número de teléfono válido.")])
+    movil = TelField('Teléfono Móvil', validators=[DataRequired(), Regexp(r'^\d{6,15}$', message="Ingrese un número de teléfono válido.")])
+    correo_personal = EmailField('Correo Personal', validators=[DataRequired(), Email()])
+    correo_institucional = EmailField('Correo Institucional', validators=[DataRequired(), Email()])
+    domicilio_actual = StringField('Domicilio Actual', validators=[DataRequired(), Length(max=200)])
+    referencia = StringField('Referencia', validators=[Optional(), Length(max=200)])
+    
+    # Image Uploads
+    foto_docente = FileField('Foto de Docente', validators=[
+        FileAllowed(['jpg', 'png', 'jpeg'], 'Solo se permiten imágenes'),
+        Optional()
+    ])
+    constancia_habilitacion = FileField('Constancia de Habilitación', validators=[
+        FileAllowed(['pdf', 'jpg', 'png'], 'Solo se permiten PDF o imágenes'),
+        Optional()
+    ])
+    
+    submit = SubmitField('Guardar Cambios')
 
 
 class TutoriaForm(FlaskForm):
@@ -479,12 +540,13 @@ class GradostitulosForm(FlaskForm):
         'Tipo de Título',
         choices=[
             ('', '--- Seleccione una opción ---'),
+            ('Grado de Bachiller', 'Grado de Bachiller'),
             ('Título Profesional', 'Título Profesional (Adjuntar certificado de habilidad en el colegio profesional correspondiente)'),
             ('Título de Segunda Especialidad Profesional', 'Título de Segunda Especialidad Profesional'),
-            ('Especialidad Médica', 'Especialidad Médica (Adjuntar Registro Nacional de especialista)'),
             ('Maestría (un año de duración)', 'Maestría (un año de duración)'),
             ('Maestría (dos años de duración)', 'Maestría (dos años de duración)'),
             ('Doctorado o Ph.D.', 'Doctorado o Ph.D.')
+
         ],
         validators=[DataRequired(message='Debe seleccionar un tipo de título.')]
     )
@@ -493,7 +555,6 @@ class GradostitulosForm(FlaskForm):
         choices=[
             ('', '--- Seleccione una opción ---'),
             ('Universidad Nacional Del Altiplano', 'Universidad Nacional Del Altiplano'),
-            ('Universidad Peruana Cayetano Heredia', 'Universidad Peruana Cayetano Heredia'),
             ('Otra', 'Otra')
         ],
         validators=[DataRequired(message='Debe seleccionar una universidad.')]
