@@ -174,6 +174,13 @@ def informacion_personal():
             db.connection.commit()
             id_foto_docente = cur.lastrowid
             cur.close()
+        else:
+            # si la foto no se actualiza, mantener la anterior
+            cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+            cur.execute("SELECT id_foto_docente FROM datospersonales WHERE id_usuario = %s", [current_user.id])
+            existing_data = cur.fetchone()
+            id_foto_docente = existing_data['id_foto_docente']
+            cur.close()
 
         # Manejar la carga de constancia de habilitación
         id_constancia_habilitacion = None
@@ -191,6 +198,13 @@ def informacion_personal():
             """, (current_user.id, unique_filename))
             db.connection.commit()
             id_constancia_habilitacion = cur.lastrowid
+            cur.close()
+        else:
+            # si la constancia no se actualiza, mantener la anterior
+            cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+            cur.execute("SELECT id_constancia_habilitacion FROM datospersonales WHERE id_usuario = %s", [current_user.id])
+            existing_data = cur.fetchone()
+            id_constancia_habilitacion = existing_data['id_constancia_habilitacion']
             cur.close()
 
         # Capturar datos del formulario
@@ -215,7 +229,10 @@ def informacion_personal():
             'domicilio_actual': form.domicilio_actual.data,
             'referencia': form.referencia.data or '',
             'id_foto_docente': id_foto_docente,
-            'id_constancia_habilitacion': id_constancia_habilitacion
+            'id_constancia_habilitacion': id_constancia_habilitacion,
+            'ID_CTI': form.ID_CTI.data,
+            'ID_Scopus': form.ID_Scopus.data,
+            'ID_ORCID': form.ID_ORCID.data
         }
 
         # Verificar si ya existen datos personales para el usuario
@@ -247,7 +264,11 @@ def informacion_personal():
                     domicilio_actual=%(domicilio_actual)s, 
                     referencia=%(referencia)s,
                     id_foto_docente=%(id_foto_docente)s,
-                    id_constancia_habilitacion=%(id_constancia_habilitacion)s
+                    id_constancia_habilitacion=%(id_constancia_habilitacion)s,
+                    `ID_CTI`=%(ID_CTI)s,
+                    `ID_Scopus`=%(ID_Scopus)s,
+                    `ID_ORCID`=%(ID_ORCID)s
+                    
                 WHERE id_usuario=%(id_usuario)s
             """, {**data, 'id_usuario': current_user.id})
         else:
@@ -275,7 +296,10 @@ def informacion_personal():
                     domicilio_actual, 
                     referencia,
                     id_foto_docente,
-                    id_constancia_habilitacion
+                    id_constancia_habilitacion,
+                    `ID_CTI`,
+                    `ID_Scopus`,
+                    `ID_ORCID`
                 ) VALUES (
                     %(id_usuario)s, 
                     %(apellido_paterno)s, 
@@ -298,7 +322,10 @@ def informacion_personal():
                     %(domicilio_actual)s, 
                     %(referencia)s,
                     %(id_foto_docente)s,
-                    %(id_constancia_habilitacion)s
+                    %(id_constancia_habilitacion)s,
+                    %(ID_CTI)s,
+                    %(ID_Scopus)s,
+                    %(ID_ORCID)s
                 )
             """, {**data, 'id_usuario': current_user.id})
         
@@ -306,6 +333,7 @@ def informacion_personal():
         cur.close()
         flash('Información personal actualizada correctamente', 'success')
         return redirect(url_for('home'))
+
     
     # Obtener datos personales actuales para prellenar el formulario
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -342,6 +370,9 @@ def informacion_personal():
         form.correo_institucional.data = existing_data['correo_institucional']
         form.domicilio_actual.data = existing_data['domicilio_actual']
         form.referencia.data = existing_data['referencia']
+        form.ID_CTI.data = existing_data['ID_CTI']
+        form.ID_Scopus.data = existing_data['ID_Scopus']
+        form.ID_ORCID.data = existing_data['ID_ORCID']
 
     return render_template('informacion_personal.html', form=form, 
                            foto_url=existing_data.get('foto_ruta') if existing_data else None,
@@ -373,6 +404,7 @@ def gradostitulos():
         pais = form.pais.data
         otro_pais = form.otro_pais.data
         fecha_expedicion = form.fecha_expedicion.data
+
 
         # Manejo de "Otra Universidad"
         if universidad == 'Otra':
@@ -415,12 +447,44 @@ def gradostitulos():
                 flash('Archivo no permitido.', 'danger')
                 return redirect(request.url)
 
+
+        # Manejo de archivo_sunedu ( PDF)
+        archivo_sunedu = form.archivo_sunedu.data
+        id_imagen_sunedu = None
+        if archivo_sunedu:
+            if allowed_file(archivo_sunedu.filename):
+                filename = secure_filename(archivo_sunedu.filename)
+                unique_filename = f"{int(time.time())}_{filename}"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                archivo_sunedu.save(file_path)
+
+                # Determinar el tipo de archivo
+                file_extension = filename.rsplit('.', 1)[1].lower()
+                if file_extension == 'pdf':
+                    categoria = 'pdf'
+                else:
+                    flash('Debe seleccionar un archivo PDF.', 'danger')
+                    return redirect(request.url)
+
+                # Insertar el archivo y obtener su id_imagen
+                cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+                cur.execute("""
+                    INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
+                    VALUES (%s, %s, %s, %s)
+                """, (current_user.id, categoria, titulo, unique_filename))
+                db.connection.commit()
+                id_imagen_sunedu = cur.lastrowid
+                cur.close()
+            else:
+                flash('Archivo no permitido.', 'danger')
+                return redirect(request.url)
+
         # Insertar el título académico
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
-            INSERT INTO gradostitulos (id_usuario, titulo, tipo, universidad, pais, fecha_expedicion, id_imagen)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (current_user.id, titulo, tipo, universidad, pais, fecha_expedicion, id_imagen))
+            INSERT INTO gradostitulos (id_usuario, titulo, tipo, universidad, pais, fecha_expedicion, id_imagen, id_imagen_sunedu)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """, (current_user.id, titulo, tipo, universidad, pais, fecha_expedicion, id_imagen, id_imagen_sunedu))
         db.connection.commit()
         cur.close()
 
@@ -430,11 +494,22 @@ def gradostitulos():
     # Obtener los títulos académicos del usuario actual
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
     cur.execute("""
-        SELECT gt.id_grado, gt.titulo, gt.tipo, gt.universidad, gt.pais, gt.fecha_expedicion,
-               ia.ruta_imagen, ia.categoria
+        SELECT 
+            gt.id_grado, 
+            gt.titulo, 
+            gt.tipo, 
+            gt.universidad, 
+            gt.pais, 
+            gt.fecha_expedicion,
+            ia.ruta_imagen, 
+            ia.categoria,
+            ia_sunedu.ruta_imagen AS ruta_imagen_sunedu, 
+            ia_sunedu.categoria AS categoria_sunedu
         FROM gradostitulos gt
         LEFT JOIN imagenesadjuntas ia ON gt.id_imagen = ia.id_imagen
-        WHERE gt.id_usuario = %s
+        LEFT JOIN imagenesadjuntas ia_sunedu ON gt.id_imagen_sunedu = ia_sunedu.id_imagen
+        WHERE gt.id_usuario = %s;
+
     """, [current_user.id])
     gradostitulos = cur.fetchall()
     cur.close()
@@ -450,11 +525,24 @@ def editar_gradostitulos(id_grado):
 
     # Obtener los datos actuales del título
     cur.execute("""
-        SELECT gt.id_grado, gt.titulo, gt.tipo, gt.universidad, gt.pais, gt.fecha_expedicion,
-               ia.id_imagen, ia.ruta_imagen, ia.categoria
+        SELECT 
+            gt.id_grado, 
+            gt.titulo, 
+            gt.tipo, 
+            gt.universidad, 
+            gt.pais, 
+            gt.fecha_expedicion,
+            ia.id_imagen AS id_imagen, 
+            ia.ruta_imagen AS ruta_imagen, 
+            ia.categoria AS categoria,
+            ia_sunedu.id_imagen AS id_imagen_sunedu, 
+            ia_sunedu.ruta_imagen AS ruta_imagen_sunedu, 
+            ia_sunedu.categoria AS categoria_sunedu
         FROM gradostitulos gt
         LEFT JOIN imagenesadjuntas ia ON gt.id_imagen = ia.id_imagen
-        WHERE gt.id_grado = %s AND gt.id_usuario = %s
+        LEFT JOIN imagenesadjuntas ia_sunedu ON gt.id_imagen_sunedu = ia_sunedu.id_imagen
+        WHERE gt.id_grado = %s AND gt.id_usuario = %s;
+
     """, (id_grado, current_user.id))
     grado = cur.fetchone()
     cur.close()
@@ -471,6 +559,8 @@ def editar_gradostitulos(id_grado):
         pais = form.pais.data
         otro_pais = form.otro_pais.data
         fecha_expedicion = form.fecha_expedicion.data
+        archivo_sunedu = form.archivo_sunedu.data
+        id_imagen_actual_sunedu = grado['id_imagen_sunedu']
         archivo = form.archivo.data
         id_imagen_actual = grado['id_imagen']
 
@@ -528,6 +618,51 @@ def editar_gradostitulos(id_grado):
             else:
                 flash('Archivo no permitido.', 'danger')
                 return redirect(request.url)
+        # Manejo del archivo adjunto sunedu
+        if archivo_sunedu:
+            if allowed_file(archivo_sunedu.filename):
+                filename = secure_filename(archivo_sunedu.filename)
+                unique_filename = f"{int(time.time())}_{filename}"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                archivo_sunedu.save(file_path)
+
+                # Determinar el tipo de archivo
+                file_extension = filename.rsplit('.', 1)[1].lower()
+                if file_extension == 'pdf':
+                    categoria = 'pdf'
+                else:
+                    flash('Debe seleccionar un archivo PDF.', 'danger')
+                    return redirect(request.url)
+
+                cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+                if id_imagen_actual_sunedu:
+                    # Actualizar el archivo existente
+                    cur.execute("""
+                        UPDATE imagenesadjuntas
+                        SET ruta_imagen = %s, categoria = %s, descripcion = %s, fecha_subida = NOW()
+                        WHERE id_imagen = %s AND id_usuario = %s
+                    """, (unique_filename, categoria, titulo, id_imagen_actual_sunedu, current_user.id))
+                else:
+                    # Insertar un nuevo archivo
+                    cur.execute("""
+                        INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
+                        VALUES (%s, %s, %s, %s)
+                    """, (current_user.id, categoria, titulo, unique_filename))
+                    db.connection.commit()
+                    id_imagen_nueva = cur.lastrowid
+
+                    # Actualizar el título con el nuevo id_imagen
+                    cur.execute("""
+                        UPDATE gradostitulos
+                        SET id_imagen_sunedu = %s
+                        WHERE id_grado = %s AND id_usuario = %s
+                    """, (id_imagen_nueva, id_grado, current_user.id))
+                db.connection.commit()
+                cur.close()
+            else:
+                flash('Archivo no permitido.', 'danger')
+                return redirect(request.url)
+
 
         # Actualizar los datos del título académico
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -597,6 +732,29 @@ def eliminar_gradostitulos(id_grado):
             # Eliminar la imagen de la tabla imagenesadjuntas
             cur.execute("DELETE FROM imagenesadjuntas WHERE id_imagen = %s AND id_usuario = %s", (id_imagen, current_user.id))
             db.connection.commit()
+    # Obtener id_imagen para eliminar la imagen adjunta si existe sunedu
+    cur.execute("""
+        SELECT id_imagen_sunedu FROM gradostitulos
+        WHERE id_grado = %s AND id_usuario = %s
+    """, (id_grado, current_user.id))
+    result = cur.fetchone()
+
+    if result and result['id_imagen_sunedu']:
+        id_imagen = result['id_imagen_sunedu']
+        # Eliminar el archivo físico del servidor
+        cur.execute("""
+            SELECT ruta_imagen FROM imagenesadjuntas
+            WHERE id_imagen = %s AND id_usuario = %s
+        """, (id_imagen, current_user.id))
+        imagen = cur.fetchone()
+        if imagen:
+            ruta_imagen = imagen['ruta_imagen']
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], ruta_imagen)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            # Eliminar la imagen de la tabla imagenesadjuntas
+            cur.execute("DELETE FROM imagenesadjuntas WHERE id_imagen = %s AND id_usuario = %s", (id_imagen, current_user.id))
+            db.connection.commit()
 
     # Eliminar el título académico
     cur.execute("DELETE FROM gradostitulos WHERE id_grado = %s AND id_usuario = %s", (id_grado, current_user.id))
@@ -616,6 +774,7 @@ def actividadesproyeccionsocial():
         evento = form.evento.data
         descripcion = form.descripcion.data
         fecha = form.fecha.data
+        Emitido_por = form.Emitido_por.data
 
         # Manejo de archivos (imagen o PDF)
         archivo = form.archivo.data
@@ -653,9 +812,9 @@ def actividadesproyeccionsocial():
         # Insertar la actividad de proyección social sin 'nivel'
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
-            INSERT INTO actividadesproyeccionsocial (id_usuario, tipo, evento, descripcion, fecha, id_imagen)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (current_user.id, tipo, evento, descripcion, fecha, id_imagen))
+            INSERT INTO actividadesproyeccionsocial (id_usuario, tipo, evento, descripcion, fecha, id_imagen, Emitido_por)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (current_user.id, tipo, evento, descripcion, fecha, id_imagen, Emitido_por))
         db.connection.commit()
         cur.close()
 
@@ -666,7 +825,7 @@ def actividadesproyeccionsocial():
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
     cur.execute("""
         SELECT aps.id_actividad, aps.tipo, aps.evento, aps.descripcion, aps.fecha,
-               ia.ruta_imagen, ia.categoria
+               ia.ruta_imagen, ia.categoria, aps.Emitido_por
         FROM actividadesproyeccionsocial aps
         LEFT JOIN imagenesadjuntas ia ON aps.id_imagen = ia.id_imagen
         WHERE aps.id_usuario = %s
@@ -2922,7 +3081,7 @@ def eliminar_tutoria(id_tutoria):
     flash('Tutoría eliminada correctamente')
     return redirect(url_for('tutorias'))
 
-# Ruta para que el administrador vea los datos del personal
+    # Ruta para que el administrador vea los datos del personal
 @app.route('/admin/ver_datos_personal', defaults={'page': 1})
 @app.route('/admin/ver_datos_personal/page/<int:page>')
 @login_required
@@ -2975,9 +3134,9 @@ def ver_datos_personal(page):
         return redirect(url_for('home'))
 
     return render_template('admin_ver_datos_personal.html', 
-                           usuarios=usuarios, 
-                           page=page, 
-                           total_paginas=total_paginas)
+                        usuarios=usuarios, 
+                        page=page, 
+                        total_paginas=total_paginas)
 
 @app.route('/personal_details/<int:user_id>')
 @login_required

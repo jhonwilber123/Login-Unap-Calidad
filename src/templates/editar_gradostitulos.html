@@ -29,6 +29,26 @@
             {% endfor %}
         </div>
 
+        <!-- IMAGEN SUNEDU -->  
+        <div class="mb-3">
+            {{ form.archivo_sunedu.label(class="form-label") }}
+            {{ form.archivo_sunedu(class="form-control") }}
+            {% for error in form.archivo_sunedu.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+        <!-- Archivo Actual -->
+        {% if grado.ruta_imagen %}
+        <div class="mb-3">
+            <label class="form-label">Archivo Actual:</label><br>
+            {% if grado.categoria == 'imagen' %}
+                <img src="{{ url_for('uploaded_file', filename=grado.ruta_imagen_sunedu) }}" alt="Imagen Actual" style="max-width: 200px;">
+            {% elif grado.categoria == 'pdf' %}
+                <a href="{{ url_for('uploaded_file', filename=grado.ruta_imagen_sunedu) }}" target="_blank">Ver PDF</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        
         <!-- Tipo de Título -->
         <div class="mb-3">
             {{ form.tipo.label(class="form-label") }}

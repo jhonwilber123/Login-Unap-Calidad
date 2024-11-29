@@ -14,7 +14,7 @@
 {% block body %}
 
 <div class="container mt-5">
-    <h1 class="h3 mb-4 text-center">Mis Títulos Académicos</h1>
+    <h1 class="h3 mb-4 text-center">Grados y Títulos Académicos</h1>
 
     <!-- Formulario para agregar un nuevo título -->
     <form method="POST" enctype="multipart/form-data">
@@ -25,6 +25,15 @@
             {{ form.titulo.label(class="form-label") }}
             {{ form.titulo(class="form-control", maxlength="255") }}
             {% for error in form.titulo.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- IMAGEN SUNEDU --> 
+        <div class="mb-3">
+            {{ form.archivo_sunedu.label(class="form-label") }}
+            {{ form.archivo_sunedu(class="form-control") }}
+            {% for error in form.archivo_sunedu.errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
         </div>
@@ -106,6 +115,7 @@
                 <th>País</th>
                 <th>Fecha de Expedición</th>
                 <th>Archivo</th>
+                <th>archivo SUNEDU</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -127,8 +137,17 @@
                     {% else %}
                         N/A
                     {% endif %}
+                  
+                   
                 </td>
                 <td>
+                    {% if grado.ruta_imagen_sunedu %}
+                        <a href="{{ url_for('uploaded_file', filename=grado.ruta_imagen_sunedu) }}" target="_blank">Ver PDF</a>
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+               <td>
                     <a href="{{ url_for('editar_gradostitulos', id_grado=grado.id_grado) }}" class="btn btn-warning btn-sm">Editar</a>
 
                     <!-- Botón inicial de eliminación -->

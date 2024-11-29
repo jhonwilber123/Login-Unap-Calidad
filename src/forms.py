@@ -68,6 +68,10 @@ class InformacionPersonalForm(FlaskForm):
         ('Tiempo parcial', 'Tiempo parcial')
     ], validators=[DataRequired()])
     
+    # Academic Information
+    ID_CTI = StringField('ID CTI', validators=[DataRequired(), Length(max=50)])
+    ID_Scopus = StringField('ID Scopus', validators=[DataRequired(), Length(max=50)])
+    ID_ORCID = StringField('ID ORCID', validators=[DataRequired(), Length(max=50)])
     # Contact Information
     telefono_fijo = TelField('Teléfono Fijo', validators=[DataRequired(), Regexp(r'^\d{6,15}$', message="Ingrese un número de teléfono válido.")])
     movil = TelField('Teléfono Móvil', validators=[DataRequired(), Regexp(r'^\d{6,15}$', message="Ingrese un número de teléfono válido.")])
@@ -530,14 +534,14 @@ class IdiomasForm(FlaskForm):
 
 class GradostitulosForm(FlaskForm):
     titulo = StringField(
-        'Título',
+        'Denominación',
         validators=[
             DataRequired(message='Este campo es obligatorio.'),
             Length(max=255, message='Máximo 255 caracteres.')
         ]
     )
     tipo = SelectField(
-        'Tipo de Título',
+        'Tipo de Grado o Título',
         choices=[
             ('', '--- Seleccione una opción ---'),
             ('Grado de Bachiller', 'Grado de Bachiller'),
@@ -546,7 +550,6 @@ class GradostitulosForm(FlaskForm):
             ('Maestría (un año de duración)', 'Maestría (un año de duración)'),
             ('Maestría (dos años de duración)', 'Maestría (dos años de duración)'),
             ('Doctorado o Ph.D.', 'Doctorado o Ph.D.')
-
         ],
         validators=[DataRequired(message='Debe seleccionar un tipo de título.')]
     )
@@ -775,11 +778,22 @@ class GradostitulosForm(FlaskForm):
             DataRequired(message='Este campo es obligatorio.')
         ]
     )
+
     archivo = FileField(
-        'Adjuntar Archivo (Imagen o PDF)',
+        ' Adjuntar grado o título (PDF)',
         validators=[
             Optional(),
             FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'pdf'], 'Solo se permiten imágenes y archivos PDF.'),
+            file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
+        ]
+    )
+        # IMAGEN SUNEDU
+    
+    archivo_sunedu = FileField(
+        'Adjuntar Archivo SUNEDU',
+        validators=[
+            Optional(),
+            FileAllowed(['pdf'], 'Solo se permiten Archivos PDF.'),
             file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
         ]
     )
@@ -845,6 +859,15 @@ class ActividadesProyeccionSocialForm(FlaskForm):
             file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
         ]
     )
+
+    Emitido_por = StringField(
+        'Emitido por',
+        validators=[
+            DataRequired(message='Este campo es obligatorio.'),
+            Length(max=100, message='Máximo 100 caracteres.')
+        ]
+    )
+
     submit = SubmitField('Guardar')
 
     def validate_fecha(self, field):

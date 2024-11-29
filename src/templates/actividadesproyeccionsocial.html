@@ -56,6 +56,14 @@
             {% endfor %}
         </div>
 
+        <!-- Emitido por -->
+        <div class="mb-3">
+            {{ form.Emitido_por.label(class="form-label") }}
+            {{ form.Emitido_por(class="form-control", maxlength="100") }}
+            {% for error in form.Emitido_por.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
         <!-- Archivo -->
         <div class="mb-3">
             {{ form.archivo.label(class="form-label") }}
@@ -77,6 +85,7 @@
                 <th>Evento</th>
                 <th>Descripción</th>
                 <th>Fecha</th>
+                <th>Emitido por</th>
                 <th>Archivo</th>
                 <th>Acciones</th>
             </tr>
@@ -88,6 +97,7 @@
                 <td>{{ actividad.evento }}</td>
                 <td>{{ actividad.descripcion }}</td>
                 <td>{{ actividad.fecha.strftime('%Y-%m-%d') }}</td>
+                <td>{{ actividad.Emitido_por }}</td>
                 <td>
                     {% if actividad.ruta_imagen %}
                         {% if actividad.categoria == 'imagen' %}
