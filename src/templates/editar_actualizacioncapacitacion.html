@@ -64,6 +64,13 @@
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
         </div>
+        <!--Intitucion que otorga-->
+        <div class="mb-3">
+            {{ form.institucion_otorga.label(class="form-label") }}
+            {{ form.institucion_otorga(class="form-control", maxlength="255") }}
+            {% for error in form.institucion_otorga.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
 
         <!-- Archivo Actual -->
         {% if actualizacion.ruta_imagen %}

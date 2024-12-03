@@ -15,8 +15,8 @@ from config import config
 
 # Importar el formulario
 from forms import TutoriaForm, SoftwareEspecializadoForm, ReconocimientosForm, ProduccionIntelectualForm, ParticipacionTesisForm 
-from forms import InvestigacionesForm, IdiomasForm, GradostitulosForm, ActividadesProyeccionSocialForm 
-from forms import ActualizacionesCapacitacionesForm, CargosDirectivosForm, ExperienciaDocenteForm, InformacionPersonalForm
+from forms import InvestigacionesForm, IdiomasForm, GradostitulosForm, ActividadesProyeccionSocialForm, CargaAcademicaLectivaForm 
+from forms import ActualizacionesCapacitacionesForm,AcreditacionLicenciamientoForm, CargosDirectivosForm, ExperienciaDocenteForm, InformacionPersonalForm
 
 # Models:
 from models.ModelUser import ModelUser
@@ -763,6 +763,197 @@ def eliminar_gradostitulos(id_grado):
     flash('Título académico eliminado correctamente', 'success')
     return redirect(url_for('gradostitulos'))
 
+
+# --- RUTA  PARA AGREGAR Y LISTAR CARGA ACADEMICA LECTIVA ---
+@app.route('/carga_academica', methods=['GET', 'POST'])
+@login_required
+def carga_academica():
+    form = CargaAcademicaLectivaForm()
+    if form.validate_on_submit():
+        periodo_academico = form.periodo_academico.data
+        numero_memorandum = form.numero_memorandum.data
+        categoria_docente = form.categoria_docente.data
+        horas_asignadas = form.horas_asignadas.data
+        observaciones = form.observaciones.data
+
+        # Manejo del archivo PDF del Memorándum
+        archivo = form.archivo_memorandum.data
+        id_memorandum = None
+        if archivo:
+            # Verificar si el archivo es un PDF
+            if archivo.filename.lower().endswith('.pdf'):
+                filename = secure_filename(archivo.filename)
+                unique_filename = f"{int(time.time())}_{filename}"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                archivo.save(file_path)
+
+                # Insertar el archivo en la tabla imagenesadjuntas
+                cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+                cur.execute("""
+                    INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
+                    VALUES (%s, %s, %s, %s)
+                """, (current_user.id, 'pdf', 'Memorándum de Asignación de Carga', unique_filename))
+                db.connection.commit()
+                id_memorandum = cur.lastrowid
+                cur.close()
+            else:
+                flash('Archivo no permitido. Debe ser un PDF.', 'danger')
+                return redirect(request.url)
+
+        # Insertar el registro de carga académica lectiva
+        cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+        cur.execute("""
+            INSERT INTO carga_academica_lectiva (id_usuario, periodo_academico, numero_memorandum, id_memorandum, categoria_docente, horas_asignadas, observaciones)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (current_user.id, periodo_academico, numero_memorandum, id_memorandum, categoria_docente, horas_asignadas, observaciones))
+        db.connection.commit()
+        cur.close()
+
+        flash('Carga académica agregada correctamente', 'success')
+        return redirect(url_for('carga_academica'))
+
+    # Obtener las cargas existentes
+    cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+    cur.execute("""
+        SELECT cal.*, ia.ruta_imagen
+        FROM carga_academica_lectiva cal
+        LEFT JOIN imagenesadjuntas ia ON cal.id_memorandum = ia.id_imagen
+        WHERE cal.id_usuario = %s
+    """, [current_user.id])
+    cargas = cur.fetchall()
+    cur.close()
+
+    return render_template('carga_academica.html', cargas=cargas, form=form)
+
+# --- RUTA PARA EDITAR UNA CARGA ACADÉMICA LECTIVA ---
+@app.route('/editar_carga_academica/<int:id_carga>', methods=['GET', 'POST'])
+@login_required
+def editar_carga_academica(id_carga):
+    form = CargaAcademicaLectivaForm()
+    cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    # Obtener el registro existente
+    cur.execute("""
+        SELECT cal.*, ia.ruta_imagen, ia.id_imagen
+        FROM carga_academica_lectiva cal
+        LEFT JOIN imagenesadjuntas ia ON cal.id_memorandum = ia.id_imagen
+        WHERE cal.id_carga = %s AND cal.id_usuario = %s
+    """, (id_carga, current_user.id))
+    carga = cur.fetchone()
+    cur.close()
+
+    if not carga:
+        flash('Carga académica no encontrada', 'danger')
+        return redirect(url_for('carga_academica'))
+
+    if form.validate_on_submit():
+        periodo_academico = form.periodo_academico.data
+        numero_memorandum = form.numero_memorandum.data
+        categoria_docente = form.categoria_docente.data
+        horas_asignadas = form.horas_asignadas.data
+        observaciones = form.observaciones.data
+
+        # Manejo del archivo PDF del Memorándum
+        archivo = form.archivo_memorandum.data
+        id_memorandum_actual = carga['id_memorandum']
+
+        if archivo:
+            # Verificar si el archivo es un PDF
+            if archivo.filename.lower().endswith('.pdf'):
+                filename = secure_filename(archivo.filename)
+                unique_filename = f"{int(time.time())}_{filename}"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                archivo.save(file_path)
+
+                cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+                if id_memorandum_actual:
+                    # Actualizar el registro del archivo existente
+                    cur.execute("""
+                        UPDATE imagenesadjuntas
+                        SET ruta_imagen = %s, fecha_subida = NOW()
+                        WHERE id_imagen = %s AND id_usuario = %s
+                    """, (unique_filename, id_memorandum_actual, current_user.id))
+                else:
+                    # Insertar un nuevo registro de archivo
+                    cur.execute("""
+                        INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
+                        VALUES (%s, %s, %s, %s)
+                    """, (current_user.id, 'pdf', 'Memorándum de Asignación de Carga', unique_filename))
+                    db.connection.commit()
+                    id_memorandum_nuevo = cur.lastrowid
+
+                    # Actualizar el registro de carga académica con el nuevo id_memorandum
+                    cur.execute("""
+                        UPDATE carga_academica_lectiva
+                        SET id_memorandum = %s
+                        WHERE id_carga = %s AND id_usuario = %s
+                    """, (id_memorandum_nuevo, id_carga, current_user.id))
+                db.connection.commit()
+                cur.close()
+            else:
+                flash('Archivo no permitido. Debe ser un PDF.', 'danger')
+                return redirect(request.url)
+
+        # Actualizar el registro de carga académica lectiva
+        cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+        cur.execute("""
+            UPDATE carga_academica_lectiva
+            SET periodo_academico = %s, numero_memorandum = %s, categoria_docente = %s,
+                horas_asignadas = %s, observaciones = %s
+            WHERE id_carga = %s AND id_usuario = %s
+        """, (periodo_academico, numero_memorandum, categoria_docente, horas_asignadas, observaciones, id_carga, current_user.id))
+        db.connection.commit()
+        cur.close()
+
+        flash('Carga académica actualizada correctamente', 'success')
+        return redirect(url_for('carga_academica'))
+
+    # Prellenar el formulario con los datos existentes
+    if request.method == 'GET':
+        form.periodo_academico.data = carga['periodo_academico']
+        form.numero_memorandum.data = carga['numero_memorandum']
+        form.categoria_docente.data = carga['categoria_docente']
+        form.horas_asignadas.data = carga['horas_asignadas']
+        form.observaciones.data = carga['observaciones']
+
+    return render_template('editar_carga_academica.html', carga=carga, form=form)
+
+@app.route('/eliminar_carga_academica/<int:id_carga>', methods=['POST'])
+@login_required
+def eliminar_carga_academica(id_carga):
+    cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    # Obtener id_memorandum para eliminar el PDF adjunto si existe
+    cur.execute("""
+        SELECT id_memorandum FROM carga_academica_lectiva
+        WHERE id_carga = %s AND id_usuario = %s
+    """, (id_carga, current_user.id))
+    result = cur.fetchone()
+
+    if result and result['id_memorandum']:
+        id_memorandum = result['id_memorandum']
+        # Eliminar el archivo físico del servidor
+        cur.execute("""
+            SELECT ruta_imagen FROM imagenesadjuntas
+            WHERE id_imagen = %s AND id_usuario = %s
+        """, (id_memorandum, current_user.id))
+        imagen = cur.fetchone()
+        if imagen:
+            ruta_imagen = imagen['ruta_imagen']
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], ruta_imagen)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+    # Eliminar el registro de carga académica lectiva
+    cur.execute("DELETE FROM carga_academica_lectiva WHERE id_carga = %s AND id_usuario = %s", (id_carga, current_user.id))
+    db.connection.commit()
+
+    # Eliminar el registro de la tabla imagenesadjuntas
+    cur.execute("DELETE FROM imagenesadjuntas WHERE id_imagen = %s AND id_usuario = %s", (id_memorandum, current_user.id))
+    db.connection.commit()
+    cur.close()
+    flash('Carga académica eliminada correctamente', 'success')
+    return redirect(url_for('carga_academica'))
+
 # Ruta para manejar actividades de proyección social
 # --- RUTA PARA AGREGAR Y LISTAR ACTIVIDADES DE PROYECCIÓN SOCIAL ---
 @app.route('/actividadesproyeccionsocial', methods=['GET', 'POST'])
@@ -984,6 +1175,7 @@ def actualizacionescapacitaciones():
         horas = form.horas.data if form.horas.data else None
         creditos = form.creditos.data if form.creditos.data else None
         semestres_concluidos = form.semestres_concluidos.data if form.semestres_concluidos.data else None
+        institucion_otorga = form.institucion_otorga.data  # Nuevo campo
 
         # Manejo de archivos (imagen o PDF)
         archivo = form.archivo.data
@@ -1021,9 +1213,9 @@ def actualizacionescapacitaciones():
         # Insertar la actualización de capacitación
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
-            INSERT INTO actualizacionescapacitaciones (id_usuario, tipo, descripcion, horas, creditos, semestres_concluidos, id_imagen)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (current_user.id, tipo, descripcion, horas, creditos, semestres_concluidos, id_imagen))
+            INSERT INTO actualizacionescapacitaciones (id_usuario, tipo, descripcion, horas, creditos, semestres_concluidos, institucion_otorga, id_imagen)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """, (current_user.id, tipo, descripcion, horas, creditos, semestres_concluidos, institucion_otorga, id_imagen))
         db.connection.commit()
         cur.close()
 
@@ -1034,7 +1226,7 @@ def actualizacionescapacitaciones():
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
     cur.execute("""
         SELECT ac.id_capacitacion, ac.tipo, ac.descripcion, ac.horas, ac.creditos, ac.semestres_concluidos,
-               ia.ruta_imagen, ia.categoria
+               ac.institucion_otorga, ia.ruta_imagen, ia.categoria
         FROM actualizacionescapacitaciones ac
         LEFT JOIN imagenesadjuntas ia ON ac.id_imagen = ia.id_imagen
         WHERE ac.id_usuario = %s
@@ -1054,7 +1246,7 @@ def editar_actualizacioncapacitacion(id_capacitacion):
     # Obtener los datos actuales de la actualización
     cur.execute("""
         SELECT ac.id_capacitacion, ac.tipo, ac.descripcion, ac.horas, ac.creditos, ac.semestres_concluidos,
-               ia.id_imagen, ia.ruta_imagen, ia.categoria
+               ac.institucion_otorga, ia.id_imagen, ia.ruta_imagen, ia.categoria
         FROM actualizacionescapacitaciones ac
         LEFT JOIN imagenesadjuntas ia ON ac.id_imagen = ia.id_imagen
         WHERE ac.id_capacitacion = %s AND ac.id_usuario = %s
@@ -1072,6 +1264,7 @@ def editar_actualizacioncapacitacion(id_capacitacion):
         horas = form.horas.data if form.horas.data else None
         creditos = form.creditos.data if form.creditos.data else None
         semestres_concluidos = form.semestres_concluidos.data if form.semestres_concluidos.data else None
+        institucion_otorga = form.institucion_otorga.data  # Nuevo campo
         archivo = form.archivo.data
         id_imagen_actual = actualizacion['id_imagen']
 
@@ -1126,9 +1319,9 @@ def editar_actualizacioncapacitacion(id_capacitacion):
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
             UPDATE actualizacionescapacitaciones
-            SET tipo = %s, descripcion = %s, horas = %s, creditos = %s, semestres_concluidos = %s
+            SET tipo = %s, descripcion = %s, horas = %s, creditos = %s, semestres_concluidos = %s, institucion_otorga = %s
             WHERE id_capacitacion = %s AND id_usuario = %s
-        """, (tipo, descripcion, horas, creditos, semestres_concluidos, id_capacitacion, current_user.id))
+        """, (tipo, descripcion, horas, creditos, semestres_concluidos, institucion_otorga, id_capacitacion, current_user.id))
         db.connection.commit()
         cur.close()
 
@@ -1142,6 +1335,7 @@ def editar_actualizacioncapacitacion(id_capacitacion):
         form.horas.data = actualizacion['horas']
         form.creditos.data = actualizacion['creditos']
         form.semestres_concluidos.data = actualizacion['semestres_concluidos']
+        form.institucion_otorga.data = actualizacion['institucion_otorga']  # Nuevo campo
 
     return render_template('editar_actualizacioncapacitacion.html', actualizacion=actualizacion, form=form)
 
@@ -1182,6 +1376,160 @@ def eliminar_actualizacioncapacitacion(id_capacitacion):
     flash('Actualización de capacitación eliminada correctamente', 'success')
     return redirect(url_for('actualizacionescapacitaciones'))
 
+#ruta para participacion en acreditacion y licenciamiento
+# --- RUTA PARA AGREGAR Y LISTAR PARTICIPACIONES EN ACREDITACIÓN Y LICENCIAMIENTO ---
+@app.route('/acreditacionlicenciamiento', methods=['GET', 'POST'])
+@login_required
+def acreditacionlicenciamiento():
+    form = AcreditacionLicenciamientoForm()
+    if form.validate_on_submit():
+        cargo = form.cargo.data
+        nombre_comite = form.nombre_comite.data
+        tipo_participacion = form.tipo_participacion.data
+        fecha_inicio = form.fecha_inicio.data
+        fecha_fin = form.fecha_fin.data
+        resolucion_numero = form.resolucion_numero.data
+        resolucion_fecha = form.resolucion_fecha.data
+        logros = form.logros.data
+
+        archivo_copia = form.archivo_copia.data
+        evidencias = form.evidencias.data
+        id_evidencia = None
+
+        if archivo_copia:
+            if allowed_file(archivo_copia.filename, ['pdf']):
+                filename = secure_filename(archivo_copia.filename)
+                unique_filename = f"{int(time.time())}_{filename}"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                archivo_copia.save(file_path)
+
+                cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+                cur.execute("""
+                    INSERT INTO resoluciones (id_usuario, numero, fecha, ruta_resolucion)
+                    VALUES (%s, %s, %s, %s)
+                """, (current_user.id, resolucion_numero, resolucion_fecha, unique_filename))
+                db.connection.commit()
+                id_resolucion = cur.lastrowid
+                cur.close()
+            else:
+                flash('Debe subir un archivo PDF válido para la Resolución.', 'danger')
+                return redirect(request.url)
+
+        if evidencias:
+            for evidencia in evidencias:
+                if allowed_file(evidencia.filename, ['pdf']) and evidencia.content_length <= 10 * 1024 * 1024:
+                    filename = secure_filename(evidencia.filename)
+                    unique_filename = f"{int(time.time())}_{filename}"
+                    file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                    evidencia.save(file_path)
+
+                    cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+                    cur.execute("""
+                        INSERT INTO evidencias (id_usuario, descripcion, ruta_evidencia)
+                        VALUES (%s, %s, %s)
+                    """, (current_user.id, form.descripcion_evidencia.data, unique_filename))
+                    db.connection.commit()
+                    cur.close()
+                else:
+                    flash('Cada evidencia debe ser un PDF de máximo 10 MB.', 'danger')
+                    return redirect(request.url)
+
+        cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+        cur.execute("""
+            INSERT INTO acreditacionlicenciamiento (
+                id_usuario, cargo, nombre_comite, tipo_participacion,
+                fecha_inicio, fecha_fin, resolucion_numero, resolucion_fecha, logros
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            current_user.id, cargo, nombre_comite, tipo_participacion,
+            fecha_inicio, fecha_fin, resolucion_numero, resolucion_fecha, logros
+        ))
+        db.connection.commit()
+        cur.close()
+
+        flash('Acreditación y Licenciamiento agregada correctamente', 'success')
+        return redirect(url_for('acreditacionlicenciamiento'))
+
+    cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+    cur.execute("""
+        SELECT * FROM acreditacionlicenciamiento
+        WHERE id_usuario = %s
+    """, [current_user.id])
+    acreditaciones = cur.fetchall()
+    cur.close()
+
+    return render_template('acreditacionlicenciamiento.html', acreditaciones=acreditaciones, form=form)
+
+@app.route('/editar_acreditacionlicenciamiento/<int:id_acreditacion>', methods=['GET', 'POST'])
+@login_required
+def editar_acreditacionlicenciamiento(id_acreditacion):
+    form = AcreditacionLicenciamientoForm()
+    cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    cur.execute("""
+        SELECT * FROM acreditacionlicenciamiento
+        WHERE id = %s AND id_usuario = %s
+    """, (id_acreditacion, current_user.id))
+    acreditacion = cur.fetchone()
+    cur.close()
+
+    if not acreditacion:
+        flash('Acreditación y Licenciamiento no encontrada', 'danger')
+        return redirect(url_for('acreditacionlicenciamiento'))
+
+    if form.validate_on_submit():
+        # Similar processing as in the add route
+        # Update the database with form.data
+        pass  # Implement update logic
+
+    if request.method == 'GET':
+        form.cargo.data = acreditacion['cargo']
+        form.nombre_comite.data = acreditacion['nombre_comite']
+        form.tipo_participacion.data = acreditacion['tipo_participacion']
+        form.fecha_inicio.data = acreditacion['fecha_inicio']
+        form.fecha_fin.data = acreditacion['fecha_fin']
+        form.resolucion_numero.data = acreditacion['resolucion_numero']
+        form.resolucion_fecha.data = acreditacion['resolucion_fecha']
+        form.logros.data = acreditacion['logros']
+
+    return render_template('editar_acreditacionlicenciamiento.html', acreditacion=acreditacion, form=form)
+
+@app.route('/eliminar_acreditacionlicenciamiento/<int:id_acreditacion>', methods=['POST'])
+@login_required
+def eliminar_acreditacionlicenciamiento(id_acreditacion):
+    cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    cur.execute("""
+        SELECT ruta_resolucion FROM resoluciones
+        WHERE id_acreditacion = %s AND id_usuario = %s
+    """, (id_acreditacion, current_user.id))
+    resolucion = cur.fetchone()
+
+    if resolucion:
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], resolucion['ruta_resolucion'])
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        cur.execute("DELETE FROM resoluciones WHERE id_acreditacion = %s AND id_usuario = %s", (id_acreditacion, current_user.id))
+        db.connection.commit()
+
+    cur.execute("""
+        SELECT ruta_evidencia FROM evidencias
+        WHERE id_acreditacion = %s AND id_usuario = %s
+    """, (id_acreditacion, current_user.id))
+    evidencias = cur.fetchall()
+    for evidencia in evidencias:
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], evidencia['ruta_evidencia'])
+        if os.path.exists(file_path):
+            os.remove(file_path)
+    cur.execute("DELETE FROM evidencias WHERE id_acreditacion = %s AND id_usuario = %s", (id_acreditacion, current_user.id))
+    db.connection.commit()
+
+    cur.execute("DELETE FROM acreditacionlicenciamiento WHERE id = %s AND id_usuario = %s", (id_acreditacion, current_user.id))
+    db.connection.commit()
+    cur.close()
+
+    flash('Acreditación y Licenciamiento eliminada correctamente', 'success')
+    return redirect(url_for('acreditacionlicenciamiento'))
 # Ruta para listar y agregar cargos directivos
 # --- RUTA PARA AGREGAR Y LISTAR CARGOS DIRECTIVOS ---
 @app.route('/cargosdirectivos', methods=['GET', 'POST'])

@@ -65,6 +65,13 @@
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
         </div>
+        <!-- institucion_otorga -->
+        <div class="mb-3">
+            {{ form.institucion_otorga.label(class="form-label") }}
+            {{ form.institucion_otorga(class="form-control", maxlength="255") }}
+            {% for error in form.institucion_otorga.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
 
         <!-- Archivo -->
         <div class="mb-3">
@@ -86,6 +93,7 @@
                 <th>Tipo</th>
                 <th>Descripción</th>
                 <th>Detalles</th>
+                <th>Institucion</th>
                 <th>Archivo</th>
                 <th>Acciones</th>
             </tr>
@@ -108,6 +116,7 @@
                         Información no disponible
                     {% endif %}
                 </td>
+                <td>{{ actualizacion.institucion_otorga }}</td>
                 <td>
                     {% if actualizacion.ruta_imagen %}
                         {% if actualizacion.categoria == 'imagen' %}
