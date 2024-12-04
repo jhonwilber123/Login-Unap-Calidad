@@ -1,7 +1,7 @@
 # forms.py
-
 from flask_wtf import FlaskForm
 from wtforms import (
+    DecimalField,
     TextAreaField, 
     IntegerField, 
     SelectField, 
@@ -12,25 +12,75 @@ from wtforms import (
     BooleanField,
 )
 
-from wtforms import StringField, DateField, SelectField, TelField, EmailField, SubmitField
+from wtforms import StringField, DateField, SelectField, TelField, EmailField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Length, Optional, Regexp, Email
 from wtforms.validators import DataRequired, NumberRange, Optional, ValidationError, Length
-from flask_wtf.file import FileAllowed
+from flask_wtf.file import FileAllowed, FileRequired
 from datetime import datetime, date
 import re
 import requests
-from flask_wtf.file import FileRequired
+import os
 
 def file_size_limit(max_size):
     """Validador personalizado para limitar el tamaño del archivo."""
     def _file_size_limit(form, field):
         if field.data:
-            field.data.stream.seek(0, 2)  # Mover al final del archivo
+            field.data.stream.seek(0, os.SEEK_END)  # Mover al final del archivo
             file_size = field.data.stream.tell()
             field.data.stream.seek(0)  # Volver al inicio del archivo
             if file_size > max_size:
                 raise ValidationError(f"El archivo no puede exceder los {max_size / (1024 * 1024)} MB.")
     return _file_size_limit
+
+
+class EvaluacionDesempenoDocenteForm(FlaskForm):
+    periodo_academico_evaluado = StringField(
+        'Período Académico Evaluado',
+        validators=[
+            DataRequired(message='Este campo es obligatorio.'),
+            Length(max=100, message='Máximo 100 caracteres.')
+        ]
+    )
+    categoria_docente = StringField(
+        'Categoría Docente',
+        validators=[
+            DataRequired(message='Este campo es obligatorio.'),
+            Length(max=100, message='Máximo 100 caracteres.')
+        ]
+    )
+    promedio_evaluacion_general = DecimalField(
+        'Promedio de Evaluación General',
+        validators=[
+            DataRequired(message='Este campo es obligatorio.'),
+            NumberRange(min=0, max=100, message='El valor debe estar entre 0 y 100.')
+        ],
+        places=2
+    )
+    promedio_evaluacion_autoridades = DecimalField(
+        'Promedio de Evaluación por Autoridades',
+        validators=[
+            DataRequired(message='Este campo es obligatorio.'),
+            NumberRange(min=0, max=100, message='El valor debe estar entre 0 y 100.')
+        ],
+        places=2
+    )
+    promedio_evaluacion_estudiantes = DecimalField(
+        'Promedio de Evaluación por Estudiantes',
+        validators=[
+            DataRequired(message='Este campo es obligatorio.'),
+            NumberRange(min=0, max=100, message='El valor debe estar entre 0 y 100.')
+        ],
+        places=2
+    )
+    informes_evaluacion = FileField(
+        'Adjuntar Informes de Evaluación (PDF)',
+        validators=[
+            DataRequired(message='Este campo es obligatorio.'),
+            FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
+            file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
+        ]
+    )
+    submit = SubmitField('Guardar')
 
 
 class InformacionPersonalForm(FlaskForm):
@@ -927,46 +977,6 @@ class ActividadesProyeccionSocialForm(FlaskForm):
             raise ValidationError('La fecha no puede ser en el futuro.')
 
 
-class AcreditacionLicenciamientoForm(FlaskForm):
-    cargo = StringField('Cargo o Rol en el Proceso', validators=[DataRequired(), Length(max=100)])
-    
-    nombre_comite = StringField('Nombre del Comité o Proyecto', validators=[DataRequired(), Length(max=150)])
-    
-    tipo_participacion = SelectField(
-        'Tipo de Participación',
-        choices=[
-            ('acreditacion', 'Acreditación'),
-            ('licenciamiento', 'Licenciamiento'),
-            ('otro', 'Otro')
-        ],
-        validators=[DataRequired()]
-    )
-    
-    periodo_participacion_inicio = DateField('Fecha de Inicio', format='%Y-%m-%d', validators=[DataRequired()])
-    periodo_participacion_fin = DateField('Fecha de Fin', format='%Y-%m-%d', validators=[DataRequired()])
-    
-    resolucion_numero = StringField('Número de Resolución', validators=[DataRequired(), Length(max=50)])
-    resolucion_fecha = DateField('Fecha de Resolución', format='%Y-%m-%d', validators=[DataRequired()])
-    resolucion_copia = FileField(
-        'Adjuntar Copia (PDF)',
-        validators=[
-            FileRequired(),
-            FileAllowed(['pdf'], 'Solo se permiten archivos PDF.')
-        ]
-    )
-    
-    logros_alcanzados = TextAreaField('Logros Alcanzados', validators=[Optional(), Length(max=500)])
-    
-    evidencias = FileField(
-        'Adjuntar Evidencias (PDF)',
-        validators=[
-            Optional(),
-            FileAllowed(['pdf'], 'Solo se permiten archivos PDF.')
-        ]
-    )
-    
-    submit = SubmitField('Guardar')    
-
 class ActualizacionesCapacitacionesForm(FlaskForm):
     tipo = SelectField(
         'Tipo de Capacitación',
@@ -1150,3 +1160,89 @@ class ExperienciaDocenteForm(FlaskForm):
     def validate_fecha_expedicion(self, field):
         if hasattr(self, 'fecha_expedicion') and field.data > date.today():
             raise ValidationError('La fecha de expedición no puede ser en el futuro.')
+
+
+class AcreditacionLicenciamientoForm(FlaskForm):
+    cargo = StringField(
+        'Cargo o Rol en el Proceso',
+        validators=[
+            DataRequired(message='Este campo es obligatorio.'),
+            Length(max=255, message='Máximo 255 caracteres.')
+        ]
+    )
+    nombre_comite = StringField(
+        'Nombre del Comité o Proyecto',
+        validators=[
+            DataRequired(message='Este campo es obligatorio.'),
+            Length(max=255, message='Máximo 255 caracteres.')
+        ]
+    )
+    tipo_participacion = SelectField(
+        'Tipo de Participación',
+        choices=[
+            ('', '--- Seleccione una opción ---'),
+            ('Acreditación', 'Acreditación'),
+            ('Licenciamiento', 'Licenciamiento'),
+            ('Otro', 'Otro')
+        ],
+        validators=[DataRequired(message='Debe seleccionar un tipo de participación.')]
+    )
+    otro_tipo_participacion = StringField(
+        'Especificar Otro Tipo de Participación',
+        validators=[
+            Optional(),
+            Length(max=100, message='Máximo 100 caracteres.')
+        ]
+    )
+    fecha_inicio = DateField(
+        'Fecha de Inicio',
+        format='%Y-%m-%d',
+        validators=[
+            DataRequired(message='Este campo es obligatorio.')
+        ]
+    )
+    fecha_fin = DateField(
+        'Fecha de Fin',
+        format='%Y-%m-%d',
+        validators=[
+            DataRequired(message='Este campo es obligatorio.')
+        ]
+    )
+    numero_resolucion = StringField(
+        'Número de Resolución de Nombramiento',
+        validators=[
+            DataRequired(message='Este campo es obligatorio.'),
+            Length(max=50, message='Máximo 50 caracteres.')
+        ]
+    )
+    fecha_resolucion = DateField(
+        'Fecha de Resolución de Nombramiento',
+        format='%Y-%m-%d',
+        validators=[
+            DataRequired(message='Este campo es obligatorio.')
+        ]
+    )
+    resolucion_nombramiento = FileField(
+        'Adjuntar Copia de Resolución de Nombramiento (PDF)',
+        validators=[
+            DataRequired(message='Este campo es obligatorio.'),
+            FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
+            file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
+        ]
+    )
+    logros = TextAreaField(
+        'Logros Alcanzados',
+        validators=[
+            Optional(),
+            Length(max=2000, message='Máximo 2000 caracteres.')
+        ]
+    )
+    evidencias = FileField(
+        'Adjuntar Evidencias (PDF)',
+        validators=[
+            Optional(),
+            FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
+            file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
+        ]
+    )
+    submit = SubmitField('Guardar')

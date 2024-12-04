@@ -1,0 +1,85 @@
+<!-- templates/evaluacion_desempeno_docente_list.html -->
+
+{% extends './base.html' %}
+
+{% block title %}Evaluación del Desempeño Docente{% endblock %}
+
+{% block customCSS %}
+<!-- CSS específico para la página de Evaluación del Desempeño Docente -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+{% endblock %}
+
+{% block body %}
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center">Evaluación del Desempeño Docente</h1>
+
+    <!-- Botón para agregar una nueva evaluación -->
+    <div class="mb-4">
+        <a href="{{ url_for('agregar_evaluacion_desempeno_docente') }}" class="btn btn-success">Agregar Nueva Evaluación</a>
+    </div>
+
+    <!-- Tabla de evaluaciones -->
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Período Académico Evaluado</th>
+                <th>Categoría Docente</th>
+                <th>Promedio General (%)</th>
+                <th>Promedio por Autoridades (%)</th>
+                <th>Promedio por Estudiantes (%)</th>
+                <th>Informe de Evaluación</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for evaluacion in evaluaciones %}
+            <tr>
+                <td>{{ evaluacion.id_evaluacion }}</td>
+                <td>{{ evaluacion.periodo_academico_evaluado }}</td>
+                <td>{{ evaluacion.categoria_docente }}</td>
+                <td>{{ evaluacion.promedio_evaluacion_general }}</td>
+                <td>{{ evaluacion.promedio_evaluacion_autoridades }}</td>
+                <td>{{ evaluacion.promedio_evaluacion_estudiantes }}</td>
+                <td>
+                    {% if evaluacion.ruta_informes_evaluacion %}
+                        <a href="{{ url_for('uploaded_file', filename=evaluacion.ruta_informes_evaluacion) }}" target="_blank">Ver PDF</a>
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('editar_evaluacion_desempeno_docente', id_evaluacion=evaluacion.id_evaluacion) }}" class="btn btn-warning btn-sm">Editar</a>
+                    <button class="btn btn-danger btn-sm" onclick="mostrarConfirmacion({{ evaluacion.id_evaluacion }}); return false;">Eliminar</button>
+
+                    <!-- Confirmación de eliminación -->
+                    <div id="confirmacion-{{ evaluacion.id_evaluacion }}" class="confirmacion-eliminacion" style="display:none; margin-top: 5px;">
+                        <p>¿Está seguro de que desea eliminar esta evaluación?</p>
+                        <form action="{{ url_for('eliminar_evaluacion_desempeno_docente', id_evaluacion=evaluacion.id_evaluacion) }}" method="POST" style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Confirmar</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="ocultarConfirmacion({{ evaluacion.id_evaluacion }}); return false;">Cancelar</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- JavaScript para controlar la confirmación de eliminación -->
+<script type="text/javascript">
+    function mostrarConfirmacion(id) {
+        document.getElementById('confirmacion-' + id).style.display = 'block';
+    }
+
+    function ocultarConfirmacion(id) {
+        document.getElementById('confirmacion-' + id).style.display = 'none';
+    }
+</script>
+
+{% endblock %}

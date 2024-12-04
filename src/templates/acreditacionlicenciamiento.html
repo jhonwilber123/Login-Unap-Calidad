@@ -16,14 +16,14 @@
 <div class="container mt-5">
     <h1 class="h3 mb-4 text-center">Acreditación y Licenciamiento</h1>
 
-    <!-- Formulario para agregar una nueva acreditación y licenciamiento -->
+    <!-- Formulario para agregar una nueva acreditación o licenciamiento -->
     <form method="POST" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
 
         <!-- Cargo o Rol en el Proceso -->
         <div class="mb-3">
             {{ form.cargo.label(class="form-label") }}
-            {{ form.cargo(class="form-control") }}
+            {{ form.cargo(class="form-control", maxlength="255") }}
             {% for error in form.cargo.errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
@@ -32,7 +32,7 @@
         <!-- Nombre del Comité o Proyecto -->
         <div class="mb-3">
             {{ form.nombre_comite.label(class="form-label") }}
-            {{ form.nombre_comite(class="form-control") }}
+            {{ form.nombre_comite(class="form-control", maxlength="255") }}
             {% for error in form.nombre_comite.errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
@@ -41,58 +41,65 @@
         <!-- Tipo de Participación -->
         <div class="mb-3">
             {{ form.tipo_participacion.label(class="form-label") }}
-            {{ form.tipo_participacion(class="form-select") }}
+            {{ form.tipo_participacion(class="form-select", id="tipo_participacion") }}
             {% for error in form.tipo_participacion.errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
         </div>
 
+        <!-- Campo "Otro Tipo de Participación" -->
+        <div class="mb-3" id="otro_tipo_participacion_div" style="display: none;">
+            {{ form.otro_tipo_participacion.label(class="form-label") }}
+            {{ form.otro_tipo_participacion(class="form-control", maxlength="100") }}
+            {% for error in form.otro_tipo_participacion.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
         <!-- Periodo de Participación -->
-        <div class="row">
-            <div class="mb-3 col">
-                {{ form.fecha_inicio.label(class="form-label") }}
-                {{ form.fecha_inicio(class="form-control") }}
-                {% for error in form.fecha_inicio.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
-            <div class="mb-3 col">
-                {{ form.fecha_fin.label(class="form-label") }}
-                {{ form.fecha_fin(class="form-control") }}
-                {% for error in form.fecha_fin.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
+        <div class="mb-3">
+            {{ form.fecha_inicio.label(class="form-label") }}
+            {{ form.fecha_inicio(class="form-control") }}
+            {% for error in form.fecha_inicio.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.fecha_fin.label(class="form-label") }}
+            {{ form.fecha_fin(class="form-control") }}
+            {% for error in form.fecha_fin.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
         <!-- Resolución de Nombramiento -->
         <div class="mb-3">
-            {{ form.resolucion_numero.label(class="form-label") }}
-            {{ form.resolucion_numero(class="form-control") }}
-            {% for error in form.resolucion_numero.errors %}
+            {{ form.numero_resolucion.label(class="form-label") }}
+            {{ form.numero_resolucion(class="form-control", maxlength="50") }}
+            {% for error in form.numero_resolucion.errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
         </div>
         <div class="mb-3">
-            {{ form.resolucion_fecha.label(class="form-label") }}
-            {{ form.resolucion_fecha(class="form-control") }}
-            {% for error in form.resolucion_fecha.errors %}
+            {{ form.fecha_resolucion.label(class="form-label") }}
+            {{ form.fecha_resolucion(class="form-control") }}
+            {% for error in form.fecha_resolucion.errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
         </div>
         <div class="mb-3">
-            {{ form.resolucion_copia.label(class="form-label") }}
-            {{ form.resolucion_copia(class="form-control") }}
-            {% for error in form.resolucion_copia.errors %}
+            {{ form.resolucion_nombramiento.label(class="form-label") }}
+            {{ form.resolucion_nombramiento(class="form-control") }}
+            {% for error in form.resolucion_nombramiento.errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
         </div>
 
         <!-- Logros Alcanzados -->
         <div class="mb-3">
-            {{ form.logros_alcanzados.label(class="form-label") }}
-            {{ form.logros_alcanzados(class="form-control", rows="3") }}
-            {% for error in form.logros_alcanzados.errors %}
+            {{ form.logros.label(class="form-label") }}
+            {{ form.logros(class="form-control", rows="4") }}
+            {% for error in form.logros.errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
         </div>
@@ -100,95 +107,36 @@
         <!-- Adjuntar Evidencias -->
         <div class="mb-3">
             {{ form.evidencias.label(class="form-label") }}
-            {{ form.evidencias(class="form-control", multiple=True) }}
+            {{ form.evidencias(class="form-control") }}
             {% for error in form.evidencias.errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
         </div>
 
-        <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
+        {{ form.submit(class="btn btn-primary") }}
     </form>
-
-    <!-- Lista de Acreditaciones y Licenciamientos -->
-    <h2 class="h4 mt-5">Lista de Acreditaciones y Licenciamientos</h2>
-    <table class="table table-bordered mt-3">
-        <thead>
-            <tr>
-                <th>Cargo</th>
-                <th>Comité/Proyecto</th>
-                <th>Tipo de Participación</th>
-                <th>Periodo</th>
-                <th>Resolución</th>
-                <th>Logros</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for acreditacion in acreditaciones %}
-            <tr>
-                <td>{{ acreditacion.cargo }}</td>
-                <td>{{ acreditacion.nombre_comite }}</td>
-                <td>{{ acreditacion.tipo_participacion }}</td>
-                <td>{{ acreditacion.fecha_inicio }} - {{ acreditacion.fecha_fin }}</td>
-                <td>
-                    <a href="{{ url_for('static', filename='uploads/' + acreditacion.ruta_resolucion) }}" target="_blank">Ver Resolución</a>
-                </td>
-                <td>{{ acreditacion.logros }}</td>
-                <td>
-                    <a href="{{ url_for('editar_acreditacionlicenciamiento', id_acreditacion=acreditacion.id) }}" class="btn btn-warning btn-sm">Editar</a>
-
-                    <!-- Botón de eliminación -->
-                    <button class="btn btn-danger btn-sm" onclick="mostrarConfirmacion({{ acreditacion.id }})">Eliminar</button>
-
-                    <!-- Confirmación de eliminación -->
-                    <div id="confirmacion-{{ acreditacion.id }}" class="confirmacion-eliminacion" style="display:none; margin-top: 5px;">
-                        <p>¿Está seguro de que desea eliminar esta acreditación?</p>
-                        <form action="{{ url_for('eliminar_acreditacionlicenciamiento', id_acreditacion=acreditacion.id) }}" method="POST" style="display:inline;">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-danger btn-sm">Confirmar</button>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="ocultarConfirmacion({{ acreditacion.id }});">Cancelar</button>
-                        </form>
-                    </div>
-                </td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="7" class="text-center">No hay registros.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
 </div>
 
-<!-- JavaScript para controlar la visibilidad de campos adicionales -->
+<!-- JavaScript para controlar la visualización del campo "Otro Tipo de Participación" -->
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function() {
         const tipoParticipacionSelect = document.getElementById('tipo_participacion');
-        const otherParticipationField = document.getElementById('other-participation-field');
+        const otroTipoParticipacionDiv = document.getElementById('otro_tipo_participacion_div');
 
-        function toggleOtherParticipation() {
-            if (tipoParticipacionSelect.value === 'otro') {
-                otherParticipationField.style.display = 'block';
+        function toggleOtroTipoParticipacion() {
+            if (tipoParticipacionSelect.value === 'Otro') {
+                otroTipoParticipacionDiv.style.display = 'block';
             } else {
-                otherParticipationField.style.display = 'none';
-                document.getElementById('other_participation').value = '';
+                otroTipoParticipacionDiv.style.display = 'none';
             }
         }
 
         // Ejecutar al cargar la página
-        toggleOtherParticipation();
+        toggleOtroTipoParticipacion();
 
-        // Asignar evento
-        tipoParticipacionSelect.addEventListener('change', toggleOtherParticipation);
+        // Asignar el evento onchange al select
+        tipoParticipacionSelect.addEventListener('change', toggleOtroTipoParticipacion);
     });
-
-    function mostrarConfirmacion(id) {
-        document.getElementById('confirmacion-' + id).style.display = 'block';
-    }
-
-    function ocultarConfirmacion(id) {
-        document.getElementById('confirmacion-' + id).style.display = 'none';
-    }
 </script>
 
 {% endblock %}

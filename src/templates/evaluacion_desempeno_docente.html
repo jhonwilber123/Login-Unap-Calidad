@@ -1,0 +1,81 @@
+<!-- templates/evaluacion_desempeno_docente.html -->
+
+{% extends './base.html' %}
+
+{% block title %}Evaluación del Desempeño Docente{% endblock %}
+
+{% block customCSS %}
+<!-- CSS específico para la página de Evaluación del Desempeño Docente -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+{% endblock %}
+
+{% block body %}
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center">Evaluación del Desempeño Docente</h1>
+
+    <!-- Formulario para agregar una nueva evaluación -->
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <!-- Período Académico Evaluado -->
+        <div class="mb-3">
+            {{ form.periodo_academico_evaluado.label(class="form-label") }}
+            {{ form.periodo_academico_evaluado(class="form-control", maxlength="100") }}
+            {% for error in form.periodo_academico_evaluado.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Categoría Docente -->
+        <div class="mb-3">
+            {{ form.categoria_docente.label(class="form-label") }}
+            {{ form.categoria_docente(class="form-control", maxlength="100") }}
+            {% for error in form.categoria_docente.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Promedio de Evaluación General -->
+        <div class="mb-3">
+            {{ form.promedio_evaluacion_general.label(class="form-label") }}
+            {{ form.promedio_evaluacion_general(class="form-control") }}
+            {% for error in form.promedio_evaluacion_general.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Promedio de Evaluación por Autoridades -->
+        <div class="mb-3">
+            {{ form.promedio_evaluacion_autoridades.label(class="form-label") }}
+            {{ form.promedio_evaluacion_autoridades(class="form-control") }}
+            {% for error in form.promedio_evaluacion_autoridades.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Promedio de Evaluación por Estudiantes -->
+        <div class="mb-3">
+            {{ form.promedio_evaluacion_estudiantes.label(class="form-label") }}
+            {{ form.promedio_evaluacion_estudiantes(class="form-control") }}
+            {% for error in form.promedio_evaluacion_estudiantes.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Adjuntar Informes de Evaluación -->
+        <div class="mb-3">
+            {{ form.informes_evaluacion.label(class="form-label") }}
+            {{ form.informes_evaluacion(class="form-control") }}
+            {% for error in form.informes_evaluacion.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        {{ form.submit(class="btn btn-primary") }}
+    </form>
+</div>
+
+{% endblock %}

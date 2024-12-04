@@ -14,7 +14,7 @@ import re
 from config import config
 
 # Importar el formulario
-from forms import TutoriaForm, SoftwareEspecializadoForm, ReconocimientosForm, ProduccionIntelectualForm, ParticipacionTesisForm 
+from forms import TutoriaForm, EvaluacionDesempenoDocenteForm, SoftwareEspecializadoForm, ReconocimientosForm, ProduccionIntelectualForm, ParticipacionTesisForm 
 from forms import InvestigacionesForm, IdiomasForm, GradostitulosForm, ActividadesProyeccionSocialForm, CargaAcademicaLectivaForm 
 from forms import ActualizacionesCapacitacionesForm,AcreditacionLicenciamientoForm, CargosDirectivosForm, ExperienciaDocenteForm, InformacionPersonalForm
 
@@ -40,8 +40,8 @@ db = MySQL(app)
 login_manager_app = LoginManager(app)
 
 # Función para verificar si el archivo tiene una extensión permitida
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+def allowed_file(filename, allowed_extensions=ALLOWED_EXTENSIONS):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
 
 @login_manager_app.user_loader
 def load_user(id):
@@ -389,6 +389,216 @@ def uploaded_file(filename):
 # Ruta para editar un grado/título
 # Ruta para agregar un nuevo grado/título con imagen
 # Ruta para servir las imágenes
+
+# evaluacion_desempeno_docente
+# app.py
+@app.route('/evaluacion_desempeno_docente', methods=['GET', 'POST'])
+@login_required
+def agregar_evaluacion_desempeno_docente():
+    form = EvaluacionDesempenoDocenteForm()
+    if form.validate_on_submit():
+        periodo_academico_evaluado = form.periodo_academico_evaluado.data
+        categoria_docente = form.categoria_docente.data
+        promedio_evaluacion_general = form.promedio_evaluacion_general.data
+        promedio_evaluacion_autoridades = form.promedio_evaluacion_autoridades.data
+        promedio_evaluacion_estudiantes = form.promedio_evaluacion_estudiantes.data
+
+        # Manejo de Informes de Evaluación (PDF)
+        informes_evaluacion = form.informes_evaluacion.data
+        ruta_informes_evaluacion = None
+        if informes_evaluacion:
+            if allowed_file(informes_evaluacion.filename, {'pdf'}):
+                filename = secure_filename(informes_evaluacion.filename)
+                unique_filename = f"{int(time.time())}_{filename}"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                informes_evaluacion.save(file_path)
+                ruta_informes_evaluacion = unique_filename
+            else:
+                flash('Archivo de Informes de Evaluación no permitido.', 'danger')
+                return redirect(request.url)
+
+        # Insertar el registro en la base de datos
+        cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+        cur.execute("""
+            INSERT INTO evaluacion_desempeno_docente (
+                id_usuario,
+                periodo_academico_evaluado,
+                categoria_docente,
+                promedio_evaluacion_general,
+                promedio_evaluacion_autoridades,
+                promedio_evaluacion_estudiantes,
+                ruta_informes_evaluacion
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (
+            current_user.id,
+            periodo_academico_evaluado,
+            categoria_docente,
+            promedio_evaluacion_general,
+            promedio_evaluacion_autoridades,
+            promedio_evaluacion_estudiantes,
+            ruta_informes_evaluacion
+        ))
+        db.connection.commit()
+        cur.close()
+
+        flash('Evaluación del Desempeño Docente agregada correctamente.', 'success')
+        return redirect(url_for('listar_evaluaciones_desempeno_docente'))
+
+    return render_template('evaluacion_desempeno_docente.html', form=form)
+
+# app.py
+@app.route('/listar_evaluaciones_desempeno_docente')
+@login_required
+def listar_evaluaciones_desempeno_docente():
+    cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+    cur.execute("""
+        SELECT 
+            edd.id_evaluacion,
+            edd.periodo_academico_evaluado,
+            edd.categoria_docente,
+            edd.promedio_evaluacion_general,
+            edd.promedio_evaluacion_autoridades,
+            edd.promedio_evaluacion_estudiantes,
+            edd.ruta_informes_evaluacion
+        FROM evaluacion_desempeno_docente edd
+        WHERE edd.id_usuario = %s;
+    """, [current_user.id])
+    evaluaciones = cur.fetchall()
+    cur.close()
+
+    form = EvaluacionDesempenoDocenteForm()  # Opcional: si necesitas pasar el formulario
+
+    return render_template('evaluacion_desempeno_docente_list.html', evaluaciones=evaluaciones, form=form)
+# app.py
+@app.route('/editar_evaluacion_desempeno_docente/<int:id_evaluacion>', methods=['GET', 'POST'])
+@login_required
+def editar_evaluacion_desempeno_docente(id_evaluacion):
+    form = EvaluacionDesempenoDocenteForm()
+    cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    # Obtener los datos actuales del registro
+    cur.execute("""
+        SELECT 
+            edd.id_evaluacion,
+            edd.periodo_academico_evaluado,
+            edd.categoria_docente,
+            edd.promedio_evaluacion_general,
+            edd.promedio_evaluacion_autoridades,
+            edd.promedio_evaluacion_estudiantes,
+            edd.ruta_informes_evaluacion
+        FROM evaluacion_desempeno_docente edd
+        WHERE edd.id_evaluacion = %s AND edd.id_usuario = %s;
+    """, (id_evaluacion, current_user.id))
+    evaluacion = cur.fetchone()
+    cur.close()
+
+    if not evaluacion:
+        flash('Evaluación del Desempeño Docente no encontrada.', 'danger')
+        return redirect(url_for('listar_evaluaciones_desempeno_docente'))
+
+    if form.validate_on_submit():
+        periodo_academico_evaluado = form.periodo_academico_evaluado.data
+        categoria_docente = form.categoria_docente.data
+        promedio_evaluacion_general = form.promedio_evaluacion_general.data
+        promedio_evaluacion_autoridades = form.promedio_evaluacion_autoridades.data
+        promedio_evaluacion_estudiantes = form.promedio_evaluacion_estudiantes.data
+
+        # Manejo de Informes de Evaluación (PDF)
+        informes_evaluacion = form.informes_evaluacion.data
+        ruta_informes_evaluacion = evaluacion['ruta_informes_evaluacion']
+        if informes_evaluacion:
+            if allowed_file(informes_evaluacion.filename, {'pdf'}):
+                # Eliminar el archivo anterior si existe
+                if ruta_informes_evaluacion:
+                    try:
+                        os.remove(os.path.join(app.config['UPLOAD_FOLDER'], ruta_informes_evaluacion))
+                    except:
+                        pass
+                filename = secure_filename(informes_evaluacion.filename)
+                unique_filename = f"{int(time.time())}_{filename}"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                informes_evaluacion.save(file_path)
+                ruta_informes_evaluacion = unique_filename
+            else:
+                flash('Archivo de Informes de Evaluación no permitido.', 'danger')
+                return redirect(request.url)
+
+        # Actualizar el registro en la base de datos
+        cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+        cur.execute("""
+            UPDATE evaluacion_desempeno_docente
+            SET periodo_academico_evaluado = %s,
+                categoria_docente = %s,
+                promedio_evaluacion_general = %s,
+                promedio_evaluacion_autoridades = %s,
+                promedio_evaluacion_estudiantes = %s,
+                ruta_informes_evaluacion = %s
+            WHERE id_evaluacion = %s AND id_usuario = %s;
+        """, (
+            periodo_academico_evaluado,
+            categoria_docente,
+            promedio_evaluacion_general,
+            promedio_evaluacion_autoridades,
+            promedio_evaluacion_estudiantes,
+            ruta_informes_evaluacion,
+            id_evaluacion,
+            current_user.id
+        ))
+        db.connection.commit()
+        cur.close()
+
+        flash('Evaluación del Desempeño Docente actualizada correctamente.', 'success')
+        return redirect(url_for('listar_evaluaciones_desempeno_docente'))
+
+    # Prellenar el formulario con los datos actuales
+    if request.method == 'GET':
+        form.periodo_academico_evaluado.data = evaluacion['periodo_academico_evaluado']
+        form.categoria_docente.data = evaluacion['categoria_docente']
+        form.promedio_evaluacion_general.data = evaluacion['promedio_evaluacion_general']
+        form.promedio_evaluacion_autoridades.data = evaluacion['promedio_evaluacion_autoridades']
+        form.promedio_evaluacion_estudiantes.data = evaluacion['promedio_evaluacion_estudiantes']
+        # No prellenar el campo de archivo
+
+    return render_template('editar_evaluacion_desempeno_docente.html', evaluacion=evaluacion, form=form)
+
+# app.py
+@app.route('/eliminar_evaluacion_desempeno_docente/<int:id_evaluacion>', methods=['POST'])
+@login_required
+def eliminar_evaluacion_desempeno_docente(id_evaluacion):
+    cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    # Obtener los datos del registro para eliminar archivos
+    cur.execute("""
+        SELECT 
+            ruta_informes_evaluacion
+        FROM evaluacion_desempeno_docente
+        WHERE id_evaluacion = %s AND id_usuario = %s;
+    """, (id_evaluacion, current_user.id))
+    evaluacion = cur.fetchone()
+
+    if evaluacion:
+        # Eliminar Informe de Evaluación si existe
+        if evaluacion['ruta_informes_evaluacion']:
+            try:
+                os.remove(os.path.join(app.config['UPLOAD_FOLDER'], evaluacion['ruta_informes_evaluacion']))
+            except:
+                pass
+
+        # Eliminar el registro de la base de datos
+        cur.execute("""
+            DELETE FROM evaluacion_desempeno_docente
+            WHERE id_evaluacion = %s AND id_usuario = %s;
+        """, (id_evaluacion, current_user.id))
+        db.connection.commit()
+        cur.close()
+
+        flash('Evaluación del Desempeño Docente eliminada correctamente.', 'success')
+    else:
+        flash('Evaluación del Desempeño Docente no encontrada.', 'danger')
+
+    return redirect(url_for('listar_evaluaciones_desempeno_docente'))
+
 
 # --- RUTA PARA AGREGAR Y LISTAR TÍTULOS ---
 # --- RUTA PARA AGREGAR Y LISTAR TÍTULOS ---
@@ -1386,79 +1596,85 @@ def acreditacionlicenciamiento():
         cargo = form.cargo.data
         nombre_comite = form.nombre_comite.data
         tipo_participacion = form.tipo_participacion.data
+        otro_tipo_participacion = form.otro_tipo_participacion.data
         fecha_inicio = form.fecha_inicio.data
         fecha_fin = form.fecha_fin.data
-        resolucion_numero = form.resolucion_numero.data
-        resolucion_fecha = form.resolucion_fecha.data
+        numero_resolucion = form.numero_resolucion.data
+        fecha_resolucion = form.fecha_resolucion.data
         logros = form.logros.data
 
-        archivo_copia = form.archivo_copia.data
-        evidencias = form.evidencias.data
-        id_evidencia = None
+        # Manejo de "Otro Tipo de Participación"
+        if tipo_participacion == 'Otro':
+            tipo_participacion = otro_tipo_participacion
 
-        if archivo_copia:
-            if allowed_file(archivo_copia.filename, ['pdf']):
-                filename = secure_filename(archivo_copia.filename)
+        # Manejo de Resolución de Nombramiento (PDF)
+        resolucion_nombramiento = form.resolucion_nombramiento.data
+        ruta_resolucion_nombramiento = None
+        if resolucion_nombramiento:
+            if allowed_file(resolucion_nombramiento.filename):
+                filename = secure_filename(resolucion_nombramiento.filename)
                 unique_filename = f"{int(time.time())}_{filename}"
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-                archivo_copia.save(file_path)
-
-                cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
-                cur.execute("""
-                    INSERT INTO resoluciones (id_usuario, numero, fecha, ruta_resolucion)
-                    VALUES (%s, %s, %s, %s)
-                """, (current_user.id, resolucion_numero, resolucion_fecha, unique_filename))
-                db.connection.commit()
-                id_resolucion = cur.lastrowid
-                cur.close()
+                resolucion_nombramiento.save(file_path)
+                ruta_resolucion_nombramiento = unique_filename
             else:
-                flash('Debe subir un archivo PDF válido para la Resolución.', 'danger')
+                flash('Archivo de Resolución de Nombramiento no permitido.', 'danger')
+                return redirect(request.url)
+        
+        # Manejo de Evidencias (PDF)
+        evidencias = form.evidencias.data
+        ruta_evidencias = None
+        if evidencias:
+            if allowed_file(evidencias.filename):
+                filename = secure_filename(evidencias.filename)
+                unique_filename = f"{int(time.time())}_{filename}"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                evidencias.save(file_path)
+                ruta_evidencias = unique_filename
+            else:
+                flash('Archivo de Evidencias no permitido.', 'danger')
                 return redirect(request.url)
 
-        if evidencias:
-            for evidencia in evidencias:
-                if allowed_file(evidencia.filename, ['pdf']) and evidencia.content_length <= 10 * 1024 * 1024:
-                    filename = secure_filename(evidencia.filename)
-                    unique_filename = f"{int(time.time())}_{filename}"
-                    file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-                    evidencia.save(file_path)
-
-                    cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
-                    cur.execute("""
-                        INSERT INTO evidencias (id_usuario, descripcion, ruta_evidencia)
-                        VALUES (%s, %s, %s)
-                    """, (current_user.id, form.descripcion_evidencia.data, unique_filename))
-                    db.connection.commit()
-                    cur.close()
-                else:
-                    flash('Cada evidencia debe ser un PDF de máximo 10 MB.', 'danger')
-                    return redirect(request.url)
-
+        # Insertar el registro en la base de datos
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
             INSERT INTO acreditacionlicenciamiento (
-                id_usuario, cargo, nombre_comite, tipo_participacion,
-                fecha_inicio, fecha_fin, resolucion_numero, resolucion_fecha, logros
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                id_usuario, cargo, nombre_comite, tipo_participacion, fecha_inicio, fecha_fin, 
+                numero_resolucion, fecha_resolucion, logros, ruta_resolucion_nombramiento, ruta_evidencias
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (
-            current_user.id, cargo, nombre_comite, tipo_participacion,
-            fecha_inicio, fecha_fin, resolucion_numero, resolucion_fecha, logros
+            current_user.id, cargo, nombre_comite, tipo_participacion, fecha_inicio, fecha_fin,
+            numero_resolucion, fecha_resolucion, logros, ruta_resolucion_nombramiento, ruta_evidencias
         ))
         db.connection.commit()
         cur.close()
 
-        flash('Acreditación y Licenciamiento agregada correctamente', 'success')
+        flash('Acreditación/Licenciamiento agregado correctamente.', 'success')
         return redirect(url_for('acreditacionlicenciamiento'))
 
+    # Obtener las acreditaciones y licenciamientos del usuario actual
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
     cur.execute("""
-        SELECT * FROM acreditacionlicenciamiento
-        WHERE id_usuario = %s
+        SELECT 
+            al.id_acreditacion,
+            al.cargo,
+            al.nombre_comite,
+            al.tipo_participacion,
+            al.fecha_inicio,
+            al.fecha_fin,
+            al.numero_resolucion,
+            al.fecha_resolucion,
+            al.logros,
+            al.ruta_resolucion_nombramiento,
+            al.ruta_evidencias
+        FROM acreditacionlicenciamiento al
+        WHERE al.id_usuario = %s;
     """, [current_user.id])
     acreditaciones = cur.fetchall()
     cur.close()
 
-    return render_template('acreditacionlicenciamiento.html', acreditaciones=acreditaciones, form=form)
+    return render_template('acreditacionlicenciamiento_list.html', acreditaciones=acreditaciones, form=form)
 
 @app.route('/editar_acreditacionlicenciamiento/<int:id_acreditacion>', methods=['GET', 'POST'])
 @login_required
@@ -1466,30 +1682,126 @@ def editar_acreditacionlicenciamiento(id_acreditacion):
     form = AcreditacionLicenciamientoForm()
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
 
+    # Obtener los datos actuales del registro
     cur.execute("""
-        SELECT * FROM acreditacionlicenciamiento
-        WHERE id = %s AND id_usuario = %s
+        SELECT 
+            al.id_acreditacion,
+            al.cargo,
+            al.nombre_comite,
+            al.tipo_participacion,
+            al.fecha_inicio,
+            al.fecha_fin,
+            al.numero_resolucion,
+            al.fecha_resolucion,
+            al.logros,
+            al.ruta_resolucion_nombramiento,
+            al.ruta_evidencias
+        FROM acreditacionlicenciamiento al
+        WHERE al.id_acreditacion = %s AND al.id_usuario = %s;
     """, (id_acreditacion, current_user.id))
     acreditacion = cur.fetchone()
     cur.close()
 
     if not acreditacion:
-        flash('Acreditación y Licenciamiento no encontrada', 'danger')
+        flash('Acreditación o Licenciamiento no encontrado.', 'danger')
         return redirect(url_for('acreditacionlicenciamiento'))
 
     if form.validate_on_submit():
-        # Similar processing as in the add route
-        # Update the database with form.data
-        pass  # Implement update logic
+        cargo = form.cargo.data
+        nombre_comite = form.nombre_comite.data
+        tipo_participacion = form.tipo_participacion.data
+        otro_tipo_participacion = form.otro_tipo_participacion.data
+        fecha_inicio = form.fecha_inicio.data
+        fecha_fin = form.fecha_fin.data
+        numero_resolucion = form.numero_resolucion.data
+        fecha_resolucion = form.fecha_resolucion.data
+        logros = form.logros.data
 
+        # Manejo de "Otro Tipo de Participación"
+        if tipo_participacion == 'Otro':
+            tipo_participacion = otro_tipo_participacion
+
+        # Manejo de Resolución de Nombramiento (PDF)
+        resolucion_nombramiento = form.resolucion_nombramiento.data
+        ruta_resolucion_nombramiento = acreditacion.ruta_resolucion_nombramiento
+        if resolucion_nombramiento:
+            if allowed_file(resolucion_nombramiento.filename, {'pdf'}):
+                # Eliminar el archivo anterior si existe
+                if ruta_resolucion_nombramiento:
+                    try:
+                        os.remove(os.path.join(app.config['UPLOAD_FOLDER'], ruta_resolucion_nombramiento))
+                    except:
+                        pass
+                filename = secure_filename(resolucion_nombramiento.filename)
+                unique_filename = f"{int(time.time())}_{filename}"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                resolucion_nombramiento.save(file_path)
+                ruta_resolucion_nombramiento = unique_filename
+            else:
+                flash('Archivo de Resolución de Nombramiento no permitido.', 'danger')
+                return redirect(request.url)
+
+        # Manejo de Evidencias (PDF)
+        evidencias = form.evidencias.data
+        ruta_evidencias = acreditacion.ruta_evidencias
+        if evidencias:
+            if allowed_file(evidencias.filename, {'pdf'}):
+                # Eliminar el archivo anterior si existe
+                if ruta_evidencias:
+                    try:
+                        os.remove(os.path.join(app.config['UPLOAD_FOLDER'], ruta_evidencias))
+                    except:
+                        pass
+                filename = secure_filename(evidencias.filename)
+                unique_filename = f"{int(time.time())}_{filename}"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                evidencias.save(file_path)
+                ruta_evidencias = unique_filename
+            else:
+                flash('Archivo de Evidencias no permitido.', 'danger')
+                return redirect(request.url)
+
+        # Actualizar el registro en la base de datos
+        cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+        cur.execute("""
+            UPDATE acreditacionlicenciamiento
+            SET cargo = %s,
+                nombre_comite = %s,
+                tipo_participacion = %s,
+                fecha_inicio = %s,
+                fecha_fin = %s,
+                numero_resolucion = %s,
+                fecha_resolucion = %s,
+                logros = %s,
+                ruta_resolucion_nombramiento = %s,
+                ruta_evidencias = %s
+            WHERE id_acreditacion = %s AND id_usuario = %s;
+        """, (
+            cargo, nombre_comite, tipo_participacion, fecha_inicio, fecha_fin,
+            numero_resolucion, fecha_resolucion, logros,
+            ruta_resolucion_nombramiento, ruta_evidencias,
+            id_acreditacion, current_user.id
+        ))
+        db.connection.commit()
+        cur.close()
+
+        flash('Acreditación/Licenciamiento actualizado correctamente.', 'success')
+        return redirect(url_for('acreditacionlicenciamiento'))
+
+    # Prellenar el formulario con los datos actuales
     if request.method == 'GET':
         form.cargo.data = acreditacion['cargo']
         form.nombre_comite.data = acreditacion['nombre_comite']
-        form.tipo_participacion.data = acreditacion['tipo_participacion']
+        if acreditacion['tipo_participacion'] not in ['Acreditación', 'Licenciamiento']:
+            form.tipo_participacion.data = 'Otro'
+            form.otro_tipo_participacion.data = acreditacion['tipo_participacion']
+        else:
+            form.tipo_participacion.data = acreditacion['tipo_participacion']
+            form.otro_tipo_participacion.data = ''
         form.fecha_inicio.data = acreditacion['fecha_inicio']
         form.fecha_fin.data = acreditacion['fecha_fin']
-        form.resolucion_numero.data = acreditacion['resolucion_numero']
-        form.resolucion_fecha.data = acreditacion['resolucion_fecha']
+        form.numero_resolucion.data = acreditacion['numero_resolucion']
+        form.fecha_resolucion.data = acreditacion['fecha_resolucion']
         form.logros.data = acreditacion['logros']
 
     return render_template('editar_acreditacionlicenciamiento.html', acreditacion=acreditacion, form=form)
@@ -1499,38 +1811,47 @@ def editar_acreditacionlicenciamiento(id_acreditacion):
 def eliminar_acreditacionlicenciamiento(id_acreditacion):
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
 
+    # Obtener los datos del registro para eliminar archivos
     cur.execute("""
-        SELECT ruta_resolucion FROM resoluciones
-        WHERE id_acreditacion = %s AND id_usuario = %s
+        SELECT 
+            ruta_resolucion_nombramiento,
+            ruta_evidencias
+        FROM acreditacionlicenciamiento
+        WHERE id_acreditacion = %s AND id_usuario = %s;
     """, (id_acreditacion, current_user.id))
-    resolucion = cur.fetchone()
+    acreditacion = cur.fetchone()
 
-    if resolucion:
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], resolucion['ruta_resolucion'])
-        if os.path.exists(file_path):
-            os.remove(file_path)
-        cur.execute("DELETE FROM resoluciones WHERE id_acreditacion = %s AND id_usuario = %s", (id_acreditacion, current_user.id))
+    if acreditacion:
+        # Eliminar Resolución de Nombramiento si existe
+        if acreditacion['ruta_resolucion_nombramiento']:
+            try:
+                os.remove(os.path.join(app.config['UPLOAD_FOLDER'], acreditacion['ruta_resolucion_nombramiento']))
+            except:
+                pass
+
+        # Eliminar Evidencias si existen
+        if acreditacion['ruta_evidencias']:
+            try:
+                os.remove(os.path.join(app.config['UPLOAD_FOLDER'], acreditacion['ruta_evidencias']))
+            except:
+                pass
+
+        # Eliminar el registro de la base de datos
+        cur.execute("""
+            DELETE FROM acreditacionlicenciamiento
+            WHERE id_acreditacion = %s AND id_usuario = %s;
+        """, (id_acreditacion, current_user.id))
         db.connection.commit()
+        cur.close()
 
-    cur.execute("""
-        SELECT ruta_evidencia FROM evidencias
-        WHERE id_acreditacion = %s AND id_usuario = %s
-    """, (id_acreditacion, current_user.id))
-    evidencias = cur.fetchall()
-    for evidencia in evidencias:
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], evidencia['ruta_evidencia'])
-        if os.path.exists(file_path):
-            os.remove(file_path)
-    cur.execute("DELETE FROM evidencias WHERE id_acreditacion = %s AND id_usuario = %s", (id_acreditacion, current_user.id))
-    db.connection.commit()
+        flash('Acreditación/Licenciamiento eliminado correctamente.', 'success')
+    else:
+        flash('Acreditación/Licenciamiento no encontrado.', 'danger')
 
-    cur.execute("DELETE FROM acreditacionlicenciamiento WHERE id = %s AND id_usuario = %s", (id_acreditacion, current_user.id))
-    db.connection.commit()
-    cur.close()
-
-    flash('Acreditación y Licenciamiento eliminada correctamente', 'success')
     return redirect(url_for('acreditacionlicenciamiento'))
-# Ruta para listar y agregar cargos directivos
+
+
+
 # --- RUTA PARA AGREGAR Y LISTAR CARGOS DIRECTIVOS ---
 @app.route('/cargosdirectivos', methods=['GET', 'POST'])
 @login_required
@@ -3530,8 +3851,89 @@ def ver_detalles_personales(user_id):
     except Exception as e:
         flash(f'Error al obtener detalles personales: {str(e)}', 'error')
         return redirect(url_for('ver_datos_personal'))
+    
+@app.route('/view_all_data', methods=['GET'])
+@login_required
+def view_all_data():
+    if current_user.role != 'Administrador':
+        flash('No tienes permisos para acceder a esta página', 'error')
+        return redirect(url_for('home'))
 
+    try:
+        cur = db.connection.cursor()
+        
+        # Carga Académica Lectiva
+        cur.execute("SELECT * FROM carga_academica_lectiva")
+        carga_academica = cur.fetchall()
 
+        # Actividades de Proyección Social
+        cur.execute("SELECT * FROM actividadesproyeccionsocial")
+        actividades_proyeccion_social = cur.fetchall()
+
+        # Actualizaciones y Capacitaciones
+        cur.execute("SELECT * FROM actualizacionescapacitaciones")
+        actualizaciones_capacitaciones = cur.fetchall()
+
+        # Acreditación y Licenciamiento
+        cur.execute("SELECT * FROM acreditacionlicenciamiento")
+        acreditacion_licenciamiento = cur.fetchall()
+
+        # Cargos Directivos
+        cur.execute("SELECT * FROM cargosdirectivos")
+        cargos_directivos = cur.fetchall()
+
+        # Experiencia Docente
+        cur.execute("SELECT * FROM experienciadocente")
+        experiencia_docente = cur.fetchall()
+
+        # Idiomas
+        cur.execute("SELECT * FROM idiomas")
+        idiomas = cur.fetchall()
+
+        # Investigaciones
+        cur.execute("SELECT * FROM investigaciones")
+        investigaciones = cur.fetchall()
+
+        # Participación en Tesis
+        cur.execute("SELECT * FROM participaciontesis")
+        participacion_tesis = cur.fetchall()
+
+        # Producción Intelectual
+        cur.execute("SELECT * FROM produccionintelectual")
+        produccion_intelectual = cur.fetchall()
+
+        # Reconocimientos
+        cur.execute("SELECT * FROM reconocimientos")
+        reconocimientos = cur.fetchall()
+
+        # Software Especializado
+        cur.execute("SELECT * FROM softwareespecializado")
+        software_especializado = cur.fetchall()
+
+        # Tutorías
+        cur.execute("SELECT * FROM tutorias")
+        tutorias = cur.fetchall()
+
+        cur.close()
+
+        return render_template('view_all_data.html',
+                                carga_academica=carga_academica,
+                                actividades_proyeccion_social=actividades_proyeccion_social,
+                                actualizaciones_capacitaciones=actualizaciones_capacitaciones,
+                                acreditacion_licenciamiento=acreditacion_licenciamiento,
+                                cargos_directivos=cargos_directivos,
+                                experiencia_docente=experiencia_docente,
+                                idiomas=idiomas,
+                                investigaciones=investigaciones,
+                                participacion_tesis=participacion_tesis,
+                                produccion_intelectual=produccion_intelectual,
+                                reconocimientos=reconocimientos,
+                                software_especializado=software_especializado,
+                                tutorias=tutorias)
+    except Exception as e:
+        flash(f'Error al obtener los datos: {str(e)}', 'error')
+        return redirect(url_for('home'))
+    
 # --- FIN DE NUEVAS RUTAS ---
 
 # Manejo de errores y configuración final
