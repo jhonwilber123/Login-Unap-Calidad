@@ -3852,88 +3852,109 @@ def ver_detalles_personales(user_id):
         flash(f'Error al obtener detalles personales: {str(e)}', 'error')
         return redirect(url_for('ver_datos_personal'))
     
-@app.route('/view_all_data', methods=['GET'])
+@app.route('/view_all_data/<int:user_id>', methods=['GET'])
 @login_required
-def view_all_data():
+def view_all_data(user_id):
     if current_user.role != 'Administrador':
         flash('No tienes permisos para acceder a esta página', 'error')
         return redirect(url_for('home'))
 
     try:
         cur = db.connection.cursor()
-        
+
+        # Datos Personales
+        cur.execute("SELECT * FROM datospersonales WHERE id_usuario = %s", (user_id,))
+        datos_personales = cur.fetchall()
+
+        # Gradostitulos
+        cur.execute("SELECT * FROM gradostitulos WHERE id_usuario = %s", (user_id,))
+        gradostitulos = cur.fetchall()
+
         # Carga Académica Lectiva
-        cur.execute("SELECT * FROM carga_academica_lectiva")
+        cur.execute("SELECT * FROM carga_academica_lectiva WHERE id_usuario = %s", (user_id,))
         carga_academica = cur.fetchall()
 
         # Actividades de Proyección Social
-        cur.execute("SELECT * FROM actividadesproyeccionsocial")
+        cur.execute("SELECT * FROM actividadesproyeccionsocial WHERE id_usuario = %s", (user_id,))
         actividades_proyeccion_social = cur.fetchall()
 
         # Actualizaciones y Capacitaciones
-        cur.execute("SELECT * FROM actualizacionescapacitaciones")
+        cur.execute("SELECT * FROM actualizacionescapacitaciones WHERE id_usuario = %s", (user_id,))
         actualizaciones_capacitaciones = cur.fetchall()
 
         # Acreditación y Licenciamiento
-        cur.execute("SELECT * FROM acreditacionlicenciamiento")
+        cur.execute("SELECT * FROM acreditacionlicenciamiento WHERE id_usuario = %s", (user_id,))
         acreditacion_licenciamiento = cur.fetchall()
 
         # Cargos Directivos
-        cur.execute("SELECT * FROM cargosdirectivos")
+        cur.execute("SELECT * FROM cargosdirectivos WHERE id_usuario = %s", (user_id,))
         cargos_directivos = cur.fetchall()
 
         # Experiencia Docente
-        cur.execute("SELECT * FROM experienciadocente")
+        cur.execute("SELECT * FROM experienciadocente WHERE id_usuario = %s", (user_id,))
         experiencia_docente = cur.fetchall()
 
         # Idiomas
-        cur.execute("SELECT * FROM idiomas")
+        cur.execute("SELECT * FROM idiomas WHERE id_usuario = %s", (user_id,))
         idiomas = cur.fetchall()
 
         # Investigaciones
-        cur.execute("SELECT * FROM investigaciones")
+        cur.execute("SELECT * FROM investigaciones WHERE id_usuario = %s", (user_id,))
         investigaciones = cur.fetchall()
 
         # Participación en Tesis
-        cur.execute("SELECT * FROM participaciontesis")
+        cur.execute("SELECT * FROM participaciontesis WHERE id_usuario = %s", (user_id,))
         participacion_tesis = cur.fetchall()
 
         # Producción Intelectual
-        cur.execute("SELECT * FROM produccionintelectual")
+        cur.execute("SELECT * FROM produccionintelectual WHERE id_usuario = %s", (user_id,))
         produccion_intelectual = cur.fetchall()
 
         # Reconocimientos
-        cur.execute("SELECT * FROM reconocimientos")
+        cur.execute("SELECT * FROM reconocimientos WHERE id_usuario = %s", (user_id,))
         reconocimientos = cur.fetchall()
 
         # Software Especializado
-        cur.execute("SELECT * FROM softwareespecializado")
+        cur.execute("SELECT * FROM softwareespecializado WHERE id_usuario = %s", (user_id,))
         software_especializado = cur.fetchall()
 
         # Tutorías
-        cur.execute("SELECT * FROM tutorias")
+        cur.execute("SELECT * FROM tutorias WHERE id_usuario = %s", (user_id,))
         tutorias = cur.fetchall()
+
+        # Imágenes Adjuntas
+        cur.execute("SELECT * FROM imagenesadjuntas WHERE id_usuario = %s", (user_id,))
+        imagenes_adjuntas = cur.fetchall()
+
+        cur.close()
+
+        # Crear diccionario id_imagen -> ruta_imagen
+        imagenes_dict = {imagen[0]: imagen[4] for imagen in imagenes_adjuntas}
 
         cur.close()
 
         return render_template('view_all_data.html',
-                                carga_academica=carga_academica,
-                                actividades_proyeccion_social=actividades_proyeccion_social,
-                                actualizaciones_capacitaciones=actualizaciones_capacitaciones,
-                                acreditacion_licenciamiento=acreditacion_licenciamiento,
-                                cargos_directivos=cargos_directivos,
-                                experiencia_docente=experiencia_docente,
-                                idiomas=idiomas,
-                                investigaciones=investigaciones,
-                                participacion_tesis=participacion_tesis,
-                                produccion_intelectual=produccion_intelectual,
-                                reconocimientos=reconocimientos,
-                                software_especializado=software_especializado,
-                                tutorias=tutorias)
+                               datos_personales=datos_personales,
+                               gradostitulos=gradostitulos,
+                               carga_academica=carga_academica,
+                               actividades_proyeccion_social=actividades_proyeccion_social,
+                               actualizaciones_capacitaciones=actualizaciones_capacitaciones,
+                               acreditacion_licenciamiento=acreditacion_licenciamiento,
+                               cargos_directivos=cargos_directivos,
+                               experiencia_docente=experiencia_docente,
+                               idiomas=idiomas,
+                               investigaciones=investigaciones,
+                               participacion_tesis=participacion_tesis,
+                               produccion_intelectual=produccion_intelectual,
+                               reconocimientos=reconocimientos,
+                               software_especializado=software_especializado,
+                               tutorias=tutorias,
+                               imagenes_adjuntas=imagenes_adjuntas,
+                               imagenes_dict=imagenes_dict)
     except Exception as e:
         flash(f'Error al obtener los datos: {str(e)}', 'error')
         return redirect(url_for('home'))
-    
+        
 # --- FIN DE NUEVAS RUTAS ---
 
 # Manejo de errores y configuración final
