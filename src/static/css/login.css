@@ -1,140 +1,147 @@
 /*src/static/css/login.css*/
 
-/* Definición de variables para colores y tipografías */
-/* Asegúrate de que estas variables estén definidas en un archivo CSS global o en la parte superior de este CSS */
+/* Variables de color */
 :root {
-  /* Colores */
-  --turquesa: #0F827F; /* Verde turquesa */
-  --turquesa-rgb: 15, 130, 127;
-  --turquesa-oscuro: #0a6b6a; /* Un tono más oscuro para hover */
-  --fondo: #f0f0f0;
-  --blanco: #ffffff;
-  --gris-claro: #f0f0f0;
-  --gris: #555555;
-  --negro: #333333;
-  
-  /* Tipografías */
-  --fuente-principal: 'Arial Rounded MT Bold', Arial, sans-serif;
-  --fuente-secundaria: 'ITC Avant Garde LT Extra Bold', sans-serif;
+  --login-primary-color: #0F827F; /* Verde turquesa */
+  --login-secondary-color: #1E3050; /* Azul oscuro */
+  --login-accent-color: #F0C808; /* Amarillo dorado */
+  --login-background-color: #f5f5f5; /* Fondo suave */
+  --login-text-color: #333333; /* Texto principal */
+  --login-card-bg: #ffffff; /* Fondo de la tarjeta */
+  --login-border-color: #e0e0e0; /* Borde de la tarjeta */
+  --login-button-hover: #0c6a6a; /* Hover de botones */
+  --frm-blanco: #ffffff; /* Blanco para formularios */
 }
 
-/* Estilos generales para la página de login */
-html,
-body {
-  height: 100%;
-  font-family: var(--fuente-principal);
-  background-color: var(--fondo);
-  margin: 0;
-  padding: 0;
-}
-
-body {
+/* Contenedor de login */
+.login-container {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(--login-background-color);
   padding: 20px;
 }
 
-/* Contenedor del formulario de login */
-.form-signin {
+/* Tarjeta de login */
+.login-card {
+  background-color: var(--login-card-bg);
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 400px;
-  padding: 30px; /* Aumentado el padding para mayor comodidad */
-  margin: auto;
-  background-color: var(--blanco);
-  border-radius: 10px;
-  box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.2); /* Sombra más prominente */
-  transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
-}
-
-.form-signin:hover {
-  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.3);
-  transform: translateY(-5px); /* Efecto de levantamiento al hover */
-}
-
-/* Título del formulario */
-.form-signin h2 {
   text-align: center;
-  margin-bottom: 25px; /* Aumentado el margen inferior */
+}
+
+/* Logo */
+.login-card .logo {
+  width: 150px;
+  height: 150px;
+  object-fit: contain;
+  margin-bottom: 20px;
+}
+
+/* Título */
+.login-card h2 {
+  font-family: 'Helvetica Neue', sans-serif;
+  color: var(--login-primary-color);
+  margin-bottom: 20px;
   font-size: 2rem;
-  color: var(--negro);
-  font-family: var(--fuente-secundaria);
 }
 
-/* Campos de entrada */
-.form-signin input[type="text"],
-.form-signin input[type="password"] {
-  margin-bottom: 20px; /* Aumentado el margen inferior */
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  padding: 15px; /* Aumentado el padding */
-  width: 100%;
+/* Formulario */
+.login-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Grupos de formulario */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+/* Etiquetas */
+.form-group label {
   font-size: 1.1rem;
-  transition: border-color 0.3s, box-shadow 0.3s;
-  font-family: var(--fuente-principal);
+  color: var(--login-text-color);
+  margin-bottom: 8px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.form-signin input[type="text"]:focus,
-.form-signin input[type="password"]:focus {
-  border-color: var(--turquesa);
-  outline: none;
-  box-shadow: 0 0 8px rgba(var(--turquesa-rgb), 0.5);
-}
-
-/* Botón de envío */
-.form-signin input[type="submit"] {
-  background-color: var(--turquesa);
-  color: var(--blanco);
-  padding: 15px;
-  width: 100%;
-  border: none;
-  border-radius: 5px;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-  font-family: var(--fuente-secundaria);
-}
-
-.form-signin input[type="submit"]:hover {
-  background-color: var(--turquesa-oscuro);
-  transform: scale(1.05); /* Efecto de aumento al hover */
-}
-
-/* Enlace de "Olvidé mi contraseña" */
-.form-signin .forgot-password {
-  display: block;
-  text-align: center;
-  margin-top: 15px; /* Aumentado el margen superior */
-  color: var(--turquesa);
+/* Inputs */
+.form-group input {
+  padding: 12px 15px;
   font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+/* Estado de enfoque */
+.form-group input:focus {
+  border-color: var(--login-primary-color);
+  outline: none;
+  box-shadow: 0 0 8px rgba(15, 130, 127, 0.5);
+}
+
+/* Botones */
+.btn-primary {
+  background-color: var(--login-primary-color);
+  color: var(--frm-blanco);
+  padding: 12px;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+  background-color: var(--login-button-hover);
+}
+
+/* Enlace de contraseña olvidada */
+.forgot-password {
+  display: block;
+  margin-top: 10px;
+  color: var(--login-secondary-color);
   text-decoration: none;
-  transition: color 0.3s, text-decoration 0.3s;
-  font-family: var(--fuente-principal);
+  font-size: 0.9rem;
+  transition: color 0.3s;
 }
 
-.form-signin .forgot-password:hover {
-  color: var(--turquesa-oscuro);
-  text-decoration: underline;
+.forgot-password:hover {
+  color: var(--login-accent-color);
 }
 
-/* Responsividad para pantallas más pequeñas */
+/* Alertas */
+.alert {
+  margin-bottom: 20px;
+}
+
+/* Responsividad */
 @media (max-width: 576px) {
-  .form-signin {
-    padding: 20px;
+  .login-card {
+      padding: 20px;
   }
 
-  .form-signin h2 {
-    font-size: 1.75rem;
+  .login-card h2 {
+      font-size: 1.5rem;
   }
 
-  .form-signin input[type="text"],
-  .form-signin input[type="password"],
-  .form-signin input[type="submit"] {
-    font-size: 1rem;
-    padding: 12px;
+  .form-group label {
+      font-size: 1rem;
   }
 
-  .form-signin .forgot-password {
-    font-size: 0.95rem;
+  .btn-primary {
+      font-size: 1rem;
+      padding: 10px;
   }
 }

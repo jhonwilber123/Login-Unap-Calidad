@@ -41,6 +41,22 @@ class ModelUser():
             with open('errores.log', 'a') as f:
                 print(ex, file=f)
             raise Exception(ex)
+        
+    @classmethod
+    def create_user(cls, db, user):
+        try:
+            cursor = db.connection.cursor()
+            sql = """
+            INSERT INTO usuarios (usuario, contraseña, rol)
+            VALUES (%s, %s, %s)
+            """
+            cursor.execute(sql, (user.username, user.password, user.role))
+            db.connection.commit()
+            return True
+        except Exception as ex:
+            with open('errores.log', 'a') as f:
+                print(ex, file=f)
+            return False
 
     @classmethod
     def get_by_id(cls, db, id):

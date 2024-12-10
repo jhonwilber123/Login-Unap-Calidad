@@ -1,35 +1,53 @@
 /* formularios.css */
 
+/* Variables de color actualizadas */
+:root {
+  --home-primary-color: #0F827F; /* Verde turquesa */
+  --home-secondary-color: #1E3050; /* Azul oscuro complementario */
+  --home-accent-color: #F0C808; /* Amarillo dorado complementario */
+  --home-background-color: #f5f5f5; /* Color de fondo suave */
+  --home-text-color: #333333; /* Color de texto principal */
+  --home-card-bg: #ffffff; /* Fondo de las tarjetas */
+  --home-card-border: #e0e0e0; /* Borde de las tarjetas */
+  --home-link-color: #0F827F; /* Color de los enlaces */
+  --home-link-hover: #0c6a6a; /* Color de los enlaces al pasar el cursor */
+  --frm-blanco: #ffffff; /* Blanco para formularios */
+}
+
 /* Contenedor específico para formularios */
 .formularios-container {
   background-color: var(--home-background-color);
   color: var(--home-text-color);
-  font-family: var(--frm-fuente-principal);
+  font-family: Arial, sans-serif;
   padding: 40px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  max-width: 1200px;
+  max-width: 800px;
   margin: 80px auto 40px; /* Ajuste de margen superior para evitar el navbar fijo */
   border-radius: 12px;
   display: flex;
   flex-direction: column;
+  gap: 20px;
 }
 
 /* Encabezado */
 .formularios-container .header {
   background-color: var(--home-primary-color);
   color: var(--frm-blanco);
-  padding: 25px;
+  padding: 20px;
   text-align: center;
-  font-family: var(--frm-fuente-secundaria);
-  font-size: 2.5rem;
+  font-family: Arial, sans-serif;
+  font-size: 2rem;
   border-radius: 12px 12px 0 0;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
 /* Contenido principal */
 .formularios-container .main-content {
   padding: 30px;
-  background-color: var(--frm-gris-claro);
+  background-color: var(--frm-blanco);
   border-radius: 0 0 12px 12px;
   display: flex;
   flex-direction: column;
@@ -38,11 +56,14 @@
 
 /* Títulos */
 .formularios-container .main-content h2 {
-  text-align: center;
-  font-family: var(--frm-fuente-secundaria);
-  font-size: 2rem;
+  text-align: left;
+  font-family: Arial, sans-serif;
+  font-size: 1.5rem;
   color: var(--home-primary-color);
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 /* Formularios */
@@ -64,6 +85,9 @@
   color: var(--home-text-color);
   margin-bottom: 8px;
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 /* Inputs y Selects */
@@ -89,7 +113,7 @@
 .formularios-container .form-group input[type="file"]:focus {
   border-color: var(--home-primary-color);
   outline: none;
-  box-shadow: 0 0 8px rgba(var(--home-primary-color-rgb, 15, 130, 127), 0.5);
+  box-shadow: 0 0 8px rgba(15, 130, 127, 0.5);
 }
 
 /* Botones */
@@ -104,169 +128,71 @@
   transition: background-color 0.3s, transform 0.2s;
   align-self: center;
   min-width: 150px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-/* Hover y Active en Botones */
-.formularios-container button:hover {
+.btn-primary {
+  background-color: var(--home-primary-color);
+  color: var(--frm-blanco);
+  border: none;
+}
+
+.btn-primary:hover {
   background-color: var(--home-link-hover);
 }
 
-.formularios-container button:active {
-  transform: scale(0.98);
-}
-
-/* Estilo para el pie de página del formulario */
-.formularios-container footer {
-  background-color: var(--home-primary-color);
+.btn-secondary {
+  background-color: var(--home-secondary-color);
   color: var(--frm-blanco);
-  padding: 15px;
-  text-align: center;
-  font-size: 1rem;
-  border-radius: 0 0 12px 12px;
-  margin-top: 20px;
+  border: none;
 }
 
-/* Previsualización de Archivos */
-#preview-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
+.btn-secondary:hover {
+  background-color: #162a4f; /* Darker shade of azul oscuro */
 }
 
-#preview-image {
-  max-width: 100%;
-  height: auto;
+/* Enlace de Cancelación */
+.btn-secondary i {
+  font-size: 1.2rem;
+}
+
+/* Enlace de previsualización */
+.preview-image {
+  width: 120px;
+  height: 160px;
+  object-fit: cover;
+  margin-top: 10px;
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-#preview-pdf {
+.preview-link {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-size: 1rem;
   color: var(--home-primary-color);
   text-decoration: none;
-  transition: color 0.3s;
-}
-
-#preview-pdf:hover {
-  color: var(--home-link-hover);
-}
-
-/* Estilo para la tabla */
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
-.table th,
-.table td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-.table th {
-  background-color: var(--home-primary-color);
-  color: var(--frm-blanco);
-  font-size: 1rem;
-}
-
-.table tr:hover {
-  background-color: #f1f1f1;
-}
-
-.btn-warning,
-.btn-danger,
-.btn-secondary {
-  padding: 8px 12px;
-  border: none;
-  border-radius: 4px;
-  color: #fff;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  font-size: 0.9rem;
-}
-
-.btn-warning {
-  background-color: #f0ad4e;
-}
-
-.btn-warning:hover {
-  background-color: #ec971f;
-}
-
-.btn-danger {
-  background-color: #d9534f;
-}
-
-.btn-danger:hover {
-  background-color: #c9302c;
-}
-
-.btn-secondary {
-  background-color: #6c757d;
-}
-
-.btn-secondary:hover {
-  background-color: #5a6268;
-}
-
-/* Estilos para la confirmación de eliminación */
-.confirmacion-eliminacion {
   margin-top: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
-.confirmacion-eliminacion p {
-  margin: 0;
-  font-size: 0.95rem;
-}
-
-.confirmacion-eliminacion form {
-  display: flex;
-  gap: 10px;
+.preview-link:hover {
+  color: var(--home-link-hover);
 }
 
 /* Responsividad */
 
-/* Disposición en columnas para pantallas medianas */
-@media (min-width: 768px) {
-  .formularios-container .main-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-  }
-
-  .formularios-container form,
-  .formularios-container table {
-    width: 100%;
-  }
-}
-
-/* Ajustes para pantallas pequeñas */
-@media (max-width: 767px) {
-  .formularios-container .main-content {
-    flex-direction: column;
-  }
-
-  .formularios-container form,
-  .formularios-container table {
-    width: 100%;
-  }
-}
-
-@media (max-width: 576px) {
+@media (max-width: 768px) {
   .formularios-container {
     padding: 20px;
     margin: 60px 10px 20px;
   }
 
   .formularios-container .header {
-    font-size: 2rem;
-    padding: 20px;
+    font-size: 1.8rem;
+    padding: 15px;
   }
 
   .formularios-container .main-content {
@@ -274,25 +200,38 @@
   }
 
   .formularios-container .main-content h2 {
-    font-size: 1.75rem;
+    font-size: 1.3rem;
   }
 
-  .formularios-container button {
+  .btn-primary,
+  .btn-secondary {
     width: 100%;
     padding: 12px 0;
     font-size: 1rem;
   }
+}
 
-  .table th,
-  .table td {
-    padding: 10px 12px;
-    font-size: 0.9rem;
+@media (max-width: 576px) {
+  .formularios-container {
+    padding: 15px;
+    margin: 50px 5px 15px;
   }
 
-  .btn-warning,
-  .btn-danger,
-  .btn-secondary {
-    padding: 6px 10px;
-    font-size: 0.8rem;
+  .formularios-container .header {
+    font-size: 1.5rem;
+    padding: 10px;
+  }
+
+  .formularios-container .main-content {
+    padding: 15px;
+  }
+
+  .formularios-container .main-content h2 {
+    font-size: 1.2rem;
+  }
+
+  .preview-image {
+    width: 100px;
+    height: 140px;
   }
 }

@@ -26,3 +26,8 @@ cannot import name 'COMMAND' from 'MySQLdb.constants' (D:\UNAP CCS CURRICULUM\Ma
 2
 (2005, "Unknown server host 'localhost222' (11001)")
 (2005, "Unknown server host 'localhost222' (11001)")
+(1265, "Data truncated for column 'rol' at row 1")
+(1265, "Data truncated for column 'rol' at row 1")
+(1265, "Data truncated for column 'rol' at row 1")
+(1265, "Data truncated for column 'rol' at row 1")
+(1062, "Duplicate entry 'admin' for key 'usuarios.usuario'")

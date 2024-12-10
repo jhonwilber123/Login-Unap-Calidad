@@ -14,171 +14,183 @@
 {% block body %}
 
 <div class="container mt-5">
-    <h1 class="h3 mb-4 text-center">Grados y Títulos Académicos</h1>
+    <h1 class="h3 mb-4 text-center"><i class="bi bi-mortarboard-fill"></i> Grados y Títulos Académicos</h1>
 
     <!-- Formulario para agregar un nuevo título -->
-    <form method="POST" enctype="multipart/form-data">
-        {{ form.hidden_tag() }}
+    <div class="formularios-container">
+        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
 
-        <!-- Título -->
-        <div class="mb-3">
-            {{ form.titulo.label(class="form-label") }}
-            {{ form.titulo(class="form-control", maxlength="255") }}
-            {% for error in form.titulo.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+            <!-- Título -->
+            <div class="mb-3">
+                {{ form.titulo.label(class="form-label") }}
+                {{ form.titulo(class="form-control", maxlength="255", placeholder="Nombre del Título") }}
+                {% for error in form.titulo.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
 
-        <!-- IMAGEN SUNEDU --> 
-        <div class="mb-3">
-            {{ form.archivo_sunedu.label(class="form-label") }}
-            {{ form.archivo_sunedu(class="form-control") }}
-            {% for error in form.archivo_sunedu.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+            <!-- Archivo SUNEDU --> 
+            <div class="mb-3">
+                {{ form.archivo_sunedu.label(class="form-label") }}
+                {{ form.archivo_sunedu(class="form-control") }}
+                {% for error in form.archivo_sunedu.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
 
-        <!-- Tipo de Título -->
-        <div class="mb-3">
-            {{ form.tipo.label(class="form-label") }}
-            {{ form.tipo(class="form-select") }}
-            {% for error in form.tipo.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+            <!-- Tipo de Título -->
+            <div class="mb-3">
+                {{ form.tipo.label(class="form-label") }}
+                {{ form.tipo(class="form-select") }}
+                {% for error in form.tipo.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
 
-        <!-- Universidad -->
-        <div class="mb-3">
-            {{ form.universidad.label(class="form-label") }}
-            {{ form.universidad(class="form-select", id="universidad") }}
-            {% for error in form.universidad.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+            <!-- Universidad -->
+            <div class="mb-3">
+                {{ form.universidad.label(class="form-label") }}
+                {{ form.universidad(class="form-select", id="universidad") }}
+                {% for error in form.universidad.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
 
-        <!-- Campo "Otra Universidad" -->
-        <div class="mb-3" id="otro_universidad_div" style="display: none;">
-            {{ form.otro_universidad.label(class="form-label") }}
-            {{ form.otro_universidad(class="form-control", maxlength="255") }}
-            {% for error in form.otro_universidad.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+            <!-- Campo "Otra Universidad" -->
+            <div class="mb-3" id="otro_universidad_div" style="display: none;">
+                {{ form.otro_universidad.label(class="form-label") }}
+                {{ form.otro_universidad(class="form-control", maxlength="255", placeholder="Nombre de otra universidad") }}
+                {% for error in form.otro_universidad.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
 
-        <!-- País -->
-        <div class="mb-3">
-            {{ form.pais.label(class="form-label") }}
-            {{ form.pais(class="form-select", id="pais") }}
-            {% for error in form.pais.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+            <!-- País -->
+            <div class="mb-3">
+                {{ form.pais.label(class="form-label") }}
+                {{ form.pais(class="form-select", id="pais") }}
+                {% for error in form.pais.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
 
-        <!-- Campo "Otro País" -->
-        <div class="mb-3" id="otro_pais_div" style="display: none;">
-            {{ form.otro_pais.label(class="form-label") }}
-            {{ form.otro_pais(class="form-control", maxlength="255") }}
-            {% for error in form.otro_pais.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+            <!-- Campo "Otro País" -->
+            <div class="mb-3" id="otro_pais_div" style="display: none;">
+                {{ form.otro_pais.label(class="form-label") }}
+                {{ form.otro_pais(class="form-control", maxlength="255", placeholder="Nombre de otro país") }}
+                {% for error in form.otro_pais.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
 
-        <!-- Fecha de Expedición -->
-        <div class="mb-3">
-            {{ form.fecha_expedicion.label(class="form-label") }}
-            {{ form.fecha_expedicion(class="form-control") }}
-            {% for error in form.fecha_expedicion.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+            <!-- Fecha de Expedición -->
+            <div class="mb-3">
+                {{ form.fecha_expedicion.label(class="form-label") }}
+                {{ form.fecha_expedicion(class="form-control", placeholder="YYYY-MM-DD") }}
+                {% for error in form.fecha_expedicion.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
 
-        <!-- Archivo -->
-        <div class="mb-3">
-            {{ form.archivo.label(class="form-label") }}
-            {{ form.archivo(class="form-control") }}
-            {% for error in form.archivo.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+            <!-- Archivo -->
+            <div class="mb-3">
+                {{ form.archivo.label(class="form-label") }}
+                {{ form.archivo(class="form-control") }}
+                {% for error in form.archivo.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
 
-        {{ form.submit(class="btn btn-primary") }}
-    </form>
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    </div>
 
     <!-- Lista de títulos académicos -->
-    <h2 class="h4 mt-5">Lista de Títulos Académicos</h2>
-    <table class="table table-bordered mt-3">
-        <thead>
-            <tr>
-                <th>Título</th>
-                <th>Tipo de Título</th>
-                <th>Universidad</th>
-                <th>País</th>
-                <th>Fecha de Expedición</th>
-                <th>Archivo</th>
-                <th>archivo SUNEDU</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for grado in gradostitulos %}
-            <tr>
-                <td>{{ grado.titulo }}</td>
-                <td>{{ grado.tipo }}</td>
-                <td>{{ grado.universidad }}</td>
-                <td>{{ grado.pais }}</td>
-                <td>{{ grado.fecha_expedicion.strftime('%Y-%m-%d') }}</td>
-                <td>
-                    {% if grado.ruta_imagen %}
-                        {% if grado.categoria == 'imagen' %}
-                            <img src="{{ url_for('uploaded_file', filename=grado.ruta_imagen) }}" alt="Imagen" style="max-width: 100px;">
-                        {% elif grado.categoria == 'pdf' %}
-                            <a href="{{ url_for('uploaded_file', filename=grado.ruta_imagen) }}" target="_blank">Ver PDF</a>
+    <div class="table-responsive mt-5">
+        <h2 class="h4 mb-3"><i class="bi bi-list-ul"></i> Títulos Registrados</h2>
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Título</th>
+                    <th>Tipo de Título</th>
+                    <th>Universidad</th>
+                    <th>País</th>
+                    <th>Fecha de Expedición</th>
+                    <th>Archivo</th>
+                    <th>Archivo SUNEDU</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for grado in gradostitulos %}
+                <tr>
+                    <td>{{ grado.titulo }}</td>
+                    <td>{{ grado.tipo }}</td>
+                    <td>{{ grado.universidad }}</td>
+                    <td>{{ grado.pais }}</td>
+                    <td>{{ grado.fecha_expedicion.strftime('%d/%m/%Y') }}</td>
+                    <td>
+                        {% if grado.ruta_imagen %}
+                            {% if grado.categoria == 'imagen' %}
+                                <img src="{{ url_for('uploaded_file', filename=grado.ruta_imagen) }}" alt="Imagen" class="img-thumbnail" style="max-width: 100px;">
+                            {% elif grado.categoria == 'pdf' %}
+                                <a href="{{ url_for('uploaded_file', filename=grado.ruta_imagen) }}" target="_blank" class="btn btn-sm btn-info">
+                                    <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            N/A
                         {% endif %}
-                    {% else %}
-                        N/A
-                    {% endif %}
-                  
-                   
-                </td>
-                <td>
-                    {% if grado.ruta_imagen_sunedu %}
-                        <a href="{{ url_for('uploaded_file', filename=grado.ruta_imagen_sunedu) }}" target="_blank">Ver PDF</a>
-                    {% else %}
-                        N/A
-                    {% endif %}
-                </td>
-               <td>
-                    <a href="{{ url_for('editar_gradostitulos', id_grado=grado.id_grado) }}" class="btn btn-warning btn-sm">Editar</a>
+                    </td>
+                    <td>
+                        {% if grado.ruta_imagen_sunedu %}
+                            <a href="{{ url_for('uploaded_file', filename=grado.ruta_imagen_sunedu) }}" target="_blank" class="btn btn-sm btn-info">
+                                <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
+                            </a>
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                   <td>
+                        <a href="{{ url_for('editar_gradostitulos', id_grado=grado.id_grado) }}" class="btn btn-sm btn-warning mb-1">
+                            <i class="bi bi-pencil-fill"></i> Editar
+                        </a>
+                        <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal-{{ grado.id_grado }}">
+                            <i class="bi bi-trash-fill"></i> Eliminar
+                        </button>
 
-                    <!-- Botón inicial de eliminación -->
-                    <button class="btn btn-danger btn-sm" onclick="mostrarConfirmacion({{ grado.id_grado }}); return false;">Eliminar</button>
-
-                    <!-- Sección de confirmación de eliminación, oculta inicialmente -->
-                    <div id="confirmacion-{{ grado.id_grado }}" class="confirmacion-eliminacion" style="display:none; margin-top: 5px;">
-                        <p>¿Está seguro de que desea eliminar este título académico?</p>
-                        <form action="{{ url_for('eliminar_gradostitulos', id_grado=grado.id_grado) }}" method="POST" style="display:inline;">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-danger btn-sm">Confirmar</button>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="ocultarConfirmacion({{ grado.id_grado }}); return false;">Cancelar</button>
-                        </form>
-                    </div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                        <!-- Modal de Confirmación de Eliminación -->
+                        <div class="modal fade" id="confirmDeleteModal-{{ grado.id_grado }}" tabindex="-1" aria-labelledby="confirmDeleteLabel-{{ grado.id_grado }}" aria-hidden="true">
+                          <div class="modal-dialog">
+                            <div class="modal-content">
+                              <div class="modal-header">
+                                <h5 class="modal-title" id="confirmDeleteLabel-{{ grado.id_grado }}">Confirmar Eliminación</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                              </div>
+                              <div class="modal-body">
+                                ¿Está seguro de que desea eliminar el título académico "<strong>{{ grado.titulo }}</strong>"?
+                              </div>
+                              <div class="modal-footer">
+                                <form action="{{ url_for('eliminar_gradostitulos', id_grado=grado.id_grado) }}" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                </form>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                   </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 
-<!-- JavaScript para controlar la confirmación de eliminación y la opción "Otra" -->
+<!-- JavaScript para controlar la opción "Otra" -->
 <script type="text/javascript">
-    function mostrarConfirmacion(id) {
-        document.getElementById('confirmacion-' + id).style.display = 'block';
-    }
-
-    function ocultarConfirmacion(id) {
-        document.getElementById('confirmacion-' + id).style.display = 'none';
-    }
-
     document.addEventListener('DOMContentLoaded', function() {
         const universidadSelect = document.getElementById('universidad');
         const otroUniversidadDiv = document.getElementById('otro_universidad_div');

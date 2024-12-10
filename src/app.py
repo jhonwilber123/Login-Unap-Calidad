@@ -72,6 +72,22 @@ def login():
             return render_template('auth/login.html')
     else:
         return render_template('auth/login.html')
+    
+@app.route('/create_user', methods=['GET', 'POST'])
+@login_required
+def create_user():
+    if current_user.role != 'Administrador':
+        return redirect(url_for('home'))
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        fullname = request.form['fullname']
+        role = request.form['role']
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        new_user = User(None, username, hashed_password, fullname, role)
+        ModelUser.create_user(db, new_user)
+        return redirect(url_for('ver_datos_personal'))  # Asegúrate de tener esta ruta o cámbiala según tu necesidad
+    return render_template('auth/create_user.html')
 
 @app.route('/logout')
 def logout():
@@ -83,6 +99,8 @@ def logout():
 @login_required
 def home():
     return render_template('home.html')
+
+
 
 @app.route('/change-password', methods=['GET', 'POST']) 
 @login_required

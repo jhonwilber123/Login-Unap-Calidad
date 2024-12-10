@@ -11,172 +11,163 @@
 {% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <h1 class="h3 mb-4 text-center">Editar Información Personal</h1>
+<div class="formularios-container">
+    <div class="header">
+        <i class="bi bi-person-fill"></i> Editar Información Personal
+    </div>
+    <div class="main-content">
+        <!-- Formulario de edición -->
+        <form action="{{ url_for('informacion_personal') }}" method="POST" class="needs-validation" novalidate enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
 
-    <!-- Formulario de edición -->
-    <form action="{{ url_for('informacion_personal') }}" method="POST" class="needs-validation" novalidate enctype="multipart/form-data">
-        {{ form.hidden_tag() }}
-
-        <!-- Foto del Docente -->
-        <h2 class="h5">Foto del Docente</h2>
-        <div class="mb-3">
-            {{ form.foto_docente.label(class="form-label") }}
-            {{ form.foto_docente(class="form-control") }}
-            {% for error in form.foto_docente.errors %}
-            <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
-        {% if foto_url %}
-        <img src="{{ url_for('uploaded_file', filename=foto_url) }}" alt="Foto del docente" style="width: 120px; height: 160px; object-fit: cover;">
-        {% endif %}
-        <!-- Constancia de Habilitación -->
-        <h2 class="h5">Constancia de Habilitación</h2>
-        <div class="mb-3">
-            {{ form.constancia_habilitacion.label(class="form-label") }}
-            {{ form.constancia_habilitacion(class="form-control") }}
-            {% for error in form.constancia_habilitacion.errors %}
-            <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
-        {% if constancia_url %}
-        <a href="{{ url_for('uploaded_file', filename=constancia_url) }}" target="_blank">Descargar Constancia de Habilitación (PDF)</a>
-        {% endif %}
-        <!-- Información básica -->
-        <h2 class="h5">Información Básica</h2>
-        <div class="row mb-3">
-            {% for field, placeholder in [('apellido_paterno', 'Apellido Paterno'), 
-                                          ('apellido_materno', 'Apellido Materno'), 
-                                          ('nombres', 'Nombres')] %}
-            <div class="col-md-4">
-                {{ form[field].label(class="form-label") }}
-                {{ form[field](class="form-control", placeholder=placeholder) }}
-                {% for error in form[field].errors %}
+            <!-- Foto del Docente -->
+            <div class="form-group">
+                <label for="foto_docente"><i class="bi bi-image-fill"></i> Foto del Docente</label>
+                {{ form.foto_docente(class="form-control") }}
+                {% for error in form.foto_docente.errors %}
                 <div class="text-danger">{{ error }}</div>
                 {% endfor %}
+                {% if foto_url %}
+                <img src="{{ url_for('uploaded_file', filename=foto_url) }}" alt="Foto del docente" class="preview-image">
+                {% endif %}
             </div>
-            {% endfor %}
-        </div>
 
-        <div class="row mb-3">
-            {% for field, label in [('fecha_nacimiento', 'Fecha de Nacimiento'), ('dni', 'DNI')] %}
-            <div class="col-md-6">
-                {{ form[field].label(class="form-label") }}
-                {{ form[field](class="form-control", placeholder=label) }}
-                {% for error in form[field].errors %}
+            <!-- Constancia de Habilitación -->
+            <div class="form-group">
+                <label for="constancia_habilitacion"><i class="bi bi-file-earmark-lock-fill"></i> Constancia de Habilitación</label>
+                {{ form.constancia_habilitacion(class="form-control") }}
+                {% for error in form.constancia_habilitacion.errors %}
                 <div class="text-danger">{{ error }}</div>
                 {% endfor %}
+                {% if constancia_url %}
+                <a href="{{ url_for('uploaded_file', filename=constancia_url) }}" target="_blank" class="preview-link"><i class="bi bi-download"></i> Descargar Constancia de Habilitación (PDF)</a>
+                {% endif %}
             </div>
-            {% endfor %}
-        </div>
 
-        <!-- Lugar de nacimiento -->
-        <h2 class="h5">Lugar de Nacimiento</h2>
-        <div class="row mb-3">
-            {% for field, placeholder in [('lugar_nacimiento_departamento', 'Departamento'), 
-                                          ('lugar_nacimiento_provincia', 'Provincia'), 
-                                          ('lugar_nacimiento_distrito', 'Distrito')] %}
-            <div class="col-md-4">
-                {{ form[field].label(class="form-label") }}
-                {{ form[field](class="form-control", placeholder=placeholder) }}
-                {% for error in form[field].errors %}
-                <div class="text-danger">{{ error }}</div>
-                {% endfor %}
+            <!-- Información Básica -->
+            <div class="form-group">
+                <label><i class="bi bi-info-circle-fill"></i> Información Básica</label>
+                <div class="row">
+                    {% for field, placeholder in [('apellido_paterno', 'Apellido Paterno'), 
+                                                  ('apellido_materno', 'Apellido Materno'), 
+                                                  ('nombres', 'Nombres')] %}
+                    <div class="col-md-4">
+                        {{ form[field].label(class="form-label") }}
+                        {{ form[field](class="form-control", placeholder=placeholder) }}
+                        {% for error in form[field].errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
-            {% endfor %}
-        </div>
 
-        <!-- Documentos de identidad -->
-        <h2 class="h5">Documentos de Identidad</h2>
-        <div class="row mb-3">
-            {% for field, placeholder in [('numero_colegiatura', 'Número de Colegiatura'), 
-                                          ('codigo', 'Código UNAP')] %}
-            <div class="col-md-6">
-                {{ form[field].label(class="form-label") }}
-                {{ form[field](class="form-control", placeholder=placeholder) }}
-                {% for error in form[field].errors %}
-                <div class="text-danger">{{ error }}</div>
-                {% endfor %}
+            <div class="form-group">
+                <div class="row">
+                    {% for field, label in [('fecha_nacimiento', 'Fecha de Nacimiento'), ('dni', 'DNI')] %}
+                    <div class="col-md-6">
+                        {{ form[field].label(class="form-label") }}
+                        {{ form[field](class="form-control", placeholder=label) }}
+                        {% for error in form[field].errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
-            {% endfor %}
-        </div>
 
-        <!-- Información laboral -->
-        <h2 class="h5">Información Laboral</h2>
-        <div class="row mb-3">
-            {% for field in ['condicion', 'categoria', 'dedicacion'] %}
-            <div class="col-md-4">
-                {{ form[field].label(class="form-label") }}
-                {{ form[field](class="form-control") }}
-                {% for error in form[field].errors %}
-                <div class="text-danger">{{ error }}</div>
-                {% endfor %}
+            <!-- Lugar de Nacimiento -->
+            <div class="form-group">
+                <label><i class="bi bi-geo-alt-fill"></i> Lugar de Nacimiento</label>
+                <div class="row">
+                    {% for field, placeholder in [('lugar_nacimiento_departamento', 'Departamento'), 
+                                                  ('lugar_nacimiento_provincia', 'Provincia'), 
+                                                  ('lugar_nacimiento_distrito', 'Distrito')] %}
+                    <div class="col-md-4">
+                        {{ form[field].label(class="form-label") }}
+                        {{ form[field](class="form-control", placeholder=placeholder) }}
+                        {% for error in form[field].errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
-            {% endfor %}
-        </div>
 
-
-        <!--Identificadores Académicos-->
-        <h2 class="h5">Identificadores Académicos</h2>    
-        <div class="row mb-3">
-            {% for field in ['ID_CTI', 'ID_Scopus', 'ID_ORCID'] %}
-            <div class="col-md-4">
-                {{ form[field].label(class="form-label") }}
-                {{ form[field](class="form-control") }}
-                {% for error in form[field].errors %}
-                <div class="text-danger">{{ error }}</div>
-                {% endfor %}
+            <!-- Documentos de Identidad -->
+            <div class="form-group">
+                <label><i class="bi bi-file-earmark-person-fill"></i> Documentos de Identidad</label>
+                <div class="row">
+                    {% for field, placeholder in [('numero_colegiatura', 'Número de Colegiatura'), 
+                                                  ('codigo', 'Código UNAP')] %}
+                    <div class="col-md-6">
+                        {{ form[field].label(class="form-label") }}
+                        {{ form[field](class="form-control", placeholder=placeholder) }}
+                        {% for error in form[field].errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
-            {% endfor %}
-        </div>        
 
-        <!-- Información de contacto -->
-
-        <h2 class="h5">Información de Contacto</h2>
-        <div class="row mb-3">
-            {% for field, placeholder in [('telefono_fijo', 'Teléfono Fijo'), ('movil', 'Teléfono Móvil')] %}
-            <div class="col-md-6">
-                {{ form[field].label(class="form-label") }}
-                {{ form[field](class="form-control", placeholder=placeholder) }}
-                {% for error in form[field].errors %}
-                <div class="text-danger">{{ error }}</div>
-                {% endfor %}
+            <!-- Información Laboral -->
+            <div class="form-group">
+                <label><i class="bi bi-briefcase-fill"></i> Información Laboral</label>
+                <div class="row">
+                    {% for field in ['condicion', 'categoria', 'dedicacion'] %}
+                    <div class="col-md-4">
+                        {{ form[field].label(class="form-label") }}
+                        {{ form[field](class="form-control") }}
+                        {% for error in form[field].errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
-            {% endfor %}
-        </div>
 
-        <div class="row mb-3">
-            {% for field, placeholder in [('correo_personal', 'Correo Personal'), ('correo_institucional', 'Correo Institucional')] %}
-            <div class="col-md-6">
-                {{ form[field].label(class="form-label") }}
-                {{ form[field](class="form-control", placeholder=placeholder) }}
-                {% for error in form[field].errors %}
-                <div class="text-danger">{{ error }}</div>
-                {% endfor %}
+            <!-- Identificadores Académicos -->
+            <div class="form-group">
+                <label><i class="bi bi-gear-fill"></i> Identificadores Académicos</label>
+                <div class="row">
+                    {% for field in ['ID_CTI', 'ID_Scopus', 'ID_ORCID'] %}
+                    <div class="col-md-4">
+                        {{ form[field].label(class="form-label") }}
+                        {{ form[field](class="form-control") }}
+                        {% for error in form[field].errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
-            {% endfor %}
-        </div>
 
-        <div class="mb-3">
-            {{ form.domicilio_actual.label(class="form-label") }}
-            {{ form.domicilio_actual(class="form-control", placeholder="Domicilio Actual") }}
-            {% for error in form.domicilio_actual.errors %}
-            <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+            <!-- Información de Contacto -->
+            <div class="form-group">
+                <label><i class="bi bi-telephone-fill"></i> Información de Contacto</label>
+                <div class="row">
+                    {% for field, placeholder in [('telefono_fijo', 'Teléfono Fijo'), ('movil', 'Teléfono Móvil')] %}
+                    <div class="col-md-6">
+                        {{ form[field].label(class="form-label") }}
+                        {{ form[field](class="form-control", placeholder=placeholder) }}
+                        {% for error in form[field].errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
 
-        <div class="mb-3">
-            {{ form.referencia.label(class="form-label") }}
-            {{ form.referencia(class="form-control", placeholder="Referencia") }}
-            {% for error in form.referencia.errors %}
-            <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
-
-        <!-- Botón de envío -->
-        <div class="text-center">
-            {{ form.submit(class="btn btn-primary") }}
-        </div>
-    </form>
+            <!-- Botones de Acción -->
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save-fill"></i> Guardar Cambios</button>
+                <a href="{{ url_for('home') }}" class="btn btn-secondary"><i class="bi bi-arrow-left-circle-fill"></i> Cancelar</a>
+            </div>
+        </form>
+    </div>
+    <footer>
+        &copy; 2024 Legajo CCS. Todos los derechos reservados.
+    </footer>
 </div>
 {% endblock %}

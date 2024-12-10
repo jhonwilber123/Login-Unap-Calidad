@@ -2,7 +2,9 @@
 <nav class="navbar navbar-expand-lg navbar-dark navbarNav">
     <div class="container-fluid">
         <!-- Marca de la Navbar que redirige a la página de inicio -->
-        <a class="navbar-brand" href="{{ url_for('home') }}">Acreditación UNAP CCS</a>
+        <a class="navbar-brand" href="{{ url_for('home') }}">
+            <i class="bi bi-book-half me-2"></i> Legajo CCS
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
             aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -15,11 +17,16 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="menuDropdown" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false">
-                        Menú
+                        <i class="bi bi-menu-button-wide-fill me-1"></i> Menú
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="menuDropdown">
-                        <li><a class="dropdown-item" href="{{ url_for('home') }}">Inicio</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('change_password') }}">Cambiar Contraseña</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('home') }}"><i class="bi bi-house-door-fill me-2"></i> Inicio</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('change_password') }}"><i class="bi bi-lock-fill me-2"></i> Cambiar Contraseña</a></li>
+                        {% if current_user.role == 'Administrador' %}
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('create_user') }}"><i class="bi bi-person-plus-fill me-2"></i> Crear Usuario</a>
+                        </li>
+                        {% endif %}
                     </ul>
                 </li>
 
@@ -27,32 +34,32 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="curriculumDropdown" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false">
-                        Curriculum
+                        <i class="bi bi-file-earmark-person-fill me-1"></i> Curriculum
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="curriculumDropdown">
-                        <li><a class="dropdown-item" href="{{ url_for('informacion_personal') }}">Datos Personales</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('gradostitulos') }}">Grados y Títulos</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('carga_academica') }}">Carga Academica</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('acreditacionlicenciamiento') }}">Acreditación</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('listar_evaluaciones_desempeno_docente') }}">Evaluación de Desempeño</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('actividadesproyeccionsocial') }}">Actividades de Proyección Social</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('actualizacionescapacitaciones') }}">Actualizaciones y Capacitaciones</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('cargosdirectivos') }}">Cargos Directivos</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('experienciadocente') }}">Experiencia Docente</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('idiomas') }}">Idiomas</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('investigaciones') }}">Investigaciones</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('participaciontesis') }}">Participación en Tesis</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('produccion_intelectual') }}">Producción Intelectual</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('reconocimientos') }}">Reconocimientos</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('softwareespecializado') }}">Software Especializado</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('tutorias') }}">Tutorías</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('informacion_personal') }}"><i class="bi bi-person-fill me-2"></i> Datos Personales</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('gradostitulos') }}"><i class="bi bi-mortarboard-fill me-2"></i> Grados y Títulos</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('carga_academica') }}"><i class="bi bi-book-fill me-2"></i> Carga Académica</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('acreditacionlicenciamiento') }}"><i class="bi bi-shield-lock-fill me-2"></i> Acreditación</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('listar_evaluaciones_desempeno_docente') }}"><i class="bi bi-bar-chart-fill me-2"></i> Evaluación de Desempeño</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('actividadesproyeccionsocial') }}"><i class="bi bi-people-fill me-2"></i> Actividades de Proyección Social</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('actualizacionescapacitaciones') }}"><i class="bi bi-calendar-check-fill me-2"></i> Actualizaciones y Capacitaciones</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('cargosdirectivos') }}"><i class="bi bi-person-badge-fill me-2"></i> Cargos Directivos</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('experienciadocente') }}"><i class="bi bi-book-half me-2"></i> Experiencia Docente</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('idiomas') }}"><i class="bi bi-translate me-2"></i> Idiomas</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('investigaciones') }}"><i class="bi bi-search-heart me-2"></i> Investigaciones</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('participaciontesis') }}"><i class="bi bi-journal-bookmark-fill me-2"></i> Participación en Tesis</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('produccion_intelectual') }}"><i class="bi bi-lightbulb-fill me-2"></i> Producción Intelectual</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('reconocimientos') }}"><i class="bi bi-award-fill me-2"></i> Reconocimientos</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('softwareespecializado') }}"><i class="bi bi-controller me-2"></i> Software Especializado</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('tutorias') }}"><i class="bi bi-people-fill me-2"></i> Tutorías</a></li>
                     </ul>
                 </li>
 
                 {% if current_user.role == 'Administrador' %}
                 <!-- Datos del Personal (Solo para Administradores) -->
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('ver_datos_personal') }}">Reporte</a>
+                    <a class="nav-link" href="{{ url_for('ver_datos_personal') }}"><i class="bi bi-clipboard-data me-2"></i> Reporte</a>
                 </li>
                 {% endif %}
             </ul>
@@ -70,4 +77,4 @@
 </nav>
 
 <!-- Al final del cuerpo de tu plantilla, antes de cerrar </body> -->
-<script src="{{ url_for('static', filename='js/navbar.js') }}"></script>    
+<script src="{{ url_for('static', filename='js/navbar.js') }}"></script>

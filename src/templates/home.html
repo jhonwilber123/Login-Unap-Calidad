@@ -8,165 +8,187 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 {% endblock %}
 
 {% block body %}
 <!-- Contenido principal -->
 <main class="container">
     <h1>Bienvenido, {{ current_user.fullname }}</h1>
+    <p class="welcome-message">¿Qué deseas hacer hoy?</p>
 
     <!-- Tarjetas informativas -->
     <section class="cards-container">
         <!-- Datos Personales -->
         <article class="card">
             <div class="card-body">
+                <i class="bi bi-person-fill card-icon"></i>
                 <h2 class="card-title">Datos Personales</h2>
                 <p class="card-text">Administra tus datos personales y de contacto.</p>
-                <a href="{{ url_for('informacion_personal') }}" class="card-link">Editar</a>
+                <a href="{{ url_for('informacion_personal') }}" class="btn btn-primary">Editar</a>
             </div>
         </article>
 
         <!-- Grados y Títulos -->
         <article class="card">
             <div class="card-body">
+                <i class="bi bi-mortarboard-fill card-icon"></i>
                 <h2 class="card-title">Grados y Títulos</h2>
                 <p class="card-text">Agrega o edita tu información académica.</p>
-                <a href="{{ url_for('gradostitulos') }}" class="card-link">Agregar</a>
+                <a href="{{ url_for('gradostitulos') }}" class="btn btn-primary">Agregar</a>
             </div>
         </article>
 
-        <!-- Carga academica -->
+        <!-- Carga Academica -->
         <article class="card">
             <div class="card-body">
+                <i class="bi bi-book-fill card-icon"></i>
                 <h2 class="card-title">Carga Académica</h2>
                 <p class="card-text">Agrega o edita tu carga académica.</p>
-                <a href="{{ url_for('carga_academica') }}" class="card-link">Agregar</a>
+                <a href="{{ url_for('carga_academica') }}" class="btn btn-primary">Agregar</a>
             </div>
         </article>
 
         <!-- Actividades Sociales -->
         <article class="card">
             <div class="card-body">
+                <i class="bi bi-people-fill card-icon"></i>
                 <h2 class="card-title">Actividades de Proyección Social</h2>
                 <p class="card-text">Agrega o edita tu información sobre actividades de proyección social.</p>
-                <a href="{{ url_for('actividadesproyeccionsocial') }}" class="card-link">Agregar</a>
+                <a href="{{ url_for('actividadesproyeccionsocial') }}" class="btn btn-primary">Agregar</a>
             </div>
         </article>
 
         <!-- Actualizaciones y Capacitaciones -->
         <article class="card">
             <div class="card-body">
+                <i class="bi bi-calendar-check-fill card-icon"></i>
                 <h2 class="card-title">Actualizaciones y Capacitaciones</h2>
                 <p class="card-text">Agrega o edita tu información sobre actualizaciones y capacitaciones.</p>
-                <a href="{{ url_for('actualizacionescapacitaciones') }}" class="card-link">Agregar</a>
+                <a href="{{ url_for('actualizacionescapacitaciones') }}" class="btn btn-primary">Agregar</a>
             </div>
         </article>
 
         <!-- Cargos Directivos -->
         <article class="card">
             <div class="card-body">
+                <i class="bi bi-person-badge-fill card-icon"></i>
                 <h2 class="card-title">Cargos Directivos</h2>
                 <p class="card-text">Agrega o edita tu información sobre cargos directivos.</p>
-                <a href="{{ url_for('cargosdirectivos') }}" class="card-link">Agregar</a>
+                <a href="{{ url_for('cargosdirectivos') }}" class="btn btn-primary">Agregar</a>
             </div>
         </article>
 
         <!-- Experiencia Docente -->
         <article class="card">
             <div class="card-body">
+                <i class="bi bi-book-half card-icon"></i>
                 <h2 class="card-title">Experiencia Docente</h2>
                 <p class="card-text">Agrega o edita tu experiencia docente.</p>
-                <a href="{{ url_for('experienciadocente') }}" class="card-link">Agregar</a>
+                <a href="{{ url_for('experienciadocente') }}" class="btn btn-primary">Agregar</a>
             </div>
         </article>
 
         <!-- Idiomas -->
         <article class="card">
             <div class="card-body">
+                <i class="bi bi-translate card-icon"></i>
                 <h2 class="card-title">Idiomas</h2>
                 <p class="card-text">Agrega o edita tus habilidades lingüísticas.</p>
-                <a href="{{ url_for('idiomas') }}" class="card-link">Agregar</a>
+                <a href="{{ url_for('idiomas') }}" class="btn btn-primary">Agregar</a>
             </div>
         </article>
 
         <!-- Investigaciones -->
         <article class="card">
             <div class="card-body">
+                <i class="bi bi-search-heart card-icon"></i>
                 <h2 class="card-title">Investigaciones</h2>
                 <p class="card-text">Agrega o edita tus investigaciones.</p>
-                <a href="{{ url_for('investigaciones') }}" class="card-link">Agregar</a>
+                <a href="{{ url_for('investigaciones') }}" class="btn btn-primary">Agregar</a>
             </div>
         </article>
 
         <!-- Participación en Tesis -->
         <article class="card">
             <div class="card-body">
+                <i class="bi bi-journal-bookmark-fill card-icon"></i>
                 <h2 class="card-title">Participación en Tesis</h2>
                 <p class="card-text">Agrega o edita tu participación en tesis.</p>
-                <a href="{{ url_for('participaciontesis') }}" class="card-link">Agregar</a>
+                <a href="{{ url_for('participaciontesis') }}" class="btn btn-primary">Agregar</a>
             </div>
         </article>
 
         <!-- Producción Intelectual -->
         <article class="card">
             <div class="card-body">
+                <i class="bi bi-lightbulb-fill card-icon"></i>
                 <h2 class="card-title">Producción Intelectual</h2>
                 <p class="card-text">Agrega o edita tu producción intelectual.</p>
-                <a href="{{ url_for('produccion_intelectual') }}" class="card-link">Agregar</a>
+                <a href="{{ url_for('produccion_intelectual') }}" class="btn btn-primary">Agregar</a>
             </div>
         </article>
 
         <!-- Reconocimientos -->
         <article class="card">
             <div class="card-body">
+                <i class="bi bi-award-fill card-icon"></i>
                 <h2 class="card-title">Reconocimientos</h2>
                 <p class="card-text">Agrega o edita tus reconocimientos y distinciones.</p>
-                <a href="{{ url_for('reconocimientos') }}" class="card-link">Agregar</a>
+                <a href="{{ url_for('reconocimientos') }}" class="btn btn-primary">Agregar</a>
             </div>
         </article>
 
         <!-- Software Especializado -->
         <article class="card">
             <div class="card-body">
+                <i class="bi bi-controller card-icon"></i>
                 <h2 class="card-title">Software Especializado</h2>
                 <p class="card-text">Agrega o edita tus cursos de software especializado.</p>
-                <a href="{{ url_for('softwareespecializado') }}" class="card-link">Agregar</a>
+                <a href="{{ url_for('softwareespecializado') }}" class="btn btn-primary">Agregar</a>
             </div>
         </article>
 
         <!-- Tutorías -->
         <article class="card">
             <div class="card-body">
-                <h2 class="card-title">Tutorías</h2>
-                <p class="card-text">Agrega o edita tus tutorías.</p>
-                <a href="{{ url_for('tutorias') }}" class="card-link">Agregar</a>
+            <i class="bi bi-people-fill card-icon"></i>
+            <h2 class="card-title">Tutorías</h2>
+            <p class="card-text">Agrega o edita tus tutorías.</p>
+            <a href="{{ url_for('tutorias') }}" class="btn btn-primary">Agregar</a>
             </div>
         </article>
 
         <!-- Acreditación y Licenciamiento -->
         <article class="card">
             <div class="card-body">
+                <i class="bi bi-shield-lock-fill card-icon"></i>
                 <h2 class="card-title">Acreditación y Licenciamiento</h2>
                 <p class="card-text">Agrega o edita tu información de acreditación y licenciamiento.</p>
-                <a href="{{ url_for('acreditacionlicenciamiento') }}" class="card-link">Agregar</a>
+                <a href="{{ url_for('acreditacionlicenciamiento') }}" class="btn btn-primary">Agregar</a>
             </div>
         </article>
+
         <!-- Evaluación de Desempeño Docente -->
         <article class="card">
             <div class="card-body">
+                <i class="bi bi-bar-chart-fill card-icon"></i>
                 <h2 class="card-title">Evaluación de Desempeño Docente</h2>
                 <p class="card-text">Agrega o edita tus evaluaciones de desempeño docente.</p>
-                <a href="{{ url_for('listar_evaluaciones_desempeno_docente') }}" class="card-link">Agregar</a>
+                <a href="{{ url_for('listar_evaluaciones_desempeno_docente') }}" class="btn btn-primary">Agregar</a>
             </div>
         </article>
+
         
         {% if current_user.role == 'Administrador' %}
         <!-- Datos del Personal (Solo para Administradores) -->
         <article class="card">
             <div class="card-body">
+                <i class="bi bi-clipboard-data card-icon"></i>
                 <h2 class="card-title">Reporte</h2>
                 <p class="card-text">Verifica la información del personal registrado.</p>
-                <a href="{{ url_for('ver_datos_personal') }}" class="card-link">Ver</a>
+                <a href="{{ url_for('ver_datos_personal') }}" class="btn btn-secondary">Ver</a>
             </div>
         </article>
         {% endif %}
