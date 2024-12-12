@@ -770,7 +770,6 @@ def editar_gradostitulos(id_grado):
         LEFT JOIN imagenesadjuntas ia ON gt.id_imagen = ia.id_imagen
         LEFT JOIN imagenesadjuntas ia_sunedu ON gt.id_imagen_sunedu = ia_sunedu.id_imagen
         WHERE gt.id_grado = %s AND gt.id_usuario = %s;
-
     """, (id_grado, current_user.id))
     grado = cur.fetchone()
     cur.close()
@@ -846,6 +845,10 @@ def editar_gradostitulos(id_grado):
             else:
                 flash('Archivo no permitido.', 'danger')
                 return redirect(request.url)
+        else:
+            # Si no se carga un nuevo archivo, mantener el existente
+            id_imagen_nueva = grado['id_imagen']
+
         # Manejo del archivo adjunto sunedu
         if archivo_sunedu:
             if allowed_file(archivo_sunedu.filename):
@@ -877,20 +880,22 @@ def editar_gradostitulos(id_grado):
                         VALUES (%s, %s, %s, %s)
                     """, (current_user.id, categoria, titulo, unique_filename))
                     db.connection.commit()
-                    id_imagen_nueva = cur.lastrowid
+                    id_imagen_nueva_sunedu = cur.lastrowid
 
-                    # Actualizar el título con el nuevo id_imagen
+                    # Actualizar el título con el nuevo id_imagen_sunedu
                     cur.execute("""
                         UPDATE gradostitulos
                         SET id_imagen_sunedu = %s
                         WHERE id_grado = %s AND id_usuario = %s
-                    """, (id_imagen_nueva, id_grado, current_user.id))
+                    """, (id_imagen_nueva_sunedu, id_grado, current_user.id))
                 db.connection.commit()
                 cur.close()
             else:
                 flash('Archivo no permitido.', 'danger')
                 return redirect(request.url)
-
+        else:
+            # Si no se carga un nuevo archivo sunedu, mantener el existente
+            id_imagen_nueva_sunedu = grado['id_imagen_sunedu']
 
         # Actualizar los datos del título académico
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -1694,7 +1699,7 @@ def acreditacionlicenciamiento():
 
     return render_template('acreditacionlicenciamiento_list.html', acreditaciones=acreditaciones, form=form)
 
-@app.route('/editar_acreditacionlicenciamiento/<int:id_acreditacion>', methods=['GET', 'POST'])
+@app.route('/editar_acreditacionlicenciamiento/<int:id_acreditacion>', methods=['GET', 'POST']) 
 @login_required
 def editar_acreditacionlicenciamiento(id_acreditacion):
     form = AcreditacionLicenciamientoForm()
@@ -1741,42 +1746,42 @@ def editar_acreditacionlicenciamiento(id_acreditacion):
 
         # Manejo de Resolución de Nombramiento (PDF)
         resolucion_nombramiento = form.resolucion_nombramiento.data
-        ruta_resolucion_nombramiento = acreditacion.ruta_resolucion_nombramiento
+        ruta_resolucion_nombramiento = acreditacion['ruta_resolucion_nombramiento']
         if resolucion_nombramiento:
             if allowed_file(resolucion_nombramiento.filename, {'pdf'}):
                 # Eliminar el archivo anterior si existe
                 if ruta_resolucion_nombramiento:
                     try:
                         os.remove(os.path.join(app.config['UPLOAD_FOLDER'], ruta_resolucion_nombramiento))
-                    except:
-                        pass
+                    except Exception as e:
+                        print(f"Error al eliminar el archivo anterior: {e}")
                 filename = secure_filename(resolucion_nombramiento.filename)
                 unique_filename = f"{int(time.time())}_{filename}"
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 resolucion_nombramiento.save(file_path)
                 ruta_resolucion_nombramiento = unique_filename
             else:
-                flash('Archivo de Resolución de Nombramiento no permitido.', 'danger')
+                flash('Archivo de Resolución de Nombramiento no permitido. Solo se permiten archivos PDF.', 'danger')
                 return redirect(request.url)
 
         # Manejo de Evidencias (PDF)
         evidencias = form.evidencias.data
-        ruta_evidencias = acreditacion.ruta_evidencias
+        ruta_evidencias = acreditacion['ruta_evidencias']
         if evidencias:
             if allowed_file(evidencias.filename, {'pdf'}):
                 # Eliminar el archivo anterior si existe
                 if ruta_evidencias:
                     try:
                         os.remove(os.path.join(app.config['UPLOAD_FOLDER'], ruta_evidencias))
-                    except:
-                        pass
+                    except Exception as e:
+                        print(f"Error al eliminar el archivo anterior: {e}")
                 filename = secure_filename(evidencias.filename)
                 unique_filename = f"{int(time.time())}_{filename}"
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 evidencias.save(file_path)
                 ruta_evidencias = unique_filename
             else:
-                flash('Archivo de Evidencias no permitido.', 'danger')
+                flash('Archivo de Evidencias no permitido. Solo se permiten archivos PDF.', 'danger')
                 return redirect(request.url)
 
         # Actualizar el registro en la base de datos

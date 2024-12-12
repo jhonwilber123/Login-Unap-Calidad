@@ -30,28 +30,6 @@
                 {% endfor %}
             </div>
 
-            <!-- Archivo SUNEDU -->  
-            <div class="mb-3">
-                {{ form.archivo_sunedu.label(class="form-label") }}
-                {{ form.archivo_sunedu(class="form-control") }}
-                {% for error in form.archivo_sunedu.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
-            <!-- Archivo Actual -->
-            {% if grado.ruta_imagen %}
-            <div class="mb-3">
-                <label class="form-label"><i class="bi bi-file-earmark-person-fill"></i> Archivo Actual:</label><br>
-                {% if grado.categoria == 'imagen' %}
-                    <img src="{{ url_for('uploaded_file', filename=grado.ruta_imagen_sunedu) }}" alt="Imagen Actual" class="preview-image">
-                {% elif grado.categoria == 'pdf' %}
-                    <a href="{{ url_for('uploaded_file', filename=grado.ruta_imagen_sunedu) }}" target="_blank" class="preview-link">
-                        <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
-                    </a>
-                {% endif %}
-            </div>
-            {% endif %}
-            
             <!-- Tipo de Título -->
             <div class="mb-3">
                 {{ form.tipo.label(class="form-label") }}
@@ -100,7 +78,7 @@
             <!-- Fecha de Expedición -->
             <div class="mb-3">
                 {{ form.fecha_expedicion.label(class="form-label") }}
-                {{ form.fecha_expedicion(class="form-control", placeholder="DD/MM/YYYY") }}
+                {{ form.fecha_expedicion(class="form-control", placeholder="YYYY-MM-DD") }}
                 {% for error in form.fecha_expedicion.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
@@ -114,6 +92,55 @@
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </div>
+
+            <!-- Archivo Actual -->
+            {% if grado.ruta_imagen %}
+                <div class="mb-3 text-center">
+                    <label class="form-label mb-1"><i class="bi bi-file-earmark-person-fill"></i> Archivo Actual:</label>
+                    {% if grado.categoria == 'imagen' %}
+                        <button type="button" class="btn p-0 border-0" data-bs-toggle="modal" data-bs-target="#imageModal">
+                            <img src="{{ url_for('uploaded_file', filename=grado.ruta_imagen) }}" alt="Imagen Actual" class="preview-image" style="max-width: 200px;">
+                        </button>
+                        <!-- Modal -->
+                        <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="imageModalLabel">Vista Completa</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <img src="{{ url_for('uploaded_file', filename=grado.ruta_imagen) }}" class="img-fluid" alt="Imagen Completa">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% elif grado.categoria == 'pdf' %}
+                        <a href="{{ url_for('uploaded_file', filename=grado.ruta_imagen) }}" target="_blank" class="preview-link d-block text-center">
+                            <i class="bi bi-file-earmark-pdf-fill"></i> Ver Archivo PDF
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <!-- Archivo SUNEDU -->
+            <div class="mb-3">
+                {{ form.archivo_sunedu.label(class="form-label") }}
+                {{ form.archivo_sunedu(class="form-control") }}
+                {% for error in form.archivo_sunedu.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Archivo SUNEDU Actual -->
+            {% if grado.ruta_imagen_sunedu %}
+                <div class="mb-3 text-center">
+                    <label class="form-label mb-1"><i class="bi bi-file-earmark-person-fill"></i> Archivo SUNEDU Actual:</label><br>
+                    <a href="{{ url_for('uploaded_file', filename=grado.ruta_imagen_sunedu) }}" target="_blank" class="preview-link d-block text-center">
+                        <i class="bi bi-file-earmark-pdf-fill"></i> Ver Archivo SUNEDU
+                    </a>
+                </div>
+            {% endif %}
 
             <!-- Botones de Acción -->
             <div class="d-flex justify-content-between">

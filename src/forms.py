@@ -103,23 +103,43 @@ class InformacionPersonalForm(FlaskForm):
     # Professional Information
     numero_colegiatura = StringField('Número de Colegiatura', validators=[Optional(), Length(max=20)])
     codigo = StringField('Código UNAP', validators=[DataRequired(), Length(max=20)])
-    condicion = SelectField('Condición', choices=[('', 'Seleccione...'), ('Nombrado', 'Nombrado'), ('Contratado', 'Contratado')], validators=[DataRequired()])
-    categoria = SelectField('Categoría', choices=[
-        ('', 'Seleccione...'),
-        ('Principal', 'Principal'),
-        ('Asociado', 'Asociado'),
-        ('Auxiliar', 'Auxiliar'),
-        ('A1', 'A1'),
-        ('B1', 'B1'),
-        ('B2', 'B2'),
-        ('B3', 'B3')
-    ], validators=[DataRequired()])
-    dedicacion = SelectField('Dedicación', choices=[
-        ('', 'Seleccione...'),
-        ('Exclusiva', 'Exclusiva'),
-        ('Tiempo completo', 'Tiempo completo'),
-        ('Tiempo parcial', 'Tiempo parcial')
-    ], validators=[DataRequired()])
+    condicion = SelectField(
+        'Condición', 
+        choices=[
+            ('', 'Seleccione...'),
+            ('Nombrado', 'Nombrado'),
+            ('Contratado', 'Contratado')
+        ], 
+        validators=[DataRequired()]
+    )
+    categoria = SelectField(
+        'Categoría', 
+        choices=[
+            ('', 'Seleccione...'),
+            # Opciones para 'Nombrado'
+            ('Principal', 'Principal'),
+            ('Asociado', 'Asociado'),
+            ('Auxiliar', 'Auxiliar'),
+            # Opciones para 'Contratado'
+            ('A1', 'A1'),
+            ('B1', 'B1'),
+            ('B2', 'B2'),
+            ('B3', 'B3')
+        ], 
+        validators=[DataRequired()]
+    )
+    dedicacion = SelectField(
+        'Dedicación', 
+        choices=[
+            ('', 'Seleccione...'),
+            # Opcion solo para 'Nombrado'
+            ('Exclusiva', 'Exclusiva'),
+            # Opciones para 'Contratado y Nombrado'
+            ('Tiempo completo', 'Tiempo completo'),
+            ('Tiempo parcial', 'Tiempo parcial')
+        ], 
+        validators=[DataRequired()]
+    )
     
     # Academic Information
     ID_CTI = StringField('ID CTI', validators=[DataRequired(), Length(max=50)])

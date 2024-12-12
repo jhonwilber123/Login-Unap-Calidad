@@ -1,0 +1,31 @@
+<!-- templates/macros.html -->
+{% macro action_buttons(id, editar_url, eliminar_url, descripcion) %}
+    <a href="{{ editar_url }}" class="btn btn-sm btn-warning mb-1">
+        <i class="bi bi-pencil-fill"></i> Editar
+    </a>
+    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal-{{ id }}">
+        <i class="bi bi-trash-fill"></i> Eliminar
+    </button>
+
+    <!-- Modal de Confirmación de Eliminación -->
+    <div class="modal fade" id="confirmDeleteModal-{{ id }}" tabindex="-1" aria-labelledby="confirmDeleteLabel-{{ id }}" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="confirmDeleteLabel-{{ id }}">Confirmar Eliminación</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            ¿Está seguro de que desea eliminar <strong>{{ descripcion }}</strong>?
+          </div>
+          <div class="modal-footer">
+            <form action="{{ eliminar_url }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-danger">Eliminar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endmacro %}

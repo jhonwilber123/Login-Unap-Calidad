@@ -48,6 +48,15 @@
                 {% endfor %}
             </div>
 
+            <!-- País -->
+            <div class="mb-3">
+                {{ form.pais.label(class="form-label") }}
+                {{ form.pais(class="form-select", id="pais") }}
+                {% for error in form.pais.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
             <!-- Universidad -->
             <div class="mb-3">
                 {{ form.universidad.label(class="form-label") }}
@@ -62,15 +71,6 @@
                 {{ form.otro_universidad.label(class="form-label") }}
                 {{ form.otro_universidad(class="form-control", maxlength="255", placeholder="Nombre de otra universidad") }}
                 {% for error in form.otro_universidad.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
-
-            <!-- País -->
-            <div class="mb-3">
-                {{ form.pais.label(class="form-label") }}
-                {{ form.pais(class="form-select", id="pais") }}
-                {% for error in form.pais.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </div>
@@ -189,13 +189,33 @@
     </div>
 </div>
 
-<!-- JavaScript para controlar la opción "Otra" -->
+<!-- Actualizado JavaScript para controlar las opciones de universidad según el país seleccionado -->
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function() {
+        const paisSelect = document.getElementById('pais');
         const universidadSelect = document.getElementById('universidad');
         const otroUniversidadDiv = document.getElementById('otro_universidad_div');
-        const paisSelect = document.getElementById('pais');
         const otroPaisDiv = document.getElementById('otro_pais_div');
+
+        const universidadesPeru = [
+            { value: '', text: 'Seleccione una universidad' },
+            { value: 'Universidad Nacional del Altiplano', text: 'Universidad Nacional del Altiplano' },
+            { value: 'Otra', text: 'Otra' }
+        ];
+
+        const universidadesDefault = [
+            { value: 'Otra', text: 'Otra' }
+        ];
+
+        function populateUniversidad(options) {
+            universidadSelect.innerHTML = '';
+            options.forEach(function(univ) {
+                const option = document.createElement('option');
+                option.value = univ.value;
+                option.text = univ.text;
+                universidadSelect.appendChild(option);
+            });
+        }
 
         function toggleOtroUniversidad() {
             if (universidadSelect.value === 'Otra') {
@@ -205,22 +225,24 @@
             }
         }
 
-        function toggleOtroPais() {
-            if (paisSelect.value === 'Otro') {
-                otroPaisDiv.style.display = 'block';
+        function handlePaisChange() {
+            if (paisSelect.value === 'Perú') {
+                populateUniversidad(universidadesPeru);
             } else {
-                otroPaisDiv.style.display = 'none';
+                populateUniversidad(universidadesDefault);
             }
+            toggleOtroUniversidad();
         }
 
-        // Ejecutar al cargar la página
-        toggleOtroUniversidad();
-        toggleOtroPais();
+        // Inicializar con Perú seleccionado por defecto
+        paisSelect.value = 'Perú';
+        handlePaisChange();
 
-        // Asignar el evento onchange a los select fields
+        // Eventos
+        paisSelect.addEventListener('change', handlePaisChange);
         universidadSelect.addEventListener('change', toggleOtroUniversidad);
-        paisSelect.addEventListener('change', toggleOtroPais);
     });
 </script>
+
 
 {% endblock %}

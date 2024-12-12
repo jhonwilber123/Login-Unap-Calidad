@@ -115,15 +115,27 @@
             <div class="form-group">
                 <label><i class="bi bi-briefcase-fill"></i> Información Laboral</label>
                 <div class="row">
-                    {% for field in ['condicion', 'categoria', 'dedicacion'] %}
                     <div class="col-md-4">
-                        {{ form[field].label(class="form-label") }}
-                        {{ form[field](class="form-control") }}
-                        {% for error in form[field].errors %}
+                        {{ form.condicion.label(class="form-label") }}
+                        {{ form.condicion(class="form-control", id="condicion") }}
+                        {% for error in form.condicion.errors %}
                         <div class="text-danger">{{ error }}</div>
                         {% endfor %}
                     </div>
-                    {% endfor %}
+                    <div class="col-md-4">
+                        {{ form.categoria.label(class="form-label") }}
+                        {{ form.categoria(class="form-control", id="categoria") }}
+                        {% for error in form.categoria.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.dedicacion.label(class="form-label") }}
+                        {{ form.dedicacion(class="form-control", id="dedicacion") }}
+                        {% for error in form.dedicacion.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
 
@@ -159,6 +171,39 @@
                 </div>
             </div>
 
+            <!-- Correo Electrónico -->
+            <div class="form-group">
+                <div class="row">
+                    {% for field, placeholder in [('correo_personal', 'Correo Personal'), ('correo_institucional', 'Correo Institucional')] %}
+                    <div class="col-md-6">
+                        {{ form[field].label(class="form-label") }}
+                        {{ form[field](class="form-control", placeholder=placeholder) }}
+                        {% for error in form[field].errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Domicilio Actual -->
+            <div class="form-group">
+                <label for="domicilio_actual"><i class="bi bi-house-fill"></i> Domicilio Actual</label>
+                {{ form.domicilio_actual(class="form-control", placeholder="Domicilio Actual") }}
+                {% for error in form.domicilio_actual.errors %}
+                <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Referencia -->
+            <div class="form-group">
+                <label for="referencia"><i class="bi bi-clipboard-fill"></i> Referencia</label>
+                {{ form.referencia(class="form-control", placeholder="Referencia") }}
+                {% for error in form.referencia.errors %}
+                <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
             <!-- Botones de Acción -->
             <div class="form-group">
                 <button type="submit" class="btn btn-primary"><i class="bi bi-save-fill"></i> Guardar Cambios</button>
@@ -170,4 +215,114 @@
         &copy; 2024 Legajo CCS. Todos los derechos reservados.
     </footer>
 </div>
+
+<!-- Agrega este script al final del archivo, antes de cerrar </body> -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const condicionField = document.getElementById('condicion');
+        const categoriaField = document.getElementById('categoria');
+        const dedicacionField = document.getElementById('dedicacion');
+
+        const categoriaOptions = {
+            '': [{'value': '', 'text': 'Seleccione...'}],
+            'Nombrado': [
+                {'value': '', 'text': 'Seleccione...'},
+                {'value': 'Principal', 'text': 'Principal'},
+                {'value': 'Asociado', 'text': 'Asociado'},
+                {'value': 'Auxiliar', 'text': 'Auxiliar'}
+            ],
+            'Contratado': [
+                {'value': '', 'text': 'Seleccione...'},
+                {'value': 'A1', 'text': 'A1'},
+                {'value': 'B1', 'text': 'B1'},
+                {'value': 'B2', 'text': 'B2'},
+                {'value': 'B3', 'text': 'B3'}
+            ]
+        };
+
+        const condicionByCategoria = {
+            'Principal': 'Nombrado',
+            'Asociado': 'Nombrado',
+            'Auxiliar': 'Nombrado',
+            'A1': 'Contratado',
+            'B1': 'Contratado',
+            'B2': 'Contratado',
+            'B3': 'Contratado'
+        };
+
+        const dedicacionOptions = {
+            'Nombrado': [
+                {'value': '', 'text': 'Seleccione...'},
+                {'value': 'Exclusiva', 'text': 'Exclusiva'},
+                {'value': 'Tiempo completo', 'text': 'Tiempo completo'},
+                {'value': 'Tiempo parcial', 'text': 'Tiempo parcial'}
+            ],
+            'Contratado': [
+                {'value': '', 'text': 'Seleccione...'},
+                {'value': 'Tiempo completo', 'text': 'Tiempo completo'},
+                {'value': 'Tiempo parcial', 'text': 'Tiempo parcial'}
+            ]
+        };
+
+        function updateCategoriaOptions() {
+            const condicion = condicionField.value;
+            const options = categoriaOptions[condicion] || [{'value': '', 'text': 'Seleccione...'}];
+
+            // Actualizar opciones de Categoría
+            categoriaField.innerHTML = '';
+            options.forEach(function(option) {
+                const opt = document.createElement('option');
+                opt.value = option.value;
+                opt.text = option.text;
+                categoriaField.add(opt);
+            });
+
+            // Mantener la Categoría seleccionada
+            categoriaField.value = "{{ form.categoria.data or '' }}";
+        }
+
+        function updateDedicacionOptions() {
+            const condicion = condicionField.value;
+            const options = dedicacionOptions[condicion] || [{'value': '', 'text': 'Seleccione...'}];
+
+            // Actualizar opciones de Dedicación
+            dedicacionField.innerHTML = '';
+            options.forEach(function(option) {
+                const opt = document.createElement('option');
+                opt.value = option.value;
+                opt.text = option.text;
+                dedicacionField.add(opt);
+            });
+
+            // Mantener la Dedicación seleccionada
+            dedicacionField.value = "{{ form.dedicacion.data or '' }}";
+        }
+
+        function synchronizeFields() {
+            updateCategoriaOptions();
+            updateDedicacionOptions();
+        }
+
+        function updateCondicionField() {
+            const categoria = categoriaField.value;
+            const condicion = condicionByCategoria[categoria] || '';
+            condicionField.value = condicion;
+
+            synchronizeFields();
+            categoriaField.value = categoria;
+        }
+
+        // Inicializar al cargar la página
+        synchronizeFields();
+
+        // Eventos
+        condicionField.addEventListener('change', function() {
+            categoriaField.value = '';
+            synchronizeFields();
+        });
+
+        categoriaField.addEventListener('change', updateCondicionField);
+    });
+</script>
+
 {% endblock %}
