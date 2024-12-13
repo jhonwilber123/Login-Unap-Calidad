@@ -16,7 +16,7 @@ from config import config
 # Importar el formulario
 from forms import TutoriaForm, EvaluacionDesempenoDocenteForm, SoftwareEspecializadoForm, ReconocimientosForm, ProduccionIntelectualForm, ParticipacionTesisForm 
 from forms import InvestigacionesForm, IdiomasForm, GradostitulosForm, ActividadesProyeccionSocialForm, CargaAcademicaLectivaForm 
-from forms import ActualizacionesCapacitacionesForm,AcreditacionLicenciamientoForm, CargosDirectivosForm, ExperienciaDocenteForm, InformacionPersonalForm
+from forms import ActualizacionesCapacitacionesForm, AcreditacionLicenciamientoForm, CargosDirectivosForm, ExperienciaDocenteForm, InformacionPersonalForm, EditUserForm
 
 # Models:
 from models.ModelUser import ModelUser
@@ -88,6 +88,54 @@ def create_user():
         ModelUser.create_user(db, new_user)
         return redirect(url_for('ver_datos_personal'))  # Asegúrate de tener esta ruta o cámbiala según tu necesidad
     return render_template('auth/create_user.html')
+
+# Ruta para listar usuarios
+@app.route('/users', methods=['GET'])
+@login_required
+def list_users():
+    users = ModelUser.get_all_users(db)
+    return render_template('users/list_users.html', users=users)
+
+# Ruta para editar un usuario
+@app.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def edit_user(user_id):
+    user = ModelUser.get_by_id(db, user_id)
+    if user is None:
+        flash('Usuario no encontrado.')
+        return redirect(url_for('list_users'))
+    form = EditUserForm()
+    if request.method == 'POST' and form.validate():
+        new_username = form.username.data
+        new_password = form.password.data
+        if new_username:
+            user.username = new_username
+        if new_password:
+            if ModelUser.is_password_strong(new_password):
+                user.password = ModelUser.hash_password(new_password)
+            else:
+                flash('La contraseña no es lo suficientemente fuerte.')
+                return render_template('users/edit_user.html', form=form, user=user)
+        success = ModelUser.update_user(db, user)
+        if success:
+            flash('Usuario actualizado correctamente.')
+            return redirect(url_for('list_users'))
+        else:
+            flash('Ocurrió un error al actualizar el usuario.')
+    form.username.data = user.username
+    return render_template('users/edit_user.html', form=form, user=user)
+
+# Ruta para eliminar un usuario
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    success = ModelUser.delete_user(db, user_id)
+    if success:
+        flash('Usuario eliminado correctamente.')
+    else:
+        flash('Ocurrió un error al eliminar el usuario.')
+    return redirect(url_for('list_users'))
+
 
 @app.route('/logout')
 def logout():

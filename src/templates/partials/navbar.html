@@ -25,6 +25,7 @@
                         {% if current_user.role == 'Administrador' %}
                         <li>
                             <a class="dropdown-item" href="{{ url_for('create_user') }}"><i class="bi bi-person-plus-fill me-2"></i> Crear Usuario</a>
+                            <a class="dropdown-item" href="{{ url_for('list_users') }}"><i class="bi bi-people-fill me-2"></i> Gestionar Usuarios</a>
                         </li>
                         {% endif %}
                     </ul>

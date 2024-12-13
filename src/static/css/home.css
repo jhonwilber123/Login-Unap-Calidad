@@ -2,15 +2,15 @@
 
 /* Variables de color actualizadas */
 :root {
-    --home-primary-color: #0F827F; /* Verde turquesa */
-    --home-secondary-color: #1E3050; /* Azul oscuro complementario */
-    --home-accent-color: #F0C808; /* Amarillo dorado complementario */
-    --home-background-color: #f5f5f5; /* Color de fondo suave */
-    --home-text-color: #333333; /* Color de texto principal */
-    --home-card-bg: #ffffff; /* Fondo de las tarjetas */
-    --home-card-border: #e0e0e0; /* Borde de las tarjetas */
-    --home-link-color: #0F827F; /* Color de los enlaces */
-    --home-link-hover: #0c6a6a; /* Color de los enlaces al pasar el cursor */
+    --primary-color: #0F827F; /* Verde turquesa */
+    --secondary-color: #1E3050; /* Azul oscuro complementario */
+    --accent-color: #F0C808; /* Amarillo dorado complementario */
+    --background-color: #f5f5f5; /* Color de fondo suave */
+    --text-color: #333333; /* Color de texto principal */
+    --card-bg: #ffffff; /* Fondo de las tarjetas */
+    --card-border: #e0e0e0; /* Borde de las tarjetas */
+    --link-color: #0F827F; /* Color de los enlaces */
+    --link-hover: #0c6a6a; /* Color de los enlaces al pasar el cursor */
 }
 
 /* Reset de márgenes y paddings */
@@ -22,9 +22,9 @@
 
 /* Tipografía global */
 body {
-    font-family: 'Arial', sans-serif;
-    background-color: var(--home-background-color);
-    color: var(--home-text-color);
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
     line-height: 1.6;
     text-align: center;
 }
@@ -40,13 +40,13 @@ body {
 .welcome-message {
     font-size: 1.2rem;
     margin-bottom: 2rem;
-    color: var(--home-secondary-color);
+    color: var(--secondary-color);
 }
 
 /* Título principal */
 .container h1 {
     font-family: 'Helvetica Neue', sans-serif;
-    color: var(--home-primary-color);
+    color: var(--primary-color);
     margin-bottom: 1rem;
     font-size: 2.5rem;
 }
@@ -60,13 +60,16 @@ body {
 
 /* Tarjetas informativas */
 .card {
-    background-color: var(--home-card-bg);
-    border: 1px solid var(--home-card-border);
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s, box-shadow 0.3s;
     padding: 1.5rem;
     text-align: left;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .card:hover {
@@ -77,14 +80,14 @@ body {
 /* Icono de la tarjeta */
 .card-icon {
     font-size: 2rem;
-    color: var(--home-accent-color);
+    color: var(--accent-color);
     margin-bottom: 1rem;
 }
 
 /* Títulos */
 .card-title {
     font-family: 'Helvetica Neue', sans-serif;
-    color: var(--home-primary-color);
+    color: var(--primary-color);
     margin-bottom: 0.5rem;
     font-size: 1.5rem;
 }
@@ -93,7 +96,7 @@ body {
 .card-text {
     font-size: 1rem;
     margin-bottom: 1.5rem;
-    color: var(--home-text-color);
+    color: var(--text-color);
 }
 
 /* Botones */
@@ -106,23 +109,23 @@ body {
 }
 
 .btn-primary {
-    background-color: var(--home-primary-color);
+    background-color: var(--primary-color);
     color: #ffffff;
     border: none;
 }
 
 .btn-primary:hover {
-    background-color: var(--home-link-hover);
+    background-color: var(--link-hover);
 }
 
 .btn-secondary {
-    background-color: var(--home-secondary-color);
+    background-color: var(--secondary-color);
     color: #ffffff;
     border: none;
 }
 
 .btn-secondary:hover {
-    background-color: darken(var(--home-secondary-color), 10%);
+    background-color: darken(var(--secondary-color), 10%);
 }
 
 /* Responsividad de las tarjetas */

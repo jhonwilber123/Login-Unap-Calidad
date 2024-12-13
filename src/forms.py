@@ -2,6 +2,7 @@
 from flask_wtf import FlaskForm
 from wtforms import (
     DecimalField,
+    PasswordField,
     TextAreaField, 
     IntegerField, 
     SelectField, 
@@ -14,7 +15,7 @@ from wtforms import (
 
 from wtforms import StringField, DateField, SelectField, TelField, EmailField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Length, Optional, Regexp, Email
-from wtforms.validators import DataRequired, NumberRange, Optional, ValidationError, Length
+from wtforms.validators import DataRequired, NumberRange, Optional, ValidationError, Length, EqualTo
 from flask_wtf.file import FileAllowed, FileRequired
 from datetime import datetime, date
 import re
@@ -31,6 +32,15 @@ def file_size_limit(max_size):
             if file_size > max_size:
                 raise ValidationError(f"El archivo no puede exceder los {max_size / (1024 * 1024)} MB.")
     return _file_size_limit
+
+class EditUserForm(FlaskForm):
+    username = StringField('Nuevo Usuario', validators=[Optional()])
+    password = PasswordField('Nueva Contraseña', validators=[Optional()])
+    confirm_password = PasswordField('Confirma Contraseña', validators=[
+        Optional(),
+        EqualTo('password', message='Las contraseñas deben coincidir.')
+    ])
+    submit = SubmitField('Guardar Cambios')
 
 
 class EvaluacionDesempenoDocenteForm(FlaskForm):

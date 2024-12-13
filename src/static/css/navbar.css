@@ -85,3 +85,13 @@
     font-size: 1.2rem; /* Ajusta el tamaño del ícono según prefieras */
     margin-right: 0.5rem;
 }
+
+/* Iconos en la navbar */
+.navbarNav .nav-link .fa {
+    margin-right: 5px;
+}
+
+/* Dropdown toggle icon */
+.navbarNav .dropdown-toggle::after {
+    margin-left: 5px;
+}
