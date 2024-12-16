@@ -201,18 +201,19 @@ def change_password():
 @app.route('/validate-password', methods=['POST'])
 @login_required
 def validate_password():
-    password = request.form['password']
+    password = request.form.get('password', '')
+    valid = ModelUser.is_password_strong(password)
     reasons = []
-    if len(password) < 8:
-        reasons.append("La contraseña debe tener al menos 8 caracteres.")
-    if not re.search(r'[A-Z]', password):
-        reasons.append("La contraseña debe tener al menos una letra mayúscula.")
-    if not re.search(r'[a-z]', password):
-        reasons.append("La contraseña debe tener al menos una letra minúscula.")
-    if not re.search(r'\d', password):
-        reasons.append("La contraseña debe tener al menos un número.")
-    
-    return jsonify({'valid': len(reasons) == 0, 'reasons': reasons})
+    if not valid:
+        if len(password) < 8:
+            reasons.append('La contraseña debe tener al menos 8 caracteres.')
+        if not re.search(r'[A-Z]', password):
+            reasons.append('La contraseña debe tener al menos una letra mayúscula.')
+        if not re.search(r'[a-z]', password):
+            reasons.append('La contraseña debe tener al menos una letra minúscula.')
+        if not re.search(r'\d', password):
+            reasons.append('La contraseña debe tener al menos un número.')
+    return jsonify({'valid': valid, 'reasons': reasons})
 
 # --- NUEVAS RUTAS ---
 

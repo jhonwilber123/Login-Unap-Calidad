@@ -5,7 +5,7 @@
 {% block title %}Editar Tutoría{% endblock %}
 
 {% block customCSS %}
-<!-- CSS específico para la página de inicio -->
+<!-- CSS específico para la página de Editar Tutoría -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
@@ -13,59 +13,94 @@
 
 {% block body %}
 
-<div class="container mt-5 pt-5">
-    <h1 class="h3 mb-4 text-center">Editar Tutoría</h1>
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center"><i class="bi bi-pencil-fill"></i> Editar Tutoría</h1>
 
     <!-- Formulario para editar una tutoría utilizando Flask-WTF -->
-    <form method="POST" enctype="multipart/form-data">
-        {{ form.hidden_tag() }}
+    <div class="formularios-container">
+        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
 
-        <div class="mb-3">
-            {{ form.descripcion.label(class="form-label") }}
-            {{ form.descripcion(class="form-control") }}
-            {% for error in form.descripcion.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+            <!-- Descripción -->
+            <div class="mb-3">
+                {{ form.descripcion.label(class="form-label") }}
+                {{ form.descripcion(class="form-control", rows="3", placeholder="Ingrese la descripción de la tutoría", required=True) }}
+                {% for error in form.descripcion.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
 
-        <div class="mb-3">
-            {{ form.anio.label(class="form-label") }}
-            {{ form.anio(class="form-control") }}
-            {% for error in form.anio.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+            <!-- Año -->
+            <div class="mb-3">
+                {{ form.anio.label(class="form-label") }}
+                {{ form.anio(class="form-control", type="number", min="1900", max="2100", placeholder="Ingrese el año", required=True) }}
+                {% for error in form.anio.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
 
-        <div class="mb-3">
-            {{ form.archivo.label(class="form-label") }}
-            {{ form.archivo(class="form-control") }}
-            {% for error in form.archivo.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
-
-        {% if tutoria[4] %}
-        <div class="mb-3">
-            <label class="form-label">Archivo Actual:</label><br>
-            {% if tutoria[5] == 'imagen' %}
-                <img src="{{ url_for('uploaded_file', filename=tutoria[4]) }}" alt="Imagen Actual" style="max-width: 200px;">
-            {% elif tutoria[5] == 'pdf' %}
-                <a href="{{ url_for('uploaded_file', filename=tutoria[4]) }}" target="_blank">Ver PDF</a>
+            <!-- Archivo Actual -->
+            {% if tutoria[4] %}
+            <div class="mb-3">
+                <label class="form-label">Archivo Actual:</label><br>
+                {% if tutoria[5] == 'imagen' %}
+                    <img src="{{ url_for('uploaded_file', filename=tutoria[4]) }}" alt="Imagen Actual" class="img-thumbnail" style="max-width: 200px;">
+                {% elif tutoria[5] == 'pdf' %}
+                    <a href="{{ url_for('uploaded_file', filename=tutoria[4]) }}" target="_blank" class="btn btn-info btn-sm">
+                        <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
+                    </a>
+                {% endif %}
+            </div>
             {% endif %}
-        </div>
-        {% endif %}
 
-        <div class="mb-3" id="preview-container" style="display:none;">
-            <label class="form-label">Previsualización de Archivo:</label><br>
-            <img id="preview-image" src="#" alt="Previsualización de Imagen" class="img-fluid" style="max-width: 300px; display: none;">
-            <a id="preview-pdf" href="#" target="_blank" style="display: none;">Ver PDF</a>
-        </div>
+            <!-- Archivo Nuevo -->
+            <div class="mb-3">
+                {{ form.archivo.label(class="form-label") }}
+                {{ form.archivo(class="form-control", id="archivo", accept=".png,.jpg,.jpeg,.pdf", required=false) }}
+                {% for error in form.archivo.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+                <div class="form-text">Subir archivo en PDF o imagen. Dejar en blanco para mantener el archivo actual.</div>
+            </div>
 
-        {{ form.submit(class="btn btn-primary") }}
-    </form>
+            <!-- Previsualización de Archivos -->
+            <div class="mb-3" id="preview-container" style="display:none;">
+                <label class="form-label">Previsualización de Archivo:</label><br>
+                <img id="preview-image" src="#" alt="Previsualización de Imagen" class="img-fluid" style="max-width: 300px; display: none;">
+                <a id="preview-pdf" href="#" target="_blank" class="btn btn-sm btn-info" style="display: none;">
+                    <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
+                </a>
+            </div>
+
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('tutorias') }}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
 </div>
 
-<!-- Script para manejar la previsualización de archivos -->
+<!-- Validación de formularios con Bootstrap -->
+<script>
+    // Validación de formularios con Bootstrap
+    (function () {
+      'use strict'
+
+      var forms = document.querySelectorAll('.needs-validation')
+
+      Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+          form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+              event.preventDefault()
+              event.stopPropagation()
+            }
+
+            form.classList.add('was-validated')
+          }, false)
+        })
+    })()
+</script>
+
+<!-- JavaScript para manejar la previsualización de archivos -->
 <script type="text/javascript">
     function previewFile(event) {
         const previewImage = document.getElementById('preview-image');
@@ -87,9 +122,11 @@
             } else if (fileType === 'application/pdf') {
                 const fileURL = URL.createObjectURL(file);
                 previewPdf.href = fileURL;
-                previewPdf.style.display = 'block';
+                previewPdf.style.display = 'inline-block';
                 previewImage.style.display = 'none';
                 previewContainer.style.display = 'block';
+            } else {
+                previewContainer.style.display = 'none';
             }
         } else {
             previewContainer.style.display = 'none'; // Ocultar si no hay archivo

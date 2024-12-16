@@ -20,43 +20,33 @@
 
     <!-- Tarjetas informativas -->
     <section class="cards-container">
-        <!-- Datos Personales -->
+        <!-- Información Personal -->
         <article class="card">
             <div class="card-body">
                 <i class="bi bi-person-fill card-icon"></i>
-                <h2 class="card-title">Datos Personales</h2>
-                <p class="card-text">Administra tus datos personales y de contacto.</p>
+                <h2 class="card-title">Información Personal</h2>
+                <p class="card-text">Administra tu información personal y de contacto.</p>
                 <a href="{{ url_for('informacion_personal') }}" class="btn btn-primary">Editar</a>
             </div>
         </article>
-
+    
         <!-- Grados y Títulos -->
         <article class="card">
             <div class="card-body">
                 <i class="bi bi-mortarboard-fill card-icon"></i>
                 <h2 class="card-title">Grados y Títulos</h2>
-                <p class="card-text">Agrega o edita tu información académica.</p>
+                <p class="card-text">Agrega o edita tus grados y títulos académicos.</p>
                 <a href="{{ url_for('gradostitulos') }}" class="btn btn-primary">Agregar</a>
             </div>
         </article>
 
-        <!-- Carga Academica -->
+        <!-- Carga Académica Lectiva -->
         <article class="card">
             <div class="card-body">
                 <i class="bi bi-book-fill card-icon"></i>
-                <h2 class="card-title">Carga Académica</h2>
-                <p class="card-text">Agrega o edita tu carga académica.</p>
+                <h2 class="card-title">Carga Académica Lectiva</h2>
+                <p class="card-text">Administra tu carga académica lectiva.</p>
                 <a href="{{ url_for('carga_academica') }}" class="btn btn-primary">Agregar</a>
-            </div>
-        </article>
-
-        <!-- Actividades Sociales -->
-        <article class="card">
-            <div class="card-body">
-                <i class="bi bi-people-fill card-icon"></i>
-                <h2 class="card-title">Actividades de Proyección Social</h2>
-                <p class="card-text">Agrega o edita tu información sobre actividades de proyección social.</p>
-                <a href="{{ url_for('actividadesproyeccionsocial') }}" class="btn btn-primary">Agregar</a>
             </div>
         </article>
 
@@ -65,98 +55,8 @@
             <div class="card-body">
                 <i class="bi bi-calendar-check-fill card-icon"></i>
                 <h2 class="card-title">Actualizaciones y Capacitaciones</h2>
-                <p class="card-text">Agrega o edita tu información sobre actualizaciones y capacitaciones.</p>
+                <p class="card-text">Agrega o edita tus actualizaciones y capacitaciones.</p>
                 <a href="{{ url_for('actualizacionescapacitaciones') }}" class="btn btn-primary">Agregar</a>
-            </div>
-        </article>
-
-        <!-- Cargos Directivos -->
-        <article class="card">
-            <div class="card-body">
-                <i class="bi bi-person-badge-fill card-icon"></i>
-                <h2 class="card-title">Cargos Directivos</h2>
-                <p class="card-text">Agrega o edita tu información sobre cargos directivos.</p>
-                <a href="{{ url_for('cargosdirectivos') }}" class="btn btn-primary">Agregar</a>
-            </div>
-        </article>
-
-        <!-- Experiencia Docente -->
-        <article class="card">
-            <div class="card-body">
-                <i class="bi bi-book-half card-icon"></i>
-                <h2 class="card-title">Experiencia Docente</h2>
-                <p class="card-text">Agrega o edita tu experiencia docente.</p>
-                <a href="{{ url_for('experienciadocente') }}" class="btn btn-primary">Agregar</a>
-            </div>
-        </article>
-
-        <!-- Idiomas -->
-        <article class="card">
-            <div class="card-body">
-                <i class="bi bi-translate card-icon"></i>
-                <h2 class="card-title">Idiomas</h2>
-                <p class="card-text">Agrega o edita tus habilidades lingüísticas.</p>
-                <a href="{{ url_for('idiomas') }}" class="btn btn-primary">Agregar</a>
-            </div>
-        </article>
-
-        <!-- Investigaciones -->
-        <article class="card">
-            <div class="card-body">
-                <i class="bi bi-search-heart card-icon"></i>
-                <h2 class="card-title">Investigaciones</h2>
-                <p class="card-text">Agrega o edita tus investigaciones.</p>
-                <a href="{{ url_for('investigaciones') }}" class="btn btn-primary">Agregar</a>
-            </div>
-        </article>
-
-        <!-- Participación en Tesis -->
-        <article class="card">
-            <div class="card-body">
-                <i class="bi bi-journal-bookmark-fill card-icon"></i>
-                <h2 class="card-title">Participación en Tesis</h2>
-                <p class="card-text">Agrega o edita tu participación en tesis.</p>
-                <a href="{{ url_for('participaciontesis') }}" class="btn btn-primary">Agregar</a>
-            </div>
-        </article>
-
-        <!-- Producción Intelectual -->
-        <article class="card">
-            <div class="card-body">
-                <i class="bi bi-lightbulb-fill card-icon"></i>
-                <h2 class="card-title">Producción Intelectual</h2>
-                <p class="card-text">Agrega o edita tu producción intelectual.</p>
-                <a href="{{ url_for('produccion_intelectual') }}" class="btn btn-primary">Agregar</a>
-            </div>
-        </article>
-
-        <!-- Reconocimientos -->
-        <article class="card">
-            <div class="card-body">
-                <i class="bi bi-award-fill card-icon"></i>
-                <h2 class="card-title">Reconocimientos</h2>
-                <p class="card-text">Agrega o edita tus reconocimientos y distinciones.</p>
-                <a href="{{ url_for('reconocimientos') }}" class="btn btn-primary">Agregar</a>
-            </div>
-        </article>
-
-        <!-- Software Especializado -->
-        <article class="card">
-            <div class="card-body">
-                <i class="bi bi-controller card-icon"></i>
-                <h2 class="card-title">Software Especializado</h2>
-                <p class="card-text">Agrega o edita tus cursos de software especializado.</p>
-                <a href="{{ url_for('softwareespecializado') }}" class="btn btn-primary">Agregar</a>
-            </div>
-        </article>
-
-        <!-- Tutorías -->
-        <article class="card">
-            <div class="card-body">
-            <i class="bi bi-people-fill card-icon"></i>
-            <h2 class="card-title">Tutorías</h2>
-            <p class="card-text">Agrega o edita tus tutorías.</p>
-            <a href="{{ url_for('tutorias') }}" class="btn btn-primary">Agregar</a>
             </div>
         </article>
 
@@ -170,16 +70,96 @@
             </div>
         </article>
 
-        <!-- Evaluación de Desempeño Docente -->
+        <!-- Evaluación del Desempeño Docente -->
         <article class="card">
             <div class="card-body">
                 <i class="bi bi-bar-chart-fill card-icon"></i>
-                <h2 class="card-title">Evaluación de Desempeño Docente</h2>
-                <p class="card-text">Agrega o edita tus evaluaciones de desempeño docente.</p>
+                <h2 class="card-title">Evaluación del Desempeño Docente</h2>
+                <p class="card-text">Administra tus evaluaciones del desempeño docente.</p>
                 <a href="{{ url_for('listar_evaluaciones_desempeno_docente') }}" class="btn btn-primary">Agregar</a>
             </div>
         </article>
 
+        <!-- Cargos Directivos y Comisiones -->
+        <article class="card">
+            <div class="card-body">
+                <i class="bi bi-person-badge-fill card-icon"></i>
+                <h2 class="card-title">Cargos Directivos y Comisiones</h2>
+                <p class="card-text">Agrega o edita tus cargos directivos y comisiones.</p>
+                <a href="{{ url_for('cargosdirectivos') }}" class="btn btn-primary">Agregar</a>
+            </div>
+        </article>
+
+        <!-- Proyección Social y Extensión Cultural -->
+        <article class="card">
+            <div class="card-body">
+                <i class="bi bi-people-fill card-icon"></i>
+                <h2 class="card-title">Proyección Social y Extensión Cultural</h2>
+                <p class="card-text">Agrega o edita tus actividades de proyección social y extensión cultural.</p>
+                <a href="{{ url_for('actividadesproyeccionsocial') }}" class="btn btn-primary">Agregar</a>
+            </div>
+        </article>
+
+        <!-- Producción Intelectual para la Enseñanza -->
+        <article class="card">
+            <div class="card-body">
+                <i class="bi bi-lightbulb-fill card-icon"></i>
+                <h2 class="card-title">Producción Intelectual para la Enseñanza</h2>
+                <p class="card-text">Agrega o edita tu producción intelectual para la enseñanza.</p>
+                <a href="{{ url_for('produccion_intelectual') }}" class="btn btn-primary">Agregar</a>
+            </div>
+        </article>
+
+        <!-- Investigación, Producción Científica y Tecnológica -->
+        <article class="card">
+            <div class="card-body">
+                <i class="bi bi-search-heart card-icon"></i>
+                <h2 class="card-title">Investigación, Producción Científica y Tecnológica</h2>
+                <p class="card-text">Agrega o edita tus investigaciones y producción científica y tecnológica.</p>
+                <a href="{{ url_for('investigaciones') }}" class="btn btn-primary">Agregar</a>
+            </div>
+        </article>
+        <!-- Registro de Patentes -->
+
+        <!-- Uso de Software Especializado -->
+        <article class="card">
+            <div class="card-body">
+                <i class="bi bi-controller card-icon"></i>
+                <h2 class="card-title">Uso de Software Especializado</h2>
+                <p class="card-text">Agrega o edita el software especializado que utilizas.</p>
+                <a href="{{ url_for('softwareespecializado') }}" class="btn btn-primary">Agregar</a>
+            </div>
+        </article>
+
+        <!-- Idiomas -->
+        <article class="card">
+            <div class="card-body">
+                <i class="bi bi-translate card-icon"></i>
+                <h2 class="card-title">Idiomas</h2>
+                <p class="card-text">Agrega o edita tus conocimientos de idiomas.</p>
+                <a href="{{ url_for('idiomas') }}" class="btn btn-primary">Agregar</a>
+            </div>
+        </article>
+
+        <!-- Apoyo al Estudiante -->
+        <article class="card">
+            <div class="card-body">
+                <i class="bi bi-people-fill card-icon"></i>
+                <h2 class="card-title">Apoyo al Estudiante</h2>
+                <p class="card-text">Agrega o edita tus actividades de apoyo al estudiante.</p>
+                <a href="{{ url_for('tutorias') }}" class="btn btn-primary">Agregar</a>
+            </div>
+        </article>
+
+        <!-- Reconocimientos y Distinciones -->
+        <article class="card">
+            <div class="card-body">
+                <i class="bi bi-award-fill card-icon"></i>
+                <h2 class="card-title">Reconocimientos y Distinciones</h2>
+                <p class="card-text">Agrega o edita tus reconocimientos y distinciones.</p>
+                <a href="{{ url_for('reconocimientos') }}" class="btn btn-primary">Agregar</a>
+            </div>
+        </article>
         
         {% if current_user.role == 'Administrador' %}
         <!-- Datos del Personal (Solo para Administradores) -->

@@ -13,72 +13,77 @@
 
 {% block body %}
 
-<div class="container mt-5 pt-5">
-    <h1 class="h3 mb-4 text-center">Editar Idioma</h1>
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center"><i class="bi bi-pencil-fill"></i> Editar Idioma</h1>
 
     <!-- Formulario para editar el idioma -->
-    <form method="POST" enctype="multipart/form-data">
-        {{ form.hidden_tag() }}
+    <div class="formularios-container">
+        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
 
-        <!-- Idioma -->
-        <div class="mb-3">
-            {{ form.idioma.label(class="form-label") }}
-            {{ form.idioma(class="form-select", id="idioma-select") }}
-            {% for error in form.idioma.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+            <!-- Idioma -->
+            <div class="mb-3">
+                {{ form.idioma.label(class="form-label") }}
+                {{ form.idioma(class="form-select", id="idioma-select", required=True) }}
+                {% for error in form.idioma.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
 
-        <!-- Otro Idioma (visible solo si se selecciona "Otro") -->
-        <div class="mb-3" id="otro-idioma-field" style="display: none;">
-            {{ form.otro_idioma.label(class="form-label") }}
-            {{ form.otro_idioma(class="form-control", maxlength="50") }}
-            {% for error in form.otro_idioma.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+            <!-- Otro Idioma (visible solo si se selecciona "Otro") -->
+            <div class="mb-3" id="otro-idioma-field" style="display: none;">
+                {{ form.otro_idioma.label(class="form-label") }}
+                {{ form.otro_idioma(class="form-control", maxlength="50", placeholder="Especificar otro idioma") }}
+                {% for error in form.otro_idioma.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
 
-        <!-- Nivel -->
-        <div class="mb-3">
-            {{ form.nivel.label(class="form-label") }}
-            {{ form.nivel(class="form-select") }}
-            {% for error in form.nivel.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+            <!-- Nivel -->
+            <div class="mb-3">
+                {{ form.nivel.label(class="form-label") }}
+                {{ form.nivel(class="form-select", required=True) }}
+                {% for error in form.nivel.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
 
-        <!-- Certificado -->
-        <div class="mb-3 form-check">
-            {{ form.certificado(class="form-check-input", id="certificado-checkbox") }}
-            {{ form.certificado.label(class="form-check-label") }}
-            {% for error in form.certificado.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+            <!-- Certificado -->
+            <div class="mb-3 form-check">
+                {{ form.certificado(class="form-check-input", id="certificado-checkbox") }}
+                {{ form.certificado.label(class="form-check-label", for="certificado-checkbox") }}
+                {% for error in form.certificado.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
 
-        <!-- Archivo -->
-        <div class="mb-3" id="archivo-field" style="display: none;">
-            {{ form.archivo.label(class="form-label") }}
-            {{ form.archivo(class="form-control") }}
-            {% for error in form.archivo.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+            <!-- Archivo (visible solo si se marca certificado) -->
+            <div class="mb-3" id="archivo-field" style="display: none;">
+                {{ form.archivo.label(class="form-label") }}
+                {{ form.archivo(class="form-control", placeholder="Subir certificado en PDF o imagen") }}
+                {% for error in form.archivo.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+                <div class="form-text">Dejar en blanco para mantener el archivo actual.</div>
+            </div>
 
-        <!-- Archivo Actual -->
-        {% if idioma.ruta_imagen %}
-        <div class="mb-3">
-            <label class="form-label">Archivo Actual:</label><br>
-            {% if idioma.categoria == 'imagen' %}
-                <img src="{{ url_for('uploaded_file', filename=idioma.ruta_imagen) }}" alt="Imagen Actual" style="max-width: 200px;">
-            {% elif idioma.categoria == 'pdf' %}
-                <a href="{{ url_for('uploaded_file', filename=idioma.ruta_imagen) }}" target="_blank">Ver PDF</a>
+            <!-- Archivo Actual -->
+            {% if idioma.ruta_imagen %}
+            <div class="mb-3">
+                <label class="form-label">Archivo Actual:</label><br>
+                {% if idioma.categoria == 'imagen' %}
+                    <img src="{{ url_for('uploaded_file', filename=idioma.ruta_imagen) }}" alt="Imagen Actual" class="img-thumbnail" style="max-width: 200px;">
+                {% elif idioma.categoria == 'pdf' %}
+                    <a href="{{ url_for('uploaded_file', filename=idioma.ruta_imagen) }}" target="_blank" class="btn btn-info btn-sm">
+                        <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
+                    </a>
+                {% endif %}
+            </div>
             {% endif %}
-        </div>
-        {% endif %}
 
-        {{ form.submit(class="btn btn-primary") }}
-    </form>
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    </div>
 </div>
 
 <!-- JavaScript para controlar la visibilidad de campos adicionales -->
@@ -117,14 +122,30 @@
         idiomaSelect.addEventListener('change', toggleOtroIdioma);
         certificadoCheckbox.addEventListener('change', toggleArchivo);
     });
+</script>
 
-    function mostrarConfirmacion(id) {
-        document.getElementById('confirmacion-' + id).style.display = 'block';
-    }
+<!-- Validación de formularios con Bootstrap -->
+<script>
+    // Ejemplo de validación de formularios con Bootstrap
+    (function () {
+      'use strict'
 
-    function ocultarConfirmacion(id) {
-        document.getElementById('confirmacion-' + id).style.display = 'none';
-    }
+      // Fetch all the forms we want to apply custom Bootstrap validation styles to
+      var forms = document.querySelectorAll('.needs-validation')
+
+      // Loop over them and prevent submission
+      Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+          form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+              event.preventDefault()
+              event.stopPropagation()
+            }
+
+            form.classList.add('was-validated')
+          }, false)
+        })
+    })()
 </script>
 
 {% endblock %}
