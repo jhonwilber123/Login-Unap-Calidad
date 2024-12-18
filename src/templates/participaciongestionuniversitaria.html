@@ -1,0 +1,215 @@
+<!-- templates/participaciongestionuniversitaria.html -->
+
+{% extends './base.html' %}
+
+{% block title %}Participación en Gestión Universitaria{% endblock %}
+
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+{% endblock %}
+
+{% block body %}
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center"><i class="bi bi-gear-fill"></i> Participación en Gestión Universitaria</h1>
+
+    <!-- Formulario para agregar nueva participación -->
+    <div class="formularios-container">
+        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- Área de Gestión -->
+            <div class="mb-3">
+                {{ form.area_gestion.label(class="form-label") }}
+                {{ form.area_gestion(class="form-select", id="area_gestion") }}
+                {% for error in form.area_gestion.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Campo "Otro Área de Gestión" -->
+            <div class="mb-3" id="otro_area_gestion_div" style="display: none;">
+                {{ form.otro_area_gestion.label(class="form-label") }}
+                {{ form.otro_area_gestion(class="form-control", maxlength="255", placeholder="Especifique otra área") }}
+                {% for error in form.otro_area_gestion.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Rol en la Gestión -->
+            <div class="mb-3">
+                {{ form.rol_gestion.label(class="form-label") }}
+                {{ form.rol_gestion(class="form-select", id="rol_gestion") }}
+                {% for error in form.rol_gestion.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Campo "Otro Rol" -->
+            <div class="mb-3" id="otro_rol_gestion_div" style="display: none;">
+                {{ form.otro_rol_gestion.label(class="form-label") }}
+                {{ form.otro_rol_gestion(class="form-control", maxlength="255", placeholder="Especifique otro rol") }}
+                {% for error in form.otro_rol_gestion.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Descripción de Responsabilidades -->
+            <div class="mb-3">
+                {{ form.descripcion_responsabilidades.label(class="form-label") }}
+                {{ form.descripcion_responsabilidades(class="form-control", rows="3", placeholder="Describa las responsabilidades asumidas") }}
+                {% for error in form.descripcion_responsabilidades.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Fechas -->
+            <div class="mb-3">
+                {{ form.fecha_inicio.label(class="form-label") }}
+                {{ form.fecha_inicio(class="form-control", placeholder="YYYY-MM-DD") }}
+                {% for error in form.fecha_inicio.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.fecha_fin.label(class="form-label") }}
+                {{ form.fecha_fin(class="form-control", placeholder="YYYY-MM-DD") }}
+                {% for error in form.fecha_fin.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Logros/Contribuciones -->
+            <div class="mb-3">
+                {{ form.logros_contribuciones.label(class="form-label") }}
+                {{ form.logros_contribuciones(class="form-control", rows="3", placeholder="Describa los logros o contribuciones") }}
+                {% for error in form.logros_contribuciones.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Archivo -->
+            <div class="mb-3">
+                {{ form.adjuntar_documentacion.label(class="form-label") }}
+                {{ form.adjuntar_documentacion(class="form-control") }}
+                {% for error in form.adjuntar_documentacion.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    </div>
+
+    <!-- Lista de participaciones en gestión universitaria -->
+    <div class="table-responsive mt-5">
+        <h2 class="h4 mb-3"><i class="bi bi-list-ul"></i> Participaciones Registradas</h2>
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Área de Gestión</th>
+                    <th>Rol</th>
+                    <th>Descripción de Responsabilidades</th>
+                    <th>Fecha Inicio</th>
+                    <th>Fecha Fin</th>
+                    <th>Logros/Contribuciones</th>
+                    <th>Archivo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in participaciones %}
+                <tr>
+                    <td>{{ p.area_gestion }}</td>
+                    <td>{{ p.rol_gestion }}</td>
+                    <td>{{ p.descripcion_responsabilidades }}</td>
+                    <td>{{ p.fecha_inicio.strftime('%d/%m/%Y') if p.fecha_inicio else 'N/A' }}</td>
+                    <td>{{ p.fecha_fin.strftime('%d/%m/%Y') if p.fecha_fin else 'N/A' }}</td>
+                    <td>{{ p.logros_contribuciones if p.logros_contribuciones else 'N/A' }}</td>
+                    <td>
+                        {% if p.ruta_imagen %}
+                            {% if p.categoria == 'imagen' %}
+                                <img src="{{ url_for('uploaded_file', filename=p.ruta_imagen) }}" alt="Imagen" class="img-thumbnail" style="max-width: 100px;">
+                            {% elif p.categoria == 'pdf' %}
+                                <a href="{{ url_for('uploaded_file', filename=p.ruta_imagen) }}" target="_blank" class="btn btn-sm btn-info">
+                                    <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('editar_participaciongestionuniversitaria', id=p.id) }}" class="btn btn-sm btn-warning mb-1">
+                            <i class="bi bi-pencil-fill"></i> Editar
+                        </a>
+                        <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal-{{ p.id }}">
+                            <i class="bi bi-trash-fill"></i> Eliminar
+                        </button>
+
+                        <!-- Modal de Confirmación de Eliminación -->
+                        <div class="modal fade" id="confirmDeleteModal-{{ p.id }}" tabindex="-1" aria-labelledby="confirmDeleteLabel-{{ p.id }}" aria-hidden="true">
+                          <div class="modal-dialog">
+                            <div class="modal-content">
+                              <div class="modal-header">
+                                <h5 class="modal-title" id="confirmDeleteLabel-{{ p.id }}">Confirmar Eliminación</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                              </div>
+                              <div class="modal-body">
+                                ¿Está seguro de que desea eliminar esta participación en gestión universitaria?
+                              </div>
+                              <div class="modal-footer">
+                                <form action="{{ url_for('eliminar_participaciongestionuniversitaria', id=p.id) }}" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                </form>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                   </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- JS para mostrar campos "Otro" -->
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        const areaSelect = document.getElementById('area_gestion');
+        const otroAreaDiv = document.getElementById('otro_area_gestion_div');
+        const rolSelect = document.getElementById('rol_gestion');
+        const otroRolDiv = document.getElementById('otro_rol_gestion_div');
+
+        function toggleOtroArea() {
+            if (areaSelect.value === 'Otro') {
+                otroAreaDiv.style.display = 'block';
+            } else {
+                otroAreaDiv.style.display = 'none';
+            }
+        }
+
+        function toggleOtroRol() {
+            if (rolSelect.value === 'Otro') {
+                otroRolDiv.style.display = 'block';
+            } else {
+                otroRolDiv.style.display = 'none';
+            }
+        }
+
+        // Ejecutar al cargar
+        toggleOtroArea();
+        toggleOtroRol();
+
+        // Eventos
+        areaSelect.addEventListener('change', toggleOtroArea);
+        rolSelect.addEventListener('change', toggleOtroRol);
+    });
+</script>
+
+{% endblock %}

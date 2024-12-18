@@ -42,6 +42,62 @@ class EditUserForm(FlaskForm):
     ])
     submit = SubmitField('Guardar Cambios')
 
+class ParticipacionGestionUniversitariaForm(FlaskForm):
+    area_gestion = SelectField(
+        'Área de Gestión',
+        choices=[
+            ('Administración Académica', 'Administración Académica'),
+            ('Administración Financiera', 'Administración Financiera'),
+            ('Desarrollo de Infraestructura', 'Desarrollo de Infraestructura'),
+            ('Innovación y Tecnología', 'Innovación y Tecnología'),
+            ('Otro', 'Otro')
+        ],
+        validators=[DataRequired()]
+    )
+    otro_area_gestion = StringField(
+        'Otra Área de Gestión',
+        validators=[Optional(), Length(max=255)]
+    )
+    rol_gestion = SelectField(
+        'Rol de Gestión',
+        choices=[
+            ('Coordinador', 'Coordinador'),
+            ('Secretario', 'Secretario'),
+            ('Miembro del Comité', 'Miembro del Comité'),
+            ('Otro', 'Otro')
+        ],
+        validators=[DataRequired()]
+    )
+    otro_rol_gestion = StringField(
+        'Otro Rol de Gestión',
+        validators=[Optional(), Length(max=255)]
+    )
+    descripcion_responsabilidades = TextAreaField(
+        'Descripción de Responsabilidades',
+        validators=[DataRequired()]
+    )
+    fecha_inicio = DateField(
+        'Fecha de Inicio',
+        validators=[DataRequired()],
+        format='%Y-%m-%d'
+    )
+    fecha_fin = DateField(
+        'Fecha de Fin',
+        validators=[DataRequired()],
+        format='%Y-%m-%d'
+    )
+    logros_contribuciones = TextAreaField(
+        'Logros y Contribuciones',
+        validators=[Optional()]
+    )
+    adjuntar_documentacion = FileField(
+        'Adjuntar Documentación',
+        validators=[
+            Optional(),
+            FileAllowed(['pdf', 'jpg', 'jpeg', 'png'], 'Solo se permiten archivos PDF o imágenes.')
+        ]
+    )
+    submit = SubmitField('Guardar')
 
 class EvaluacionDesempenoDocenteForm(FlaskForm):
     periodo_academico_evaluado = StringField(
@@ -83,7 +139,7 @@ class EvaluacionDesempenoDocenteForm(FlaskForm):
         places=2
     )
     informes_evaluacion = FileField(
-        'Adjuntar Informes de Evaluación (PDF)',
+        'Adjuntar Resultados de Evaluación (PDF)',
         validators=[
             DataRequired(message='Este campo es obligatorio.'),
             FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
@@ -169,7 +225,7 @@ class InformacionPersonalForm(FlaskForm):
         Optional()
     ])
     constancia_habilitacion = FileField('Constancia de Habilitación', validators=[
-        FileAllowed(['pdf', 'jpg', 'png'], 'Solo se permiten PDF o imágenes'),
+        FileAllowed(['pdf'], 'Solo se permiten PDF'),
         Optional()
     ])
     
@@ -179,18 +235,18 @@ class InformacionPersonalForm(FlaskForm):
 class CargaAcademicaLectivaForm(FlaskForm):
     periodo_academico = SelectField(
         'Período Académico',
-        choices=[('', '--- Seleccione una opción ---'), ('2023-I', '2023-I'), ('2023-II', '2023-II'), ('2024-I', '2024-I')],
+        choices=[('', '--- Seleccione una opción ---'), ('2023-I', '2023-I'), ('2023-II', '2023-II'), ('2024-I', '2024-I'), ('2024-II', '2024-II')],
         validators=[DataRequired(message='Este campo es obligatorio.')]
     )
     numero_memorandum = StringField(
-        'Número de Memorándum', 
+        'Número de Memorándum de Carga Académica', 
         validators=[
             DataRequired(message='Este campo es obligatorio.'),
             Length(max=50, message='Máximo 50 caracteres.')
         ]
     )
     archivo_memorandum = FileField(
-        'Archivo PDF del Memorándum', 
+        'Archivo PDF del Memorándum de Carga Académica', 
         validators=[
             DataRequired(message='Este campo es obligatorio.'),
             FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
@@ -198,15 +254,15 @@ class CargaAcademicaLectivaForm(FlaskForm):
         ]
     )
     categoria_docente = SelectField(
-        'Categoría Docente', 
+        'Categoría Docente durante el Período Académico', 
         choices=[('', 'Seleccione una opción'), ('Auxiliar', 'Auxiliar'), ('Asociado', 'Asociado'), ('Principal', 'Principal')], 
         validators=[DataRequired(message='Debe seleccionar una categoría.')]
     )
     horas_asignadas = IntegerField(
-        'Horas Asignadas', 
+        'Horas Asignadas durante el Período Académico', 
         validators=[
             DataRequired(message='Este campo es obligatorio.'),
-            NumberRange(min=1, max=40, message='Las horas asignadas deben estar entre 1 y 40.')
+            NumberRange(min=1, max=30, message='Las horas asignadas deben estar entre 1 y 30.')
         ]
     )
     observaciones = TextAreaField(
@@ -223,7 +279,7 @@ class TutoriaForm(FlaskForm):
     ])
     archivo = FileField('Adjuntar Archivo (Imagen o PDF)', validators=[
         Optional(),
-        FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'pdf'], 'Solo se permiten imágenes y archivos PDF.'),
+        FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
         file_size_limit(10 * 1024 * 1024)  # 10 MB
     ])
     submit = SubmitField('Guardar')
@@ -528,7 +584,7 @@ class InvestigacionesForm(FlaskForm):
         validators=[DataRequired(message='Debe seleccionar un tipo de investigación.')]
     )
     titulo = StringField(
-        'Título',
+        'Denominación',
         validators=[
             DataRequired(message='Este campo es obligatorio.'),
             Length(max=255, message='Máximo 255 caracteres.')
@@ -656,7 +712,7 @@ class IdiomasForm(FlaskForm):
 
 class GradostitulosForm(FlaskForm):
     titulo = StringField(
-        'Denominación',
+        'Denominación del Grado o Título',
         validators=[
             DataRequired(message='Este campo es obligatorio.'),
             Length(max=255, message='Máximo 255 caracteres.')
@@ -667,7 +723,7 @@ class GradostitulosForm(FlaskForm):
         choices=[
             ('', '--- Seleccione una opción ---'),
             ('Grado de Bachiller', 'Grado de Bachiller'),
-            ('Título Profesional', 'Título Profesional (Adjuntar certificado de habilidad en el colegio profesional correspondiente)'),
+            ('Título Profesional', 'Título Profesional (Adjuntar certificado de habilidad)'),
             ('Título de Segunda Especialidad Profesional', 'Título de Segunda Especialidad Profesional'),
             ('Maestría (un año de duración)', 'Maestría (un año de duración)'),
             ('Maestría (dos años de duración)', 'Maestría (dos años de duración)'),
@@ -922,7 +978,7 @@ class GradostitulosForm(FlaskForm):
         ]
     )
     archivo_sunedu = FileField(
-        'Adjuntar Archivo SUNEDU',
+        'Adjuntar Constancia SUNEDU',
         validators=[
             DataRequired(message='Este campo es obligatorio.'),
             FileAllowed(['pdf'], 'Solo se permiten Archivos PDF.'),
@@ -1016,15 +1072,15 @@ class ActualizacionesCapacitacionesForm(FlaskForm):
             ('Curso Virtual', 'Curso Virtual'),
             ('Diplomado Presencial', 'Diplomado Presencial'),
             ('Diplomado Virtual', 'Diplomado Virtual'),
-            ('Segunda Especialidad', 'Segunda Especialidad'),
-            ('Maestría', 'Maestría'),
-            ('Doctorado', 'Doctorado'),
-            ('Especialización en Docencia Universitaria', 'Especialización en Docencia Universitaria')
+            ('Segunda Especialidad', 'Estudios de Segunda Especialidad'),
+            ('Maestría', 'Estudios de Maestría'),
+            ('Doctorado', 'Estudios de Doctorado'),
+            ('Especialización en Docencia Universitaria', 'Estudios de Especialización en Docencia Universitaria')
         ],
         validators=[DataRequired(message='Debe seleccionar un tipo de capacitación.')]
     )
     descripcion = StringField(
-        'Descripción',
+        'Denominación de la Actualización Profesional o Los Estudios',
         validators=[
             DataRequired(message='Este campo es obligatorio.'),
             Length(max=255, message='Máximo 255 caracteres.')
@@ -1060,7 +1116,7 @@ class ActualizacionesCapacitacionesForm(FlaskForm):
     )
 
     archivo = FileField(
-        'Adjuntar Archivo (Imagen o PDF)',
+        'Adjuntar Archivo (PDF)',
         validators=[
             Optional(),
             FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'pdf'], 'Solo se permiten imágenes y archivos PDF.'),
@@ -1136,7 +1192,7 @@ class CargosDirectivosForm(FlaskForm):
         ]
     )
     archivo = FileField(
-        'Adjuntar Archivo (Imagen o PDF)',
+        'Adjuntar resolucion o memorandum (PDF)',
         validators=[
             Optional(),
             FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'pdf'], 'Solo se permiten imágenes y archivos PDF.'),
@@ -1194,7 +1250,7 @@ class ExperienciaDocenteForm(FlaskForm):
 
 class AcreditacionLicenciamientoForm(FlaskForm):
     cargo = StringField(
-        'Cargo o Rol en el Proceso',
+        'Cargo en el Comité de Calidad, Licenciamiento y Acreditación',
         validators=[
             DataRequired(message='Este campo es obligatorio.'),
             Length(max=255, message='Máximo 255 caracteres.')
@@ -1253,7 +1309,7 @@ class AcreditacionLicenciamientoForm(FlaskForm):
         ]
     )
     resolucion_nombramiento = FileField(
-        'Adjuntar Copia de Resolución de Nombramiento (PDF)',
+        'Adjuntar Resolución (archivo PDF)',
         validators=[
             DataRequired(message='Este campo es obligatorio.'),
             FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
@@ -1268,7 +1324,7 @@ class AcreditacionLicenciamientoForm(FlaskForm):
         ]
     )
     evidencias = FileField(
-        'Adjuntar Evidencias (PDF)',
+        'Adjuntar Informe de las Comisiones y/o Subcomisiones (PDF)',
         validators=[
             Optional(),
             FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),

@@ -63,10 +63,10 @@
             fetch('/validate-password', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Type': 'application/json',
                     'X-CSRFToken': '{{ csrf_token() }}'
                 },
-                body: `password=${encodeURIComponent(password)}`
+                body: JSON.stringify({ 'password': password })
             })
             .then(response => response.json())
             .then(data => {
@@ -81,15 +81,6 @@
             })
             .catch(error => console.error('Error:', error));
         });
-
-        const form = document.querySelector('.needs-validation');
-        form.addEventListener('submit', function (event) {
-            if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            form.classList.add('was-validated');
-        }, false);
     });
 </script>
 {% endblock %}

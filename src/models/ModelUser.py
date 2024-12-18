@@ -175,6 +175,6 @@ class ModelUser():
 
     @classmethod
     def is_password_strong(cls, password):
-        # La contraseña debe tener al menos 8 caracteres, una letra mayúscula, una minúscula, un número y un símbolo especial
-        pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
+        # La contraseña debe tener al menos 8 caracteres, una letra mayúscula, una minúscula y un número
+        pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)[A-Za-z\d]{8,}$'
         return re.match(pattern, password) is not None

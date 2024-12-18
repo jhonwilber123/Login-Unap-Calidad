@@ -21,11 +21,29 @@
         <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
             {{ form.hidden_tag() }}
 
+
+            <!-- Tipo de Título -->
+            <div class="mb-3">
+                {{ form.tipo.label(class="form-label") }}
+                {{ form.tipo(class="form-select") }}
+                {% for error in form.tipo.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
             <!-- Título -->
             <div class="mb-3">
                 {{ form.titulo.label(class="form-label") }}
                 {{ form.titulo(class="form-control", maxlength="255", placeholder="Nombre del Título") }}
                 {% for error in form.titulo.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Archivo -->
+            <div class="mb-3">
+                {{ form.archivo.label(class="form-label") }}
+                {{ form.archivo(class="form-control") }}
+                {% for error in form.archivo.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </div>
@@ -39,14 +57,7 @@
                 {% endfor %}
             </div>
 
-            <!-- Tipo de Título -->
-            <div class="mb-3">
-                {{ form.tipo.label(class="form-label") }}
-                {{ form.tipo(class="form-select") }}
-                {% for error in form.tipo.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
+
 
             <!-- País -->
             <div class="mb-3">
@@ -93,14 +104,7 @@
                 {% endfor %}
             </div>
 
-            <!-- Archivo -->
-            <div class="mb-3">
-                {{ form.archivo.label(class="form-label") }}
-                {{ form.archivo(class="form-control") }}
-                {% for error in form.archivo.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
+
 
             {{ form.submit(class="btn btn-primary") }}
         </form>

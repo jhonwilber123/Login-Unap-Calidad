@@ -16,13 +16,14 @@ from config import config
 # Importar el formulario
 from forms import TutoriaForm, EvaluacionDesempenoDocenteForm, SoftwareEspecializadoForm, ReconocimientosForm, ProduccionIntelectualForm, ParticipacionTesisForm 
 from forms import InvestigacionesForm, IdiomasForm, GradostitulosForm, ActividadesProyeccionSocialForm, CargaAcademicaLectivaForm 
-from forms import ActualizacionesCapacitacionesForm, AcreditacionLicenciamientoForm, CargosDirectivosForm, ExperienciaDocenteForm, InformacionPersonalForm, EditUserForm
+from forms import ActualizacionesCapacitacionesForm, ParticipacionGestionUniversitariaForm,  AcreditacionLicenciamientoForm, CargosDirectivosForm, ExperienciaDocenteForm, InformacionPersonalForm, EditUserForm
 
 # Models:
 from models.ModelUser import ModelUser
 
 # Entities:
 from models.entities.User import User
+
 
 # Configuración de Flask
 app = Flask(__name__)
@@ -452,6 +453,7 @@ def uploaded_file(filename):
     print(f"Ruta del archivo: {file_path}")
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
+
 # Ruta para listar y agregar grados y títulos
 # Ruta para editar un grado/título
 # Ruta para agregar un nuevo grado/título con imagen
@@ -666,8 +668,266 @@ def eliminar_evaluacion_desempeno_docente(id_evaluacion):
 
     return redirect(url_for('listar_evaluaciones_desempeno_docente'))
 
+# --- RUTA PARA AGREGAR Y LISTAR participacionengestionuniversitaria ---
+@app.route('/participaciongestionuniversitaria', methods=['GET', 'POST'])
+@login_required
+def participaciongestionuniversitaria():
+    form = ParticipacionGestionUniversitariaForm()
+    if form.validate_on_submit():
+        area_gestion = form.area_gestion.data
+        otro_area_gestion = form.otro_area_gestion.data
+        rol_gestion = form.rol_gestion.data
+        otro_rol_gestion = form.otro_rol_gestion.data
+        descripcion_responsabilidades = form.descripcion_responsabilidades.data
+        fecha_inicio = form.fecha_inicio.data
+        fecha_fin = form.fecha_fin.data
+        logros_contribuciones = form.logros_contribuciones.data
 
-# --- RUTA PARA AGREGAR Y LISTAR TÍTULOS ---
+        # Manejo de "Otro" en area_gestion
+        if area_gestion == 'Otro':
+            area_gestion = otro_area_gestion
+
+        # Manejo de "Otro" en rol_gestion
+        if rol_gestion == 'Otro':
+            rol_gestion = otro_rol_gestion
+
+        # Manejo del archivo adjunto
+        archivo = form.adjuntar_documentacion.data
+        id_imagen = None
+        if archivo:
+            if allowed_file(archivo.filename):
+                filename = secure_filename(archivo.filename)
+                unique_filename = f"{int(time.time())}_{filename}"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                archivo.save(file_path)
+
+                # Determinar el tipo de archivo
+                file_extension = filename.rsplit('.', 1)[1].lower()
+                if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
+                    categoria = 'imagen'
+                elif file_extension == 'pdf':
+                    categoria = 'pdf'
+                else:
+                    flash('Debe seleccionar un archivo válido (imagen o PDF).', 'danger')
+                    return redirect(request.url)
+
+                # Insertar el archivo y obtener su id_imagen
+                cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+                cur.execute("""
+                    INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
+                    VALUES (%s, %s, %s, %s)
+                """, (current_user.id, categoria, "Documento Gestión Universitaria", unique_filename))
+                db.connection.commit()
+                id_imagen = cur.lastrowid
+                cur.close()
+            else:
+                flash('Archivo no permitido.', 'danger')
+                return redirect(request.url)
+
+        # Insertar la participación en gestión universitaria
+        cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+        cur.execute("""
+            INSERT INTO participaciongestionuniversitaria 
+            (area_gestion, rol_gestion, descripcion_responsabilidades, fecha_inicio, fecha_fin, logros_contribuciones, adjuntar_documentacion)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (area_gestion, rol_gestion, descripcion_responsabilidades, fecha_inicio, fecha_fin, logros_contribuciones, id_imagen))
+        db.connection.commit()
+        cur.close()
+
+        flash('Participación en gestión universitaria agregada correctamente', 'success')
+        return redirect(url_for('participaciongestionuniversitaria'))
+
+    # Obtener las participaciones en gestión universitaria
+    cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+    cur.execute("""
+        SELECT 
+            p.id,
+            p.area_gestion,
+            p.rol_gestion,
+            p.descripcion_responsabilidades,
+            p.fecha_inicio,
+            p.fecha_fin,
+            p.logros_contribuciones,
+            ia.ruta_imagen,
+            ia.categoria
+        FROM participaciongestionuniversitaria p
+        LEFT JOIN imagenesadjuntas ia ON p.adjuntar_documentacion = ia.id_imagen
+    """)
+    participaciones = cur.fetchall()
+    cur.close()
+
+    return render_template('participaciongestionuniversitaria.html', participaciones=participaciones, form=form)
+
+@app.route('/editar_participaciongestionuniversitaria/<int:id>', methods=['GET', 'POST'])
+@login_required
+def editar_participaciongestionuniversitaria(id):
+    form = ParticipacionGestionUniversitariaForm()
+    cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    # Obtener datos actuales
+    cur.execute("""
+        SELECT 
+            p.id,
+            p.area_gestion,
+            p.rol_gestion,
+            p.descripcion_responsabilidades,
+            p.fecha_inicio,
+            p.fecha_fin,
+            p.logros_contribuciones,
+            p.adjuntar_documentacion,
+            ia.ruta_imagen,
+            ia.categoria
+        FROM participaciongestionuniversitaria p
+        LEFT JOIN imagenesadjuntas ia ON p.adjuntar_documentacion = ia.id_imagen
+        WHERE p.id = %s
+    """, (id,))
+    participacion = cur.fetchone()
+    cur.close()
+
+    if not participacion:
+        flash('Participación no encontrada', 'danger')
+        return redirect(url_for('participaciongestionuniversitaria'))
+
+    if form.validate_on_submit():
+        area_gestion = form.area_gestion.data
+        otro_area_gestion = form.otro_area_gestion.data
+        rol_gestion = form.rol_gestion.data
+        otro_rol_gestion = form.otro_rol_gestion.data
+        descripcion_responsabilidades = form.descripcion_responsabilidades.data
+        fecha_inicio = form.fecha_inicio.data
+        fecha_fin = form.fecha_fin.data
+        logros_contribuciones = form.logros_contribuciones.data
+        archivo = form.adjuntar_documentacion.data
+        id_imagen_actual = participacion['adjuntar_documentacion']
+
+        # Manejo de "Otro"
+        if area_gestion == 'Otro':
+            area_gestion = otro_area_gestion
+
+        if rol_gestion == 'Otro':
+            rol_gestion = otro_rol_gestion
+
+        if archivo:
+            if allowed_file(archivo.filename):
+                filename = secure_filename(archivo.filename)
+                unique_filename = f"{int(time.time())}_{filename}"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                archivo.save(file_path)
+
+                file_extension = filename.rsplit('.', 1)[1].lower()
+                if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
+                    categoria = 'imagen'
+                elif file_extension == 'pdf':
+                    categoria = 'pdf'
+                else:
+                    flash('Debe seleccionar un archivo válido (imagen o PDF).', 'danger')
+                    return redirect(request.url)
+
+                cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+                if id_imagen_actual:
+                    # Actualizar archivo existente
+                    cur.execute("""
+                        UPDATE imagenesadjuntas
+                        SET ruta_imagen = %s, categoria = %s, descripcion = %s, fecha_subida = NOW()
+                        WHERE id_imagen = %s AND id_usuario = %s
+                    """, (unique_filename, categoria, "Documento Gestión Universitaria", id_imagen_actual, current_user.id))
+                else:
+                    # Insertar nuevo archivo
+                    cur.execute("""
+                        INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
+                        VALUES (%s, %s, %s, %s)
+                    """, (current_user.id, categoria, "Documento Gestión Universitaria", unique_filename))
+                    db.connection.commit()
+                    id_imagen_nueva = cur.lastrowid
+                    # Actualizar la participación
+                    cur.execute("""
+                        UPDATE participaciongestionuniversitaria
+                        SET adjuntar_documentacion = %s
+                        WHERE id = %s
+                    """, (id_imagen_nueva, id))
+                db.connection.commit()
+                cur.close()
+            else:
+                flash('Archivo no permitido.', 'danger')
+                return redirect(request.url)
+
+        # Actualizar datos
+        cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+        cur.execute("""
+            UPDATE participaciongestionuniversitaria
+            SET area_gestion = %s, rol_gestion = %s, descripcion_responsabilidades = %s,
+                fecha_inicio = %s, fecha_fin = %s, logros_contribuciones = %s
+            WHERE id = %s
+        """, (area_gestion, rol_gestion, descripcion_responsabilidades, fecha_inicio, fecha_fin, logros_contribuciones, id))
+        db.connection.commit()
+        cur.close()
+
+        flash('Participación actualizada correctamente', 'success')
+        return redirect(url_for('participaciongestionuniversitaria'))
+
+    # Prellenar el formulario
+    if request.method == 'GET':
+        # Verificar si el valor actual de area_gestion está en la lista predefinida
+        valores_area = ['Administración Académica','Administración Financiera','Desarrollo de Infraestructura','Innovación y Tecnología']
+        if participacion['area_gestion'] not in valores_area:
+            form.area_gestion.data = 'Otro'
+            form.otro_area_gestion.data = participacion['area_gestion']
+        else:
+            form.area_gestion.data = participacion['area_gestion']
+            form.otro_area_gestion.data = ''
+
+        valores_rol = ['Coordinador','Secretario','Miembro del Comité']
+        if participacion['rol_gestion'] not in valores_rol:
+            form.rol_gestion.data = 'Otro'
+            form.otro_rol_gestion.data = participacion['rol_gestion']
+        else:
+            form.rol_gestion.data = participacion['rol_gestion']
+            form.otro_rol_gestion.data = ''
+
+        form.descripcion_responsabilidades.data = participacion['descripcion_responsabilidades']
+        form.fecha_inicio.data = participacion['fecha_inicio']
+        form.fecha_fin.data = participacion['fecha_fin']
+        form.logros_contribuciones.data = participacion['logros_contribuciones']
+
+    return render_template('editar_participaciongestionuniversitaria.html', participacion=participacion, form=form)
+
+@app.route('/eliminar_participaciongestionuniversitaria/<int:id>', methods=['POST'])
+@login_required
+def eliminar_participaciongestionuniversitaria(id):
+    cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    # Obtener id_imagen para eliminar si existe
+    cur.execute("""
+        SELECT adjuntar_documentacion FROM participaciongestionuniversitaria
+        WHERE id = %s
+    """, (id,))
+    result = cur.fetchone()
+
+    if result and result['adjuntar_documentacion']:
+        id_imagen = result['adjuntar_documentacion']
+        # Eliminar archivo físico
+        cur.execute("""
+            SELECT ruta_imagen FROM imagenesadjuntas
+            WHERE id_imagen = %s AND id_usuario = %s
+        """, (id_imagen, current_user.id))
+        imagen = cur.fetchone()
+        if imagen:
+            ruta_imagen = imagen['ruta_imagen']
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], ruta_imagen)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            # Eliminar imagen de la tabla imagenesadjuntas
+            cur.execute("DELETE FROM imagenesadjuntas WHERE id_imagen = %s AND id_usuario = %s", (id_imagen, current_user.id))
+            db.connection.commit()
+
+    # Eliminar la participación
+    cur.execute("DELETE FROM participaciongestionuniversitaria WHERE id = %s", (id,))
+    db.connection.commit()
+    cur.close()
+
+    flash('Participación eliminada correctamente', 'success')
+    return redirect(url_for('participaciongestionuniversitaria'))
+
 # --- RUTA PARA AGREGAR Y LISTAR TÍTULOS ---
 @app.route('/gradostitulos', methods=['GET', 'POST'])
 @login_required
