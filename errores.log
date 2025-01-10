@@ -1,0 +1,33 @@
+Error: La nueva contraseña no cumple con los requisitos de seguridad.
+cannot import name 'COMMAND' from 'MySQLdb.constants' (D:\UNAP CCS CURRICULUM\Main\Login-Unap-Calidad\env\Lib\site-packages\MySQLdb\constants\__init__.py)
+cannot import name 'COMMAND' from 'MySQLdb.constants' (D:\UNAP CCS CURRICULUM\Main\Login-Unap-Calidad\env\Lib\site-packages\MySQLdb\constants\__init__.py)
+cannot import name 'COMMAND' from 'MySQLdb.constants' (D:\UNAP CCS CURRICULUM\Main\Login-Unap-Calidad\env\Lib\site-packages\MySQLdb\constants\__init__.py)
+cannot import name 'COMMAND' from 'MySQLdb.constants' (D:\UNAP CCS CURRICULUM\Main\Login-Unap-Calidad\env\Lib\site-packages\MySQLdb\constants\__init__.py)
+cannot import name 'COMMAND' from 'MySQLdb.constants' (D:\UNAP CCS CURRICULUM\Main\Login-Unap-Calidad\env\Lib\site-packages\MySQLdb\constants\__init__.py)
+(1045, "Access denied for user 'ubvupzav_user_1_JW'@'localhost' (using password: YES)")
+(1045, "Access denied for user 'ubvupzav_user_1_JW'@'localhost' (using password: YES)")
+(1045, "Access denied for user 'ubvupzav_user_1_JW'@'localhost' (using password: YES)")
+(1045, "Access denied for user 'ubvupzav_user_1_JW'@'localhost' (using password: YES)")
+(1045, "Access denied for user 'ubvupzav_user_1_JW'@'localhost' (using password: YES)")
+(1045, "Access denied for user 'ubvupzav_user_1_JW'@'localhost' (using password: YES)")
+(1045, "Access denied for user 'ubvupzav_user_1_JW'@'localhost' (using password: YES)")
+(1045, "Access denied for user 'ubvupzav_user_1_JW'@'localhost' (using password: YES)")
+(1045, "Access denied for user 'ubvupzav_user_1_JW'@'localhost' (using password: YES)")
+(1045, "Access denied for user 'ubvupzav_user_1_JW'@'localhost' (using password: YES)")
+(1045, "Access denied for user 'ubvupzav_user_1_JW'@'localhost' (using password: YES)")
+(1045, "Access denied for user 'ubvupzav_user_1_JW'@'localhost' (using password: YES)")
+(1045, "Access denied for user 'ubvupzav_user_1_JW'@'localhost' (using password: YES)")
+(1045, "Access denied for user 'ubvupzav_user_1_JW'@'localhost' (using password: YES)")
+(1045, "Access denied for user 'ubvupzav_user_1_JW'@'localhost' (using password: YES)")
+(1045, "Access denied for user 'ubvupzav_user_1_JW'@'localhost' (using password: YES)")
+0
+2
+0
+2
+(2005, "Unknown server host 'localhost222' (11001)")
+(2005, "Unknown server host 'localhost222' (11001)")
+(1265, "Data truncated for column 'rol' at row 1")
+(1265, "Data truncated for column 'rol' at row 1")
+(1265, "Data truncated for column 'rol' at row 1")
+(1265, "Data truncated for column 'rol' at row 1")
+(1062, "Duplicate entry 'admin' for key 'usuarios.usuario'")

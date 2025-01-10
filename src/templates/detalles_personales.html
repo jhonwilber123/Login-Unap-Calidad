@@ -1,0 +1,84 @@
+{% extends './base.html' %}
+
+{% block title %}Detalles Personales{% endblock %}
+
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="mt-4">
+    <h1 class="h3 mb-4 text-center">Detalles Personales</h1>
+    
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card mb-4">
+                <div class="table-striped bg-primary text-white">
+                    <h2 class="card-body mb-0">{{ detalles[4] }} {{ detalles[2] }} {{ detalles[3] }}</h2>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <tr>
+                            <th>Nombre Completo</th>
+                            <td>{{ detalles[4] }} {{ detalles[2] }} {{ detalles[3] }}</td>
+                        </tr>
+                        <tr>
+                            <th>Código UNA</th>
+                            <td>{{ detalles[13] }}</td>
+                        </tr>
+                        <tr>
+                            <th>DNI</th>
+                            <td>{{ detalles[9] }}</td>
+                        </tr>
+                        <tr>
+                            <th>Fecha de Nacimiento</th>
+                            <td>{{ detalles[5] }}</td>
+                        </tr>
+                        <tr>
+                            <th>Lugar de Nacimiento</th>
+                            <td>
+                                {{ detalles[6] }}, 
+                                {{ detalles[7] }}, 
+                                {{ detalles[8] }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Condición</th>
+                            <td>{{ detalles[14] }}</td>
+                        </tr>
+                        <tr>
+                            <th>Categoría</th>
+                            <td>{{ detalles[15] }}</td>
+                        </tr>
+                        <tr>
+                            <th>Dedicación</th>
+                            <td>{{ detalles[16] }}</td>
+                        </tr>
+                        <tr>
+                            <th>Teléfono Fijo</th>
+                            <td>{{ detalles[17] or 'No registrado' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Teléfono Móvil</th>
+                            <td>{{ detalles[18] or 'No registrado' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Correo Personal</th>
+                            <td>{{ detalles[19] or 'No registrado' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Correo Institucional</th>
+                            <td>{{ detalles[20] or 'No registrado' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Domicilio Actual</th>
+                            <td>{{ detalles[21] or 'No registrado' }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+
+{% endblock %}

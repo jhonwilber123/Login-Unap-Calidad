@@ -1,0 +1,262 @@
+<!-- templates/produccion_intelectual.html -->
+
+{% extends './base.html' %}
+
+{% block title %}Producción Intelectual{% endblock %}
+
+{% block customCSS %}
+<!-- CSS específico para la página de Producción Intelectual -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+
+<!-- Estilos adicionales para campos deshabilitados -->
+<style>
+    /* Asegura que las etiquetas de checkboxes deshabilitados no sean transparentes */
+    .form-check-input:disabled + .form-check-label {
+        color: #6c757d; /* Color gris para indicar deshabilitado */
+        cursor: not-allowed;
+        opacity: 1; /* Mantiene la opacidad completa */
+    }
+
+    /* Opcional: Evita que todo el contenedor del checkbox se vuelva transparente */
+    .form-check-input:disabled {
+        opacity: 1; /* Mantiene la opacidad completa del checkbox */
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center"><i class="bi bi-journal-text"></i> Producción Intelectual Para la Enseñanza</h1>
+
+    <!-- Formulario para agregar una nueva producción intelectual -->
+    <div class="formularios-container">
+        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- Tipo -->
+            <div class="mb-3">
+                {{ form.tipo.label(class="form-label") }}
+                {{ form.tipo(class="form-select", required=True) }}
+                {% for error in form.tipo.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Título -->
+            <div class="mb-3">
+                {{ form.titulo.label(class="form-label") }}
+                {{ form.titulo(class="form-control", maxlength="255", placeholder="Título de la producción intelectual", required=True) }}
+                {% for error in form.titulo.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- ISBN -->
+            <div class="mb-3">
+                {{ form.isbn.label(class="form-label") }}
+                {{ form.isbn(class="form-control", maxlength="50", placeholder="ISBN (opcional)", required=False) }}
+                {% for error in form.isbn.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Depósito Legal -->
+            <div class="mb-3 form-check">
+                {{ form.deposito_legal(class="form-check-input", id="deposito_legal") }}
+                {{ form.deposito_legal.label(class="form-check-label", for="deposito_legal") }}
+                {% for error in form.deposito_legal.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Fecha de Publicación -->
+            <div class="mb-3">
+                {{ form.fecha_publicacion.label(class="form-label") }}
+                {{ form.fecha_publicacion(class="form-control", type="date", required=True) }}
+                {% for error in form.fecha_publicacion.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Autor y Coautor -->
+            <div class="mb-3">
+                <div class="form-check form-check-inline">
+                    {{ form.autor(class="form-check-input", id="autor") }}
+                    {{ form.autor.label(class="form-check-label", for="autor") }}
+                </div>
+                <div class="form-check form-check-inline ms-3">
+                    {{ form.coautor(class="form-check-input", id="coautor") }}
+                    {{ form.coautor.label(class="form-check-label", for="coautor") }}
+                </div>
+                {% for error in form.autor.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Editorial Prestigiosa -->
+            <div class="mb-3">
+                {{ form.editorial_prestigiosa.label(class="form-label") }}
+                {{ form.editorial_prestigiosa(class="form-select", required=True) }}
+                {% for error in form.editorial_prestigiosa.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Archivo -->
+            <div class="mb-3">
+                {{ form.archivo.label(class="form-label") }}
+                {{ form.archivo(class="form-control", placeholder="Subir archivo en PDF o imagen", required=False) }}
+                {% for error in form.archivo.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+                <div class="form-text">Dejar en blanco si no deseas subir un archivo.</div>
+            </div>
+
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    </div>
+
+    <!-- Lista de producciones intelectuales -->
+    <div class="table-responsive mt-5">
+        <h2 class="h4 mb-3"><i class="bi bi-list-ul"></i> Lista de Producciones Intelectuales</h2>
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Tipo</th>
+                    <th>Título</th>
+                    <th>ISBN</th>
+                    <th>Depósito Legal</th>
+                    <th>Fecha de Publicación</th>
+                    <th>Autor/Coautor</th>
+                    <th>Editorial Prestigiosa</th>
+                    <th>Archivo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for produccion in producciones %}
+                <tr>
+                    <td>{{ produccion.tipo }}</td>
+                    <td>{{ produccion.titulo }}</td>
+                    <td>{{ produccion.isbn or 'N/A' }}</td>
+                    <td>{{ 'Sí' if produccion.deposito_legal else 'No' }}</td>
+                    <td>{{ produccion.fecha_publicacion.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        {% if produccion.autor %}
+                            Autor
+                        {% endif %}
+                        {% if produccion.coautor %}
+                            {% if produccion.autor %}/{% endif %}
+                            Coautor
+                        {% endif %}
+                    </td>
+                    <td>{{ produccion.editorial_prestigiosa }}</td>
+                    <td>
+                        {% if produccion.ruta_imagen %}
+                            {% if produccion.categoria == 'imagen' %}
+                                <img src="{{ url_for('uploaded_file', filename=produccion.ruta_imagen) }}" alt="Imagen" class="img-thumbnail" style="max-width: 100px;">
+                            {% elif produccion.categoria == 'pdf' %}
+                                <a href="{{ url_for('uploaded_file', filename=produccion.ruta_imagen) }}" target="_blank" class="btn btn-sm btn-info">
+                                    <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('editar_produccion_intelectual', id_produccion=produccion.id_produccion) }}" class="btn btn-sm btn-warning mb-1">
+                            <i class="bi bi-pencil-fill"></i> Editar
+                        </a>
+                        <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal-{{ produccion.id_produccion }}">
+                            <i class="bi bi-trash-fill"></i> Eliminar
+                        </button>
+
+                        <!-- Modal de Confirmación de Eliminación -->
+                        <div class="modal fade" id="confirmDeleteModal-{{ produccion.id_produccion }}" tabindex="-1" aria-labelledby="confirmDeleteLabel-{{ produccion.id_produccion }}" aria-hidden="true">
+                          <div class="modal-dialog">
+                            <div class="modal-content">
+                              <div class="modal-header">
+                                <h5 class="modal-title" id="confirmDeleteLabel-{{ produccion.id_produccion }}">Confirmar Eliminación</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                              </div>
+                              <div class="modal-body">
+                                ¿Está seguro de que desea eliminar esta producción intelectual "<strong>{{ produccion.titulo }}</strong>"?
+                              </div>
+                              <div class="modal-footer">
+                                <form action="{{ url_for('eliminar_produccion_intelectual', id_produccion=produccion.id_produccion) }}" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                </form>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                   </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Validación de formularios con Bootstrap -->
+<script>
+    // Ejemplo de validación de formularios con Bootstrap
+    (function () {
+      'use strict'
+
+      // Fetch all the forms we want to apply custom Bootstrap validation styles to
+      var forms = document.querySelectorAll('.needs-validation')
+
+      // Loop over them and prevent submission
+      Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+          form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+              event.preventDefault()
+              event.stopPropagation()
+            }
+
+            form.classList.add('was-validated')
+          }, false)
+        })
+    })()
+</script>
+
+<!-- JavaScript para controlar la lógica de Autor/Coautor -->
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        const autorCheckbox = document.getElementById('autor');
+        const coautorCheckbox = document.getElementById('coautor');
+
+        function toggleCheckboxes() {
+            if (autorCheckbox.checked) {
+                coautorCheckbox.disabled = true;
+                coautorCheckbox.checked = false;
+            } else {
+                coautorCheckbox.disabled = false;
+            }
+
+            if (coautorCheckbox.checked) {
+                autorCheckbox.disabled = true;
+                autorCheckbox.checked = false;
+            } else {
+                autorCheckbox.disabled = false;
+            }
+        }
+
+        // Inicializar el estado al cargar la página
+        toggleCheckboxes();
+
+        // Asignar eventos
+        autorCheckbox.addEventListener('change', toggleCheckboxes);
+        coautorCheckbox.addEventListener('change', toggleCheckboxes);
+    });
+</script>
+
+{% endblock %}

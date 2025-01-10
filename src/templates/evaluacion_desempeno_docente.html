@@ -1,0 +1,117 @@
+<!-- templates/evaluacion_desempeno_docente.html -->
+
+{% extends './base.html' %}
+{% import 'macros.html' as macros %}
+
+{% block title %}Evaluación del Desempeño Docente{% endblock %}
+
+{% block customCSS %}
+<!-- CSS específico para la página de Evaluación del Desempeño Docente -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+
+<!-- Estilos adicionales para campos deshabilitados -->
+<style>
+    /* Asegura que las etiquetas de checkboxes deshabilitados no sean transparentes */
+    .form-check-input:disabled + .form-check-label {
+        color: #6c757d; /* Color gris para indicar deshabilitado */
+        cursor: not-allowed;
+        opacity: 1; /* Mantiene la opacidad completa */
+    }
+
+    .form-check-input:disabled {
+        opacity: 1; /* Mantiene la opacidad completa del checkbox */
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center"><i class="bi bi-plus-circle-fill"></i> Agregar Evaluación del Desempeño Docente</h1>
+
+    <!-- Formulario para agregar una nueva evaluación -->
+    <div class="formularios-container">
+        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- Período Académico Evaluado -->
+            <div class="mb-3">
+                {{ form.periodo_academico_evaluado.label(class="form-label") }}
+                {{ form.periodo_academico_evaluado(class="form-control", maxlength="100", placeholder="Período Académico Evaluado") }}
+                {% for error in form.periodo_academico_evaluado.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Categoría Docente -->
+            <div class="mb-3">
+                {{ form.categoria_docente.label(class="form-label") }}
+                {{ form.categoria_docente(class="form-control", maxlength="100", placeholder="Categoría Docente") }}
+                {% for error in form.categoria_docente.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Promedio de Evaluación General -->
+            <div class="mb-3">
+                {{ form.promedio_evaluacion_general.label(class="form-label") }}
+                {{ form.promedio_evaluacion_general(class="form-control", type="number", min="0", max="100", step="0.01", placeholder="Promedio de Evaluación General (%)") }}
+                {% for error in form.promedio_evaluacion_general.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Promedio de Evaluación por Autoridades -->
+            <div class="mb-3">
+                {{ form.promedio_evaluacion_autoridades.label(class="form-label") }}
+                {{ form.promedio_evaluacion_autoridades(class="form-control", type="number", min="0", max="100", step="0.01", placeholder="Promedio de Evaluación por Autoridades (%)") }}
+                {% for error in form.promedio_evaluacion_autoridades.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Promedio de Evaluación por Estudiantes -->
+            <div class="mb-3">
+                {{ form.promedio_evaluacion_estudiantes.label(class="form-label") }}
+                {{ form.promedio_evaluacion_estudiantes(class="form-control", type="number", min="0", max="100", step="0.01", placeholder="Promedio de Evaluación por Estudiantes (%)") }}
+                {% for error in form.promedio_evaluacion_estudiantes.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Adjuntar Informes de Evaluación -->
+            <div class="mb-3">
+                {{ form.informes_evaluacion.label(class="form-label") }}
+                {{ form.informes_evaluacion(class="form-control") }}
+                {% for error in form.informes_evaluacion.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+                <div class="form-text">Adjunta el informe de evaluación en formato PDF.</div>
+            </div>
+
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('listar_evaluaciones_desempeno_docente') }}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+
+<!-- JavaScript para validación de formularios -->
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        // Validación de formularios Bootstrap
+        var forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    });
+</script>
+
+{% endblock %}

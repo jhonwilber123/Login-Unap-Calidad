@@ -1,0 +1,134 @@
+<!-- templates/editar_carga_academica.html -->
+
+{% extends './base.html' %}
+
+{% block title %}Editar Carga Académica{% endblock %}
+
+{% block customCSS %}
+<!-- CSS específico para la página de Editar Carga Académica -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+
+<!-- Estilos adicionales para campos deshabilitados -->
+<style>
+    /* Asegura que las etiquetas de checkboxes deshabilitados no sean transparentes */
+    .form-check-input:disabled + .form-check-label {
+        color: #6c757d; /* Color gris para indicar deshabilitado */
+        cursor: not-allowed;
+        opacity: 1; /* Mantiene la opacidad completa */
+    }
+
+    .form-check-input:disabled {
+        opacity: 1; /* Mantiene la opacidad completa del checkbox */
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center"><i class="bi bi-pencil-fill"></i> Editar Carga Académica</h1>
+
+    <!-- Formulario para editar la carga académica -->
+    <div class="formularios-container">
+        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- Período Académico -->
+            <div class="mb-3">
+                {{ form.periodo_academico.label(class="form-label") }}
+                {{ form.periodo_academico(class="form-select") }}
+                {% for error in form.periodo_academico.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Número de Memorándum de Asignación de Carga -->
+            <div class="mb-3">
+                {{ form.numero_memorandum.label(class="form-label") }}
+                {{ form.numero_memorandum(class="form-control", maxlength="100", placeholder="Número de Memorándum") }}
+                {% for error in form.numero_memorandum.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Memorándum Actual -->
+            {% if carga.ruta_imagen %}
+            <div class="mb-3">
+                <label class="form-label">Memorándum Actual:</label><br>
+                {% if carga.ruta_imagen.lower().endswith(('.jpg', '.jpeg', '.png', '.gif')) %}
+                    <img src="{{ url_for('uploaded_file', filename=carga.ruta_imagen) }}" alt="Imagen" class="img-thumbnail" style="max-width: 200px;">
+                {% elif carga.ruta_imagen.lower().endswith('.pdf') %}
+                    <a href="{{ url_for('uploaded_file', filename=carga.ruta_imagen) }}" target="_blank" class="btn btn-sm btn-info">
+                        <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF Actual
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('uploaded_file', filename=carga.ruta_imagen) }}" target="_blank" class="btn btn-sm btn-secondary">
+                        <i class="bi bi-file-earmark-fill"></i> Ver Archivo Actual
+                    </a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Archivo PDF del Memorándum -->
+            <div class="mb-3">
+                {{ form.archivo_memorandum.label(class="form-label") }}
+                {{ form.archivo_memorandum(class="form-control") }}
+                {% for error in form.archivo_memorandum.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+                <div class="form-text">Deja este campo vacío si no deseas actualizar el memorándum actual.</div>
+            </div>
+
+            <!-- Categoría Docente -->
+            <div class="mb-3">
+                {{ form.categoria_docente.label(class="form-label") }}
+                {{ form.categoria_docente(class="form-select") }}
+                {% for error in form.categoria_docente.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Horas Asignadas -->
+            <div class="mb-3">
+                {{ form.horas_asignadas.label(class="form-label") }}
+                {{ form.horas_asignadas(class="form-control", type="number", min="0", placeholder="Número de Horas") }}
+                {% for error in form.horas_asignadas.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Observaciones -->
+            <div class="mb-3">
+                {{ form.observaciones.label(class="form-label") }}
+                {{ form.observaciones(class="form-control", rows="3", placeholder="Observaciones (opcional)") }}
+                {% for error in form.observaciones.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('carga_academica') }}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+
+<!-- JavaScript para control de formularios y modales de eliminación -->
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        // Validación de formularios Bootstrap
+        var forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    });
+</script>
+
+{% endblock %}

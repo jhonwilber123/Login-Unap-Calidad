@@ -1,0 +1,113 @@
+<!-- templates/editar_experienciadocente.html -->
+
+{% extends './base.html' %}
+
+{% block title %}Editar Experiencia Docente{% endblock %}
+
+{% block customCSS %}
+<!-- CSS específico para la página de Editar Experiencia Docente -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+{% endblock %}
+
+{% block body %}
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center"><i class="bi bi-pencil-fill"></i> Editar Experiencia Docente</h1>
+
+    <!-- Formulario para editar la experiencia docente -->
+    <div class="formularios-container">
+        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- Tipo de Experiencia -->
+            <div class="mb-3">
+                {{ form.tipo.label(class="form-label") }}
+                {{ form.tipo(class="form-select", required=True) }}
+                {% for error in form.tipo.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Descripción -->
+            <div class="mb-3">
+                {{ form.descripcion.label(class="form-label") }}
+                {{ form.descripcion(class="form-control", maxlength="255", placeholder="Descripción de la experiencia docente", required=True) }}
+                {% for error in form.descripcion.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Años de Experiencia -->
+            <div class="mb-3">
+                {{ form.anios.label(class="form-label") }}
+                {{ form.anios(class="form-control", type="number", min="0", placeholder="Número de años de experiencia", required=True) }}
+                {% for error in form.anios.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Cantidad de Cursos -->
+            <div class="mb-3">
+                {{ form.cursos.label(class="form-label") }}
+                {{ form.cursos(class="form-control", type="number", min="0", placeholder="Número de cursos impartidos", required=True) }}
+                {% for error in form.cursos.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Archivo Actual -->
+            {% if experiencia.ruta_imagen %}
+            <div class="mb-3">
+                <label class="form-label">Archivo Actual:</label><br>
+                {% if experiencia.categoria == 'imagen' %}
+                    <img src="{{ url_for('uploaded_file', filename=experiencia.ruta_imagen) }}" alt="Imagen Actual" class="img-thumbnail" style="max-width: 200px;">
+                {% elif experiencia.categoria == 'pdf' %}
+                    <a href="{{ url_for('uploaded_file', filename=experiencia.ruta_imagen) }}" target="_blank" class="btn btn-info btn-sm">
+                        <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
+                    </a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Archivo Nuevo -->
+            <div class="mb-3">
+                {{ form.archivo.label(class="form-label") }}
+                {{ form.archivo(class="form-control", required=False) }}
+                {% for error in form.archivo.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+                <div class="form-text">Dejar en blanco para mantener el archivo actual.</div>
+            </div>
+
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    </div>
+</div>
+
+<!-- Validación de formularios con Bootstrap -->
+<script>
+    // Ejemplo de validación de formularios con Bootstrap
+    (function () {
+      'use strict'
+
+      // Fetch all the forms we want to apply custom Bootstrap validation styles to
+      var forms = document.querySelectorAll('.needs-validation')
+
+      // Loop over them and prevent submission
+      Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+          form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+              event.preventDefault()
+              event.stopPropagation()
+            }
+
+            form.classList.add('was-validated')
+          }, false)
+        })
+    })()
+</script>
+
+{% endblock %}

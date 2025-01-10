@@ -1,0 +1,32 @@
+<!-- src/templates/titulo.html -->
+
+{% extends './base.html' %}
+
+{% block title %}Títulos de los Docentes{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1 class="h3 mb-4 text-center">Títulos de los Docentes</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID Grado</th>
+                <th>Título</th>
+                <th>Tipo</th>
+                <th>Docente</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for titulo in titulos %}
+            <tr>
+                <td>{{ titulo[0] }}</td>
+                <td>{{ titulo[1] }}</td>
+                <td>{{ titulo[2] }}</td>
+                <td>{{ titulo[3] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+    

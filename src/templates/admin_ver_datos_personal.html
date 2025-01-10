@@ -1,0 +1,80 @@
+<!-- templates/datos_personal.html -->
+
+{% extends './base.html' %}
+
+{% block title %}Datos del Personal{% endblock %}
+
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+<!-- Incluimos Bootstrap Icons si es necesario -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.3/font/bootstrap-icons.css">
+{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center"><i class="bi bi-people-fill"></i> Datos del Personal</h1>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Código UNA</th>
+                    <th>Usuario</th>
+                    <th>Rol</th>
+                    <th>Nombres</th>
+                    <th>Apellidos</th>
+                    <th>DNI</th>
+                    <th>Correo</th>
+                    <th>Móvil</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in usuarios %}
+                <tr>
+                    <td>{{ user[9] }}</td>
+                    <td>{{ user[1] }}</td>
+                    <td>{{ user[2] }}</td>
+                    <td>{{ user[3] }}</td>
+                    <td>{{ user[4] }} {{ user[5] }}</td>
+                    <td>{{ user[6] }}</td>
+                    <td>{{ user[7] }}</td>
+                    <td>{{ user[8] }}</td>
+                    <td>
+                        <a href="{{ url_for('view_all_data', user_id=user[0]) }}" 
+                           class="btn btn-sm btn-primary">
+                           <i class="bi bi-eye-fill"></i> Ver Detalles
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginación -->
+    <nav aria-label="Paginación">
+        <ul class="pagination justify-content-center">
+            {% if page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('ver_datos_personal', page=page-1) }}">Anterior</a>
+            </li>
+            {% endif %}
+
+            {% for p in range(1, total_paginas + 1) %}
+            <li class="page-item {{ 'active' if p == page else '' }}">
+                <a class="page-link" href="{{ url_for('ver_datos_personal', page=p) }}">{{ p }}</a>
+            </li>
+            {% endfor %}
+
+            {% if page < total_paginas %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('ver_datos_personal', page=page+1) }}">Siguiente</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% endblock %}

@@ -1,0 +1,193 @@
+<!-- templates/editar_gradostitulos.html -->
+
+{% extends './base.html' %}
+
+{% block title %}Editar Título Académico{% endblock %}
+
+{% block customCSS %}
+<!-- CSS específico para la página de Editar Título Académico -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+{% endblock %}
+
+{% block body %}
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center"><i class="bi bi-pencil-fill"></i> Editar Título Académico</h1>
+
+    <!-- Formulario para editar el título -->
+    <div class="formularios-container">
+        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- Título -->
+            <div class="mb-3">
+                {{ form.titulo.label(class="form-label") }}
+                {{ form.titulo(class="form-control", maxlength="255", placeholder="Nombre del Título") }}
+                {% for error in form.titulo.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Tipo de Título -->
+            <div class="mb-3">
+                {{ form.tipo.label(class="form-label") }}
+                {{ form.tipo(class="form-select") }}
+                {% for error in form.tipo.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Universidad -->
+            <div class="mb-3">
+                {{ form.universidad.label(class="form-label") }}
+                {{ form.universidad(class="form-select", id="universidad") }}
+                {% for error in form.universidad.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Campo "Otra Universidad" -->
+            <div class="mb-3" id="otro_universidad_div" style="display: none;">
+                {{ form.otro_universidad.label(class="form-label") }}
+                {{ form.otro_universidad(class="form-control", maxlength="255", placeholder="Nombre de otra universidad") }}
+                {% for error in form.otro_universidad.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- País -->
+            <div class="mb-3">
+                {{ form.pais.label(class="form-label") }}
+                {{ form.pais(class="form-select", id="pais") }}
+                {% for error in form.pais.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Campo "Otro País" -->
+            <div class="mb-3" id="otro_pais_div" style="display: none;">
+                {{ form.otro_pais.label(class="form-label") }}
+                {{ form.otro_pais(class="form-control", maxlength="255", placeholder="Nombre de otro país") }}
+                {% for error in form.otro_pais.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Fecha de Expedición -->
+            <div class="mb-3">
+                {{ form.fecha_expedicion.label(class="form-label") }}
+                {{ form.fecha_expedicion(class="form-control", placeholder="YYYY-MM-DD") }}
+                {% for error in form.fecha_expedicion.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Archivo -->
+            <div class="mb-3">
+                {{ form.archivo.label(class="form-label") }}
+                {{ form.archivo(class="form-control") }}
+                {% for error in form.archivo.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Archivo Actual -->
+            {% if grado.ruta_imagen %}
+                <div class="mb-3 text-center">
+                    <label class="form-label mb-1"><i class="bi bi-file-earmark-person-fill"></i> Archivo Actual:</label>
+                    {% if grado.categoria == 'imagen' %}
+                        <button type="button" class="btn p-0 border-0" data-bs-toggle="modal" data-bs-target="#imageModal">
+                            <img src="{{ url_for('uploaded_file', filename=grado.ruta_imagen) }}" alt="Imagen Actual" class="preview-image" style="max-width: 200px;">
+                        </button>
+                        <!-- Modal -->
+                        <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="imageModalLabel">Vista Completa</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <img src="{{ url_for('uploaded_file', filename=grado.ruta_imagen) }}" class="img-fluid" alt="Imagen Completa">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% elif grado.categoria == 'pdf' %}
+                        <a href="{{ url_for('uploaded_file', filename=grado.ruta_imagen) }}" target="_blank" class="preview-link d-block text-center">
+                            <i class="bi bi-file-earmark-pdf-fill"></i> Ver Archivo PDF
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <!-- Archivo SUNEDU -->
+            <div class="mb-3">
+                {{ form.archivo_sunedu.label(class="form-label") }}
+                {{ form.archivo_sunedu(class="form-control") }}
+                {% for error in form.archivo_sunedu.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Archivo SUNEDU Actual -->
+            {% if grado.ruta_imagen_sunedu %}
+                <div class="mb-3 text-center">
+                    <label class="form-label mb-1"><i class="bi bi-file-earmark-person-fill"></i> Archivo SUNEDU Actual:</label><br>
+                    <a href="{{ url_for('uploaded_file', filename=grado.ruta_imagen_sunedu) }}" target="_blank" class="preview-link d-block text-center">
+                        <i class="bi bi-file-earmark-pdf-fill"></i> Ver Archivo SUNEDU
+                    </a>
+                </div>
+            {% endif %}
+
+            <!-- Botones de Acción -->
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save-fill"></i> Guardar
+                </button>
+                <a href="{{ url_for('gradostitulos') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left-circle-fill"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- JavaScript para controlar la opción "Otra" -->
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const universidadSelect = document.getElementById('universidad');
+            const otroUniversidadDiv = document.getElementById('otro_universidad_div');
+            const paisSelect = document.getElementById('pais');
+            const otroPaisDiv = document.getElementById('otro_pais_div');
+
+            function toggleOtroUniversidad() {
+                if (universidadSelect.value === 'Otra') {
+                    otroUniversidadDiv.style.display = 'block';
+                } else {
+                    otroUniversidadDiv.style.display = 'none';
+                }
+            }
+
+            function toggleOtroPais() {
+                if (paisSelect.value === 'Otro') {
+                    otroPaisDiv.style.display = 'block';
+                } else {
+                    otroPaisDiv.style.display = 'none';
+                }
+            }
+
+            // Ejecutar al cargar la página
+            toggleOtroUniversidad();
+            toggleOtroPais();
+
+            // Asignar el evento onchange a los select fields
+            universidadSelect.addEventListener('change', toggleOtroUniversidad);
+            paisSelect.addEventListener('change', toggleOtroPais);
+        });
+    </script>
+
+</div>
+
+{% endblock %}

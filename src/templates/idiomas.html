@@ -1,0 +1,205 @@
+<!-- templates/idiomas.html -->
+
+{% extends './base.html' %}
+
+{% block title %}Idiomas{% endblock %}
+
+{% block customCSS %}
+<!-- CSS específico para la página de Idiomas -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+{% endblock %}
+
+{% block body %}
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center"><i class="bi bi-translate"></i> Idiomas</h1>
+
+    <!-- Formulario para agregar un nuevo idioma -->
+    <div class="formularios-container">
+        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- Idioma -->
+            <div class="mb-3">
+                {{ form.idioma.label(class="form-label") }}
+                {{ form.idioma(class="form-select", id="idioma-select", required=True) }}
+                {% for error in form.idioma.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Otro Idioma (visible solo si se selecciona "Otro") -->
+            <div class="mb-3" id="otro-idioma-field" style="display: none;">
+                {{ form.otro_idioma.label(class="form-label") }}
+                {{ form.otro_idioma(class="form-control", maxlength="50", placeholder="Especificar otro idioma") }}
+                {% for error in form.otro_idioma.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Nivel -->
+            <div class="mb-3">
+                {{ form.nivel.label(class="form-label") }}
+                {{ form.nivel(class="form-select", required=True) }}
+                {% for error in form.nivel.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Certificado -->
+            <div class="mb-3 form-check">
+                {{ form.certificado(class="form-check-input", id="certificado-checkbox") }}
+                {{ form.certificado.label(class="form-check-label", for="certificado-checkbox") }}
+                {% for error in form.certificado.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Archivo (visible solo si se marca certificado) -->
+            <div class="mb-3" id="archivo-field" style="display: none;">
+                {{ form.archivo.label(class="form-label") }}
+                {{ form.archivo(class="form-control", placeholder="Subir certificado en PDF o imagen") }}
+                {% for error in form.archivo.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+                <div class="form-text">Dejar en blanco para mantener el archivo actual.</div>
+            </div>
+
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    </div>
+
+    <!-- Lista de idiomas -->
+    <div class="table-responsive mt-5">
+        <h2 class="h4 mb-3"><i class="bi bi-list-ul"></i> Lista de Idiomas</h2>
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Idioma</th>
+                    <th>Nivel</th>
+                    <th>Certificado</th>
+                    <th>Archivo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for idioma in idiomas %}
+                <tr>
+                    <td>{{ idioma.idioma }}</td>
+                    <td>{{ idioma.nivel }}</td>
+                    <td>{{ 'Sí' if idioma.certificado else 'No' }}</td>
+                    <td>
+                        {% if idioma.ruta_imagen %}
+                            {% if idioma.categoria == 'imagen' %}
+                                <img src="{{ url_for('uploaded_file', filename=idioma.ruta_imagen) }}" alt="Imagen" class="img-thumbnail" style="max-width: 100px;">
+                            {% elif idioma.categoria == 'pdf' %}
+                                <a href="{{ url_for('uploaded_file', filename=idioma.ruta_imagen) }}" target="_blank" class="btn btn-sm btn-info">
+                                    <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('editar_idioma', id_idioma=idioma.id_idioma) }}" class="btn btn-sm btn-warning mb-1">
+                            <i class="bi bi-pencil-fill"></i> Editar
+                        </a>
+                        <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal-{{ idioma.id_idioma }}">
+                            <i class="bi bi-trash-fill"></i> Eliminar
+                        </button>
+
+                        <!-- Modal de Confirmación de Eliminación -->
+                        <div class="modal fade" id="confirmDeleteModal-{{ idioma.id_idioma }}" tabindex="-1" aria-labelledby="confirmDeleteLabel-{{ idioma.id_idioma }}" aria-hidden="true">
+                          <div class="modal-dialog">
+                            <div class="modal-content">
+                              <div class="modal-header">
+                                <h5 class="modal-title" id="confirmDeleteLabel-{{ idioma.id_idioma }}">Confirmar Eliminación</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                              </div>
+                              <div class="modal-body">
+                                ¿Está seguro de que desea eliminar el idioma "<strong>{{ idioma.idioma }}</strong>"?
+                              </div>
+                              <div class="modal-footer">
+                                <form action="{{ url_for('eliminar_idioma', id_idioma=idioma.id_idioma) }}" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                </form>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                   </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- JavaScript para controlar la visibilidad de campos adicionales -->
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        const idiomaSelect = document.getElementById('idioma-select');
+        const otroIdiomaField = document.getElementById('otro-idioma-field');
+        const certificadoCheckbox = document.getElementById('certificado-checkbox');
+        const archivoField = document.getElementById('archivo-field');
+
+        function toggleOtroIdioma() {
+            if (idiomaSelect.value === 'Otro') {
+                otroIdiomaField.style.display = 'block';
+            } else {
+                otroIdiomaField.style.display = 'none';
+                // Limpiar el valor del campo 'otro_idioma' si no se selecciona 'Otro'
+                document.getElementById('otro_idioma').value = '';
+            }
+        }
+
+        function toggleArchivo() {
+            if (certificadoCheckbox.checked) {
+                archivoField.style.display = 'block';
+            } else {
+                archivoField.style.display = 'none';
+                // Limpiar el archivo si no se adjunta certificado
+                document.getElementById('archivo').value = '';
+            }
+        }
+
+        // Ejecutar al cargar la página
+        toggleOtroIdioma();
+        toggleArchivo();
+
+        // Asignar eventos
+        idiomaSelect.addEventListener('change', toggleOtroIdioma);
+        certificadoCheckbox.addEventListener('change', toggleArchivo);
+    });
+</script>
+
+<!-- Validación de formularios con Bootstrap -->
+<script>
+    // Ejemplo de validación de formularios con Bootstrap
+    (function () {
+      'use strict'
+
+      // Fetch all the forms we want to apply custom Bootstrap validation styles to
+      var forms = document.querySelectorAll('.needs-validation')
+
+      // Loop over them and prevent submission
+      Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+          form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+              event.preventDefault()
+              event.stopPropagation()
+            }
+
+            form.classList.add('was-validated')
+          }, false)
+        })
+    })()
+</script>
+
+{% endblock %}

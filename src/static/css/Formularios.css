@@ -1,0 +1,237 @@
+/* formularios.css */
+
+/* Variables de color actualizadas */
+:root {
+  --primary-color: #0F827F; /* Verde turquesa */
+  --secondary-color: #1E3050; /* Azul oscuro complementario */
+  --accent-color: #F0C808; /* Amarillo dorado complementario */
+  --background-color: #f5f5f5; /* Color de fondo suave */
+  --text-color: #333333; /* Color de texto principal */
+  --card-bg: #ffffff; /* Fondo de las tarjetas */
+  --card-border: #e0e0e0; /* Borde de las tarjetas */
+  --link-color: #0F827F; /* Color de los enlaces */
+  --link-hover: #0c6a6a; /* Color de los enlaces al pasar el cursor */
+  --frm-white: #ffffff; /* Blanco para formularios */
+}
+
+/* Contenedor específico para formularios */
+.formularios-container {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-family: 'Roboto', sans-serif;
+  padding: 40px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  margin: 80px auto 40px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Encabezado */
+.formularios-container .header {
+  background-color: var(--primary-color);
+  color: var(--frm-white);
+  padding: 20px;
+  text-align: center;
+  font-family: 'Roboto', sans-serif;
+  font-size: 2rem;
+  border-radius: 12px 12px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Contenido principal */
+.formularios-container .main-content {
+  padding: 30px;
+  background-color: var(--frm-white);
+  border-radius: 0 0 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* Títulos */
+.formularios-container .main-content h2 {
+  text-align: left;
+  font-family: 'Roboto', sans-serif;
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Formularios */
+.formularios-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Grupos de formulario */
+.formularios-container .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Etiquetas */
+.formularios-container .form-group label {
+  font-size: 1.1rem;
+  color: var(--text-color);
+  margin-bottom: 8px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Inputs y Selects */
+.formularios-container .form-group input[type="text"],
+.formularios-container .form-group input[type="email"],
+.formularios-container .form-group input[type="password"],
+.formularios-container .form-group select,
+.formularios-container .form-group input[type="date"],
+.formularios-container .form-group input[type="file"] {
+  padding: 12px 15px;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+/* Estado de foco en Inputs y Selects */
+.formularios-container .form-group input[type="text"]:focus,
+.formularios-container .form-group input[type="email"]:focus,
+.formularios-container .form-group input[type="password"]:focus,
+.formularios-container .form-group select:focus,
+.formularios-container .form-group input[type="date"]:focus,
+.formularios-container .form-group input[type="file"]:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 8px rgba(15, 130, 127, 0.5);
+}
+
+/* Botones */
+.formularios-container button {
+  background-color: var(--primary-color);
+  color: var(--frm-white);
+  padding: 14px 25px;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  align-self: center;
+  min-width: 150px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: var(--frm-white);
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: var(--link-hover);
+}
+
+.btn-secondary {
+  background-color: var(--secondary-color);
+  color: var(--frm-white);
+  border: none;
+}
+
+.btn-secondary:hover {
+  background-color: #162a4f; /* Darker shade of azul oscuro */
+}
+
+/* Enlace de Cancelación */
+.btn-secondary i {
+  font-size: 1.2rem;
+}
+
+/* Enlace de previsualización */
+.preview-image {
+  width: 120px;
+  height: 160px;
+  object-fit: cover;
+  margin-top: 10px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.preview-link {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 1rem;
+  color: var(--primary-color);
+  text-decoration: none;
+  margin-top: 10px;
+}
+
+.preview-link:hover {
+  color: var(--link-hover);
+}
+
+/* Responsividad */
+
+@media (max-width: 768px) {
+  .formularios-container {
+    padding: 20px;
+    margin: 60px 10px 20px;
+  }
+
+  .formularios-container .header {
+    font-size: 1.8rem;
+    padding: 15px;
+  }
+
+  .formularios-container .main-content {
+    padding: 20px;
+  }
+
+  .formularios-container .main-content h2 {
+    font-size: 1.3rem;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    padding: 12px 0;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .formularios-container {
+    padding: 15px;
+    margin: 50px 5px 15px;
+  }
+
+  .formularios-container .header {
+    font-size: 1.5rem;
+    padding: 10px;
+  }
+
+  .formularios-container .main-content {
+    padding: 15px;
+  }
+
+  .formularios-container .main-content h2 {
+    font-size: 1.2rem;
+  }
+
+  .preview-image {
+    width: 100px;
+    height: 140px;
+  }
+}

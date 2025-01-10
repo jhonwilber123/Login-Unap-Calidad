@@ -1,0 +1,86 @@
+{% extends './base.html' %}
+
+{% block title %}Editar Usuario{% endblock %}
+
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+{% endblock %}
+
+{% block body %}
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center"><i class="bi bi-pencil-fill"></i> Editar Usuario</h1>
+
+    <div class="formularios-container">
+        <form method="POST" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- Usuario -->
+            <div class="mb-3">
+                {{ form.username.label(class="form-label") }}
+                {{ form.username(class="form-control", maxlength="255", placeholder="Nuevo nombre de usuario") }}
+                {% for error in form.username.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Contraseña -->
+            <div class="mb-3">
+                {{ form.password.label(class="form-label") }}
+                {{ form.password(class="form-control", id="password", maxlength="255", placeholder="Nueva contraseña") }}
+                <div id="password_feedback" class="form-text text-danger"></div>
+                {% for error in form.password.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Confirmar Contraseña -->
+            <div class="mb-3">
+                {{ form.confirm_password.label(class="form-label") }}
+                {{ form.confirm_password(class="form-control", maxlength="255", placeholder="Confirma la nueva contraseña") }}
+                {% for error in form.confirm_password.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block customJS %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const passwordInput = document.getElementById('password');
+        const feedback = document.getElementById('password_feedback');
+
+        passwordInput.addEventListener('input', function () {
+            const password = passwordInput.value;
+            fetch('/validate-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ 'password': password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                feedback.innerHTML = '';
+                if (!data.valid) {
+                    data.reasons.forEach(reason => {
+                        const p = document.createElement('p');
+                        p.textContent = reason;
+                        feedback.appendChild(p);
+                    });
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+</script>
+{% endblock %}

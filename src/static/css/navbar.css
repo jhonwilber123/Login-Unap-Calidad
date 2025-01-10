@@ -1,0 +1,97 @@
+/* navbar.css */
+
+/* Variables de color actualizadas */
+:root {
+    --navbar-primary-color: #0F827F; /* Verde turquesa */
+    --navbar-secondary-color: #1E3050; /* Azul oscuro complementario */
+    --navbar-accent-color: #F0C808; /* Amarillo dorado complementario */
+    --navbar-text-color: #ffffff; /* Color de texto principal */
+    --navbar-hover-color: #0c6a6a; /* Color al pasar el cursor */
+    --navbar-background-color: #0F827F; /* Fondo de la navbar */
+}
+
+/* Estilos específicos de la navbar */
+.navbarNav {
+    background-color: var(--navbar-background-color) !important;
+    padding: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para la marca y los enlaces de la navbar */
+.navbarNav .navbar-brand,
+.navbarNav .nav-link {
+    color: var(--navbar-text-color) !important;
+    transition: color 0.3s ease;
+    font-size: 1.1rem;
+    margin-right: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+/* Efecto al pasar el cursor sobre los enlaces */
+.navbarNav .nav-link:hover,
+.navbarNav .dropdown-item:hover {
+    color: var(--navbar-hover-color) !important;
+    background-color: transparent;
+}
+
+/* Estilos para el menú desplegable */
+.navbarNav .dropdown-menu {
+    background-color: var(--navbar-background-color);
+    border: none;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+/* Estilos para los íconos en el menú desplegable */
+.navbarNav .dropdown-item .bi {
+    font-size: 1.2rem;
+    margin-right: 0.5rem;
+    color: var(--navbar-text-color);
+}
+
+/* Estilos para el botón toggler (menú móvil) */
+.navbarNav .navbar-toggler {
+    border-color: var(--navbar-text-color);
+}
+
+.navbarNav .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
+/* Ajustes responsivos */
+@media (max-width: 992px) {
+    .navbarNav .navbar-collapse {
+        background-color: var(--navbar-background-color);
+    }
+
+    .navbarNav .dropdown-menu {
+        position: static;
+        float: none;
+    }
+}
+
+/* Espaciado y alineación de elementos */
+.navbarNav .navbar-nav .nav-item {
+    margin-right: 1rem;
+}
+
+.navbarNav .navbar-nav .nav-item:last-child {
+    margin-right: 0;
+}
+
+/* Estilos adicionales para "Cerrar Sesión" */
+.navbarNav .nav-link .bi {
+    font-size: 1.2rem; /* Ajusta el tamaño del ícono según prefieras */
+    margin-right: 0.5rem;
+}
+
+/* Iconos en la navbar */
+.navbarNav .nav-link .fa {
+    margin-right: 5px;
+}
+
+/* Dropdown toggle icon */
+.navbarNav .dropdown-toggle::after {
+    margin-left: 5px;
+}

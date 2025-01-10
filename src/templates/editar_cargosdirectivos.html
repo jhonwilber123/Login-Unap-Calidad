@@ -1,0 +1,104 @@
+<!-- templates/editar_cargosdirectivos.html -->
+
+{% extends './base.html' %}
+
+{% block title %}Editar Cargo Directivo{% endblock %}
+
+{% block customCSS %}
+<!-- CSS específico para la página de Editar Cargo Directivo -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+{% endblock %}
+
+{% block body %}
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center"><i class="bi bi-pencil-fill"></i> Editar Cargo Directivo</h1>
+
+    <!-- Formulario para editar el cargo directivo -->
+    <div class="formularios-container">
+        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- Cargo -->
+            <div class="mb-3">
+                {{ form.cargo.label(class="form-label") }}
+                {{ form.cargo(class="form-control", maxlength="100", placeholder="Nombre del cargo directivo", required=True) }}
+                {% for error in form.cargo.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Años en el Cargo -->
+            <div class="mb-3">
+                {{ form.anios.label(class="form-label") }}
+                {{ form.anios(class="form-control", type="number", min="0", placeholder="Número de años en el cargo", required=True) }}
+                {% for error in form.anios.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Descripción -->
+            <div class="mb-3">
+                {{ form.descripcion.label(class="form-label") }}
+                {{ form.descripcion(class="form-control", maxlength="255", placeholder="Descripción del cargo", required=False) }}
+                {% for error in form.descripcion.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Archivo Actual -->
+            {% if cargo.ruta_imagen %}
+            <div class="mb-3">
+                <label class="form-label">Archivo Actual:</label><br>
+                {% if cargo.categoria == 'imagen' %}
+                    <img src="{{ url_for('uploaded_file', filename=cargo.ruta_imagen) }}" alt="Imagen Actual" class="img-thumbnail" style="max-width: 200px;">
+                {% elif cargo.categoria == 'pdf' %}
+                    <a href="{{ url_for('uploaded_file', filename=cargo.ruta_imagen) }}" target="_blank" class="btn btn-info btn-sm">
+                        <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
+                    </a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Archivo Nuevo -->
+            <div class="mb-3">
+                {{ form.archivo.label(class="form-label") }}
+                {{ form.archivo(class="form-control", required=False) }}
+                {% for error in form.archivo.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+                <div class="form-text">Dejar en blanco para mantener el archivo actual.</div>
+            </div>
+
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    </div>
+</div>
+
+<!-- Validación de formularios con Bootstrap -->
+<script>
+    // Ejemplo de validación de formularios con Bootstrap
+    (function () {
+      'use strict'
+
+      // Fetch all the forms we want to apply custom Bootstrap validation styles to
+      var forms = document.querySelectorAll('.needs-validation')
+
+      // Loop over them and prevent submission
+      Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+          form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+              event.preventDefault()
+              event.stopPropagation()
+            }
+
+            form.classList.add('was-validated')
+          }, false)
+        })
+    })()
+</script>
+
+{% endblock %}

@@ -1,0 +1,20 @@
+/* static/css/styles.css */
+
+/* Estilos para el menú desplegable en hover */
+.nav-item.dropdown .dropdown-menu {
+    transition: all 0.3s ease;
+}
+
+/* Estilos para la navbar cuando se hace scroll */
+.navbar.scrolled {
+    background-color: #343a40 !important; /* Cambia el color según tu preferencia */
+    padding-top: 5px;
+    padding-bottom: 5px;
+    transition: all 0.3s ease;
+}
+
+/* Opcional: Cambiar la apariencia de los enlaces activos */
+.navbar .nav-link.active {
+    font-weight: bold;
+    color: #f8f9fa !important;
+}
