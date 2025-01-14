@@ -16,13 +16,14 @@
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for message in messages %}
-                    <div class="alert alert-primary alert-dismissible" role="alert">
+                    <div class="alert alert-success alert-dismissible" role="alert">
                         <strong>{{ message }}</strong>
                         <button type="button" class="btn-close" aria-label="Close" onclick="this.parentElement.style.display='none';"></button>
                     </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
+        
         
         <h2>Ingresa a tu cuenta</h2>
         

@@ -17,14 +17,14 @@
 <main class="container">
     <h1>Bienvenido, {{ current_user.fullname }}</h1>
     {% with messages = get_flashed_messages() %}
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-primary alert-dismissible" role="alert">
-                <strong>{{ message }}</strong>
-                <button type="button" class="btn-close" aria-label="Close" onclick="this.parentElement.style.display='none';"></button>
-            </div>
-        {% endfor %}
-    {% endif %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success alert-dismissible" role="alert">
+                    <strong>{{ message }}</strong>
+                    <button type="button" class="btn-close" aria-label="Close" onclick="this.parentElement.style.display='none';"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
     {% endwith %}
     <p class="welcome-message">¿Qué deseas hacer hoy?</p>
 

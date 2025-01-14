@@ -973,15 +973,15 @@ class GradostitulosForm(FlaskForm):
         except Exception:
             self.pais.choices = [('', '--- Seleccione una opción ---')]
     archivo = FileField(
-        'Adjuntar grado o título (PDF)',
+        'Adjuntar grado o título Escaneado (PDF)',
         validators=[
             Optional(),
-            FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'pdf'], 'Solo se permiten imágenes y archivos PDF.'),
+            FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
             file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
         ]
     )
     archivo_sunedu = FileField(
-        'Adjuntar Constancia SUNEDU',
+        'Adjuntar Constancia SUNEDU (PDF)',
         validators=[
             Optional(),
             FileAllowed(['pdf'], 'Solo se permiten Archivos PDF.'),

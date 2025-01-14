@@ -15,16 +15,18 @@
 
 <div class="container mt-5">
     <h1 class="h3 mb-4 text-center"><i class="bi bi-mortarboard-fill"></i> Grados y Títulos Académicos</h1>
+
     {% with messages = get_flashed_messages() %}
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-primary alert-dismissible" role="alert">
-                <strong>{{ message }}</strong>
-                <button type="button" class="btn-close" aria-label="Close" onclick="this.parentElement.style.display='none';"></button>
-            </div>
-        {% endfor %}
-    {% endif %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success alert-dismissible" role="alert">
+                    <strong>{{ message }}</strong>
+                    <button type="button" class="btn-close" aria-label="Close" onclick="this.parentElement.style.display='none';"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
     {% endwith %}
+    
     <!-- Formulario para agregar un nuevo título -->
     <div class="formularios-container">
         <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
@@ -51,9 +53,9 @@
             <!-- Archivo -->
             <div class="mb-3">
                 {{ form.archivo.label(class="form-label") }}
-                {{ form.archivo(class="form-control", id="archivo", required=true) }}
+                {{ form.archivo(class="form-control", id="archivo", required=true, accept="application/pdf") }}
                 <div class="invalid-feedback">
-                    Por favor, suba su archivo.
+                    Por favor, suba un archivo PDF.
                 </div>
                 {% for error in form.archivo.errors %}
                     <div class="text-danger">{{ error }}</div>
@@ -63,9 +65,9 @@
             <!-- Archivo SUNEDU --> 
             <div class="mb-3">
                 {{ form.archivo_sunedu.label(class="form-label") }}
-                {{ form.archivo_sunedu(class="form-control", id="archivo_sunedu", required=true) }}
+                {{ form.archivo_sunedu(class="form-control", id="archivo_sunedu", required=true, accept="application/pdf") }}
                 <div class="invalid-feedback">
-                    Por favor, suba su archivo SUNEDU.
+                    Por favor, suba un archivo PDF para la Constancia SUNEDU.
                 </div>
                 {% for error in form.archivo_sunedu.errors %}
                     <div class="text-danger">{{ error }}</div>
@@ -208,26 +210,39 @@
     </div>
 </div>
 
-<!-- Actualizado JavaScript para controlar las opciones de universidad según el país seleccionado y validación de archivos -->
+<!-- Actualizado JavaScript para controlar las opciones de universidad según el país seleccionado y validación de archivos PDF -->
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.querySelector('.needs-validation');
         const archivoInput = document.getElementById('archivo');
         const archivoSuneduInput = document.getElementById('archivo_sunedu');
 
-        // Función para validar campos de archivo
-        function validateFileInput(input, feedbackElement) {
+        // Función para validar campos de archivo PDF
+        function validatePDFInput(input, feedbackElement) {
             if (input.files.length === 0) {
                 input.classList.add('is-invalid');
                 input.classList.remove('is-valid');
+                feedbackElement.textContent = input.id === 'archivo' ? 'Por favor, suba su archivo PDF.' : 'Por favor, suba su archivo SUNEDU PDF.';
                 feedbackElement.style.display = 'block';
                 return false;
-            } else {
-                input.classList.remove('is-invalid');
-                input.classList.add('is-valid');
-                feedbackElement.style.display = 'none';
-                return true;
             }
+
+            const file = input.files[0];
+            const fileType = file.type;
+            const fileName = file.name.toLowerCase();
+
+            if (fileType !== 'application/pdf' && !fileName.endsWith('.pdf')) {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                feedbackElement.textContent = 'Solo se admiten archivos PDF.';
+                feedbackElement.style.display = 'block';
+                return false;
+            }
+
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+            feedbackElement.style.display = 'none';
+            return true;
         }
 
         // Manejar el envío del formulario
@@ -238,9 +253,9 @@
                 event.stopPropagation();
             }
 
-            // Validación personalizada para los campos de archivo
-            const archivoValid = validateFileInput(archivoInput, archivoInput.nextElementSibling);
-            const archivoSuneduValid = validateFileInput(archivoSuneduInput, archivoSuneduInput.nextElementSibling);
+            // Validación personalizada para los campos de archivo PDF
+            const archivoValid = validatePDFInput(archivoInput, archivoInput.nextElementSibling);
+            const archivoSuneduValid = validatePDFInput(archivoSuneduInput, archivoSuneduInput.nextElementSibling);
 
             if (!archivoValid || !archivoSuneduValid) {
                 event.preventDefault();
@@ -250,13 +265,13 @@
             form.classList.add('was-validated');
         }, false);
 
-        // Validación en tiempo real para los campos de archivo
+        // Validación en tiempo real para los campos de archivo PDF
         archivoInput.addEventListener('change', function() {
-            validateFileInput(archivoInput, archivoInput.nextElementSibling);
+            validatePDFInput(archivoInput, archivoInput.nextElementSibling);
         });
 
         archivoSuneduInput.addEventListener('change', function() {
-            validateFileInput(archivoSuneduInput, archivoSuneduInput.nextElementSibling);
+            validatePDFInput(archivoSuneduInput, archivoSuneduInput.nextElementSibling);
         });
 
         // Manejo existente para mostrar u ocultar campos "Otra Universidad" y "Otro País"
