@@ -150,25 +150,32 @@ class EvaluacionDesempenoDocenteForm(FlaskForm):
 
 
 class InformacionPersonalForm(FlaskForm):
+    # Subida de Imágenes y Archivos
     foto_docente = FileField('Foto del Docente', validators=[
-        FileAllowed(['jpg', 'jpeg', 'png'], 'Solo se permiten imágenes.')
+        FileAllowed(['jpg', 'jpeg', 'png'], 'Solo se permiten imágenes.'),
+        Optional()
     ])
     constancia_habilitacion = FileField('Constancia de Habilitación', validators=[
-        FileAllowed(['pdf'], 'Solo se permiten archivos PDF.')
+        FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
+        Optional()
     ])
-    # Personal Information
-    apellido_paterno = StringField('Apellido Paterno', validators=[DataRequired(), Length(max=50)])
-    apellido_materno = StringField('Apellido Materno', validators=[DataRequired(), Length(max=50)])
-    nombres = StringField('Nombres', validators=[DataRequired(), Length(max=100)])
-    fecha_nacimiento = DateField('Fecha de Nacimiento', validators=[DataRequired()], format='%Y-%m-%d')
-    lugar_nacimiento_departamento = StringField('Departamento de Nacimiento', validators=[DataRequired(), Length(max=50)])
-    lugar_nacimiento_provincia = StringField('Provincia de Nacimiento', validators=[DataRequired(), Length(max=50)])
-    lugar_nacimiento_distrito = StringField('Distrito de Nacimiento', validators=[DataRequired(), Length(max=50)])
-    dni = StringField('DNI', validators=[DataRequired(), Regexp(r'^\d{8}$', message="El DNI debe tener 8 dígitos.")])
     
-    # Professional Information
+    # Información Personal
+    apellido_paterno = StringField('Apellido Paterno', validators=[Optional(), Length(max=50)])
+    apellido_materno = StringField('Apellido Materno', validators=[Optional(), Length(max=50)])
+    nombres = StringField('Nombres', validators=[Optional(), Length(max=100)])
+    fecha_nacimiento = DateField('Fecha de Nacimiento', validators=[Optional()], format='%Y-%m-%d')
+    lugar_nacimiento_departamento = StringField('Departamento de Nacimiento', validators=[Optional(), Length(max=50)])
+    lugar_nacimiento_provincia = StringField('Provincia de Nacimiento', validators=[Optional(), Length(max=50)])
+    lugar_nacimiento_distrito = StringField('Distrito de Nacimiento', validators=[Optional(), Length(max=50)])
+    dni = StringField('DNI', validators=[
+        Optional(), 
+        Regexp(r'^\d{8}$', message="El DNI debe tener 8 dígitos.")
+    ])
+    
+    # Información Profesional
     numero_colegiatura = StringField('Número de Colegiatura', validators=[Optional(), Length(max=20)])
-    codigo = StringField('Código UNAP', validators=[DataRequired(), Length(max=20)])
+    codigo = StringField('Código UNAP', validators=[Optional(), Length(max=20)])
     condicion = SelectField(
         'Condición', 
         choices=[
@@ -176,7 +183,7 @@ class InformacionPersonalForm(FlaskForm):
             ('Nombrado', 'Nombrado'),
             ('Contratado', 'Contratado')
         ], 
-        validators=[DataRequired()]
+        validators=[Optional()]
     )
     categoria = SelectField(
         'Categoría', 
@@ -192,45 +199,41 @@ class InformacionPersonalForm(FlaskForm):
             ('B2', 'B2'),
             ('B3', 'B3')
         ], 
-        validators=[DataRequired()]
+        validators=[Optional()]
     )
     dedicacion = SelectField(
         'Dedicación', 
         choices=[
             ('', 'Seleccione...'),
-            # Opcion solo para 'Nombrado'
+            # Opción solo para 'Nombrado'
             ('Exclusiva', 'Exclusiva'),
             # Opciones para 'Contratado y Nombrado'
             ('Tiempo completo', 'Tiempo completo'),
             ('Tiempo parcial', 'Tiempo parcial')
         ], 
-        validators=[DataRequired()]
+        validators=[Optional()]
     )
     
-    # Academic Information
-    ID_CTI = StringField('ID CTI', validators=[DataRequired(), Length(max=50)])
-    ID_Scopus = StringField('ID Scopus', validators=[DataRequired(), Length(max=50)])
-    ID_ORCID = StringField('ID ORCID', validators=[DataRequired(), Length(max=50)])
-    # Contact Information
-    telefono_fijo = TelField('Teléfono Fijo', validators=[DataRequired(), Regexp(r'^\d{6,15}$', message="Ingrese un número de teléfono válido.")])
-    movil = TelField('Teléfono Móvil', validators=[DataRequired(), Regexp(r'^\d{6,15}$', message="Ingrese un número de teléfono válido.")])
-    correo_personal = EmailField('Correo Personal', validators=[DataRequired(), Email()])
-    correo_institucional = EmailField('Correo Institucional', validators=[DataRequired(), Email()])
-    domicilio_actual = StringField('Domicilio Actual', validators=[DataRequired(), Length(max=200)])
+    # Información Académica
+    ID_CTI = StringField('ID CTI', validators=[Optional(), Length(max=50)])
+    ID_Scopus = StringField('ID Scopus', validators=[Optional(), Length(max=50)])
+    ID_ORCID = StringField('ID ORCID', validators=[Optional(), Length(max=50)])
+    
+    # Información de Contacto
+    telefono_fijo = TelField('Teléfono Fijo', validators=[
+        Optional(), 
+        Regexp(r'^\d{6,15}$', message="Ingrese un número de teléfono válido.")
+    ])
+    movil = TelField('Teléfono Móvil', validators=[
+        Optional(), 
+        Regexp(r'^\d{6,15}$', message="Ingrese un número de teléfono válido.")
+    ])
+    correo_personal = EmailField('Correo Personal', validators=[Optional(), Email()])
+    correo_institucional = EmailField('Correo Institucional', validators=[Optional(), Email()])
+    domicilio_actual = StringField('Domicilio Actual', validators=[Optional(), Length(max=200)])
     referencia = StringField('Referencia', validators=[Optional(), Length(max=200)])
     
-    # Image Uploads
-    foto_docente = FileField('Foto de Docente', validators=[
-        FileAllowed(['jpg', 'png', 'jpeg'], 'Solo se permiten imágenes'),
-        Optional()
-    ])
-    constancia_habilitacion = FileField('Constancia de Habilitación', validators=[
-        FileAllowed(['pdf'], 'Solo se permiten PDF'),
-        Optional()
-    ])
-    
     submit = SubmitField('Guardar Cambios')
-
 
 class CargaAcademicaLectivaForm(FlaskForm):
     periodo_academico = SelectField(
@@ -972,7 +975,7 @@ class GradostitulosForm(FlaskForm):
     archivo = FileField(
         'Adjuntar grado o título (PDF)',
         validators=[
-            DataRequired(message='Este campo es obligatorio.'),
+            Optional(),
             FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'pdf'], 'Solo se permiten imágenes y archivos PDF.'),
             file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
         ]
@@ -980,7 +983,7 @@ class GradostitulosForm(FlaskForm):
     archivo_sunedu = FileField(
         'Adjuntar Constancia SUNEDU',
         validators=[
-            DataRequired(message='Este campo es obligatorio.'),
+            Optional(),
             FileAllowed(['pdf'], 'Solo se permiten Archivos PDF.'),
             file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
         ]

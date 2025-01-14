@@ -960,20 +960,19 @@ def eliminar_participaciongestionuniversitaria(id):
     flash('Participación eliminada correctamente', 'success')
     return redirect(url_for('participaciongestionuniversitaria'))
 
-# --- RUTA PARA AGREGAR Y LISTAR TÍTULOS ---
+# --- RUTA PARA AGREGAR Y LISTAR TÍTULOS --- 
 @app.route('/gradostitulos', methods=['GET', 'POST'])
 @login_required
 def gradostitulos():
     form = GradostitulosForm()
     if form.validate_on_submit():
-        titulo = form.titulo.data
-        tipo = form.tipo.data
-        universidad = form.universidad.data
-        otro_universidad = form.otro_universidad.data
-        pais = form.pais.data
-        otro_pais = form.otro_pais.data
-        fecha_expedicion = form.fecha_expedicion.data
-
+        titulo = form.titulo.data or None
+        tipo = form.tipo.data or None
+        universidad = form.universidad.data or None
+        otro_universidad = form.otro_universidad.data or None
+        pais = form.pais.data or None
+        otro_pais = form.otro_pais.data or None
+        fecha_expedicion = form.fecha_expedicion.data or None
 
         # Manejo de "Otra Universidad"
         if universidad == 'Otra':
@@ -1015,7 +1014,6 @@ def gradostitulos():
             else:
                 flash('Archivo no permitido.', 'danger')
                 return redirect(request.url)
-
 
         # Manejo de archivo_sunedu ( PDF)
         archivo_sunedu = form.archivo_sunedu.data
@@ -1120,13 +1118,13 @@ def editar_gradostitulos(id_grado):
         return redirect(url_for('gradostitulos'))
 
     if form.validate_on_submit():
-        titulo = form.titulo.data
-        tipo = form.tipo.data
-        universidad = form.universidad.data
-        otro_universidad = form.otro_universidad.data
-        pais = form.pais.data
-        otro_pais = form.otro_pais.data
-        fecha_expedicion = form.fecha_expedicion.data
+        titulo = form.titulo.data or None
+        tipo = form.tipo.data or None
+        universidad = form.universidad.data or None
+        otro_universidad = form.otro_universidad.data or None
+        pais = form.pais.data or None
+        otro_pais = form.otro_pais.data or None
+        fecha_expedicion = form.fecha_expedicion.data or None
         archivo_sunedu = form.archivo_sunedu.data
         id_imagen_actual_sunedu = grado['id_imagen_sunedu']
         archivo = form.archivo.data
@@ -1306,7 +1304,7 @@ def eliminar_gradostitulos(id_grado):
             # Eliminar la imagen de la tabla imagenesadjuntas
             cur.execute("DELETE FROM imagenesadjuntas WHERE id_imagen = %s AND id_usuario = %s", (id_imagen, current_user.id))
             db.connection.commit()
-    # Obtener id_imagen para eliminar la imagen adjunta si existe sunedu
+    # Obtener id_imagen_sunedu para eliminar la imagen adjunta si existe sunedu
     cur.execute("""
         SELECT id_imagen_sunedu FROM gradostitulos
         WHERE id_grado = %s AND id_usuario = %s
