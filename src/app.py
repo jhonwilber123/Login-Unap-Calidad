@@ -25,6 +25,8 @@ from models.ModelUser import ModelUser
 from models.entities.User import User
 
 
+
+
 # Configuración de Flask
 app = Flask(__name__)
 
@@ -109,14 +111,33 @@ def edit_user(user_id):
     if request.method == 'POST' and form.validate():
         new_username = form.username.data
         new_password = form.password.data
+
+        # Actualiza nombre si cambia
         if new_username:
             user.username = new_username
+        
+        # Validaciones explícitas antes
         if new_password:
+            if len(new_password) < 8:
+                flash('La contraseña debe tener al menos 8 caracteres.')
+                return render_template('users/edit_user.html', form=form, user=user)
+            if not re.search(r'[A-Z]', new_password):
+                flash('La contraseña debe tener al menos una letra mayúscula.')
+                return render_template('users/edit_user.html', form=form, user=user)
+            if not re.search(r'[a-z]', new_password):
+                flash('La contraseña debe tener al menos una letra minúscula.')
+                return render_template('users/edit_user.html', form=form, user=user)
+            if not re.search(r'\d', new_password):
+                flash('La contraseña debe tener al menos un número.')
+                return render_template('users/edit_user.html', form=form, user=user)
+
+            # Luego llama a is_password_strong
             if ModelUser.is_password_strong(new_password):
                 user.password = ModelUser.hash_password(new_password)
             else:
                 flash('La contraseña no es lo suficientemente fuerte.')
                 return render_template('users/edit_user.html', form=form, user=user)
+
         success = ModelUser.update_user(db, user)
         if success:
             flash('Usuario actualizado correctamente.')
@@ -125,6 +146,7 @@ def edit_user(user_id):
             flash('Ocurrió un error al actualizar el usuario.')
     form.username.data = user.username
     return render_template('users/edit_user.html', form=form, user=user)
+
 
 # Ruta para eliminar un usuario
 @app.route('/delete_user/<int:user_id>', methods=['POST'])
@@ -2043,268 +2065,294 @@ def eliminar_actualizacioncapacitacion(id_capacitacion):
 
 #ruta para participacion en acreditacion y licenciamiento
 # --- RUTA PARA AGREGAR Y LISTAR PARTICIPACIONES EN ACREDITACIÓN Y LICENCIAMIENTO ---
+# --- RUTA PARA AGREGAR Y LISTAR ACREDITACIÓN Y LICENCAMIENIENTO ---
+
 @app.route('/acreditacionlicenciamiento', methods=['GET', 'POST'])
 @login_required
-def acreditacionlicenciamiento():
+def acreditacion_licenciamiento():
     form = AcreditacionLicenciamientoForm()
     if form.validate_on_submit():
-        cargo = form.cargo.data
-        nombre_comite = form.nombre_comite.data
-        tipo_participacion = form.tipo_participacion.data
-        otro_tipo_participacion = form.otro_tipo_participacion.data
-        fecha_inicio = form.fecha_inicio.data
-        fecha_fin = form.fecha_fin.data
         numero_resolucion = form.numero_resolucion.data
         fecha_resolucion = form.fecha_resolucion.data
-        logros = form.logros.data
+        fecha_inicio = form.fecha_inicio.data
+        fecha_fin = form.fecha_fin.data
+        cargo_comite = form.cargo_comite.data
 
-        # Manejo de "Otro Tipo de Participación"
-        if tipo_participacion == 'Otro':
-            tipo_participacion = otro_tipo_participacion
-
-        # Manejo de Resolución de Nombramiento (PDF)
-        resolucion_nombramiento = form.resolucion_nombramiento.data
-        ruta_resolucion_nombramiento = None
-        if resolucion_nombramiento:
-            if allowed_file(resolucion_nombramiento.filename):
-                filename = secure_filename(resolucion_nombramiento.filename)
+        # Manejo del archivo PDF de la Resolución
+        archivo_resolucion = form.archivo_resolucion.data
+        id_resolucion = None
+        if archivo_resolucion:
+            if allowed_file(archivo_resolucion.filename) and archivo_resolucion.filename.lower().endswith('.pdf'):
+                filename = secure_filename(archivo_resolucion.filename)
                 unique_filename = f"{int(time.time())}_{filename}"
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-                resolucion_nombramiento.save(file_path)
-                ruta_resolucion_nombramiento = unique_filename
+                archivo_resolucion.save(file_path)
+
+                # Insertar el archivo en la tabla imagenesadjuntas
+                cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+                cur.execute("""
+                    INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
+                    VALUES (%s, %s, %s, %s)
+                """, (current_user.id, 'resolucion', 'Resolución de Acreditación y Licenciamiento', unique_filename))
+                db.connection.commit()
+                id_resolucion = cur.lastrowid
+                cur.close()
             else:
-                flash('Archivo de Resolución de Nombramiento no permitido.', 'danger')
-                return redirect(request.url)
-        
-        # Manejo de Evidencias (PDF)
-        evidencias = form.evidencias.data
-        ruta_evidencias = None
-        if evidencias:
-            if allowed_file(evidencias.filename):
-                filename = secure_filename(evidencias.filename)
-                unique_filename = f"{int(time.time())}_{filename}"
-                file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-                evidencias.save(file_path)
-                ruta_evidencias = unique_filename
-            else:
-                flash('Archivo de Evidencias no permitido.', 'danger')
+                flash('Archivo no permitido. Debe ser un PDF válido.', 'danger')
                 return redirect(request.url)
 
-        # Insertar el registro en la base de datos
-        cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+        # Manejo del archivo de Evidencias
+        archivo_evidencias = form.evidencias.data
+        id_evidencias = None
+        if archivo_evidencias:
+            if allowed_file(archivo_evidencias.filename):
+                filename = secure_filename(archivo_evidencias.filename)
+                unique_filename = f"{int(time.time())}_{filename}"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                archivo_evidencias.save(file_path)
+
+                if archivo_evidencias.filename.lower().endswith('.pdf'):
+                    categoria = 'evidencias_pdf'
+                else:
+                    categoria = 'evidencias_imagen'
+
+                # Insertar el archivo en la tabla imagenesadjuntas
+                cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+                cur.execute("""
+                    INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
+                    VALUES (%s, %s, %s, %s)
+                """, (current_user.id, categoria, 'Evidencias de Acreditación y Licenciamiento', unique_filename))
+                db.connection.commit()
+                id_evidencias = cur.lastrowid
+                cur.close()
+            else:
+                flash('Archivo de evidencias no permitido. Solo imágenes o PDF.', 'danger')
+                return redirect(request.url)
+
+        # Insertar el registro de acreditación y licenciamiento
+        cur = db.connection.cursor()
         cur.execute("""
-            INSERT INTO acreditacionlicenciamiento (
-                id_usuario, cargo, nombre_comite, tipo_participacion, fecha_inicio, fecha_fin, 
-                numero_resolucion, fecha_resolucion, logros, ruta_resolucion_nombramiento, ruta_evidencias
-            )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (
-            current_user.id, cargo, nombre_comite, tipo_participacion, fecha_inicio, fecha_fin,
-            numero_resolucion, fecha_resolucion, logros, ruta_resolucion_nombramiento, ruta_evidencias
-        ))
+            INSERT INTO acreditacionlicenciamiento
+            (id_usuario, id_imagen, id_imagen_evidencias, numero_resolucion, fecha_resolucion, fecha_inicio, fecha_fin, cargo_comite)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """, (current_user.id, id_resolucion, id_evidencias, numero_resolucion, fecha_resolucion, fecha_inicio, fecha_fin, cargo_comite))
         db.connection.commit()
         cur.close()
 
-        flash('Acreditación/Licenciamiento agregado correctamente.', 'success')
-        return redirect(url_for('acreditacionlicenciamiento'))
+        flash('Acreditación y Licenciamiento agregados correctamente', 'success')
+        return redirect(url_for('acreditacion_licenciamiento'))
 
-    # Obtener las acreditaciones y licenciamientos del usuario actual
+    # Obtener las acreditaciones existentes del usuario actual
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
     cur.execute("""
-        SELECT 
-            al.id_acreditacion,
-            al.cargo,
-            al.nombre_comite,
-            al.tipo_participacion,
-            al.fecha_inicio,
-            al.fecha_fin,
-            al.numero_resolucion,
-            al.fecha_resolucion,
-            al.logros,
-            al.ruta_resolucion_nombramiento,
-            al.ruta_evidencias
+        SELECT al.*,
+               ia_ruta.ruta_imagen AS ruta_imagen_resolucion,
+               ia_evidencias.ruta_imagen AS ruta_imagen_evidencias
         FROM acreditacionlicenciamiento al
-        WHERE al.id_usuario = %s;
+        LEFT JOIN imagenesadjuntas ia_ruta ON al.id_imagen = ia_ruta.id_imagen
+        LEFT JOIN imagenesadjuntas ia_evidencias ON al.id_imagen_evidencias = ia_evidencias.id_imagen
+        WHERE al.id_usuario = %s
     """, [current_user.id])
     acreditaciones = cur.fetchall()
     cur.close()
 
-    return render_template('acreditacionlicenciamiento_list.html', acreditaciones=acreditaciones, form=form)
+    return render_template('acreditacion_licenciamiento.html', acreditaciones=acreditaciones, form=form)
 
-@app.route('/editar_acreditacionlicenciamiento/<int:id_acreditacion>', methods=['GET', 'POST']) 
+@app.route('/editar_acreditacion_licenciamiento/<int:id_acreditacion>', methods=['GET', 'POST'])
 @login_required
-def editar_acreditacionlicenciamiento(id_acreditacion):
+def editar_acreditacion_licenciamiento(id_acreditacion):
     form = AcreditacionLicenciamientoForm()
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
 
-    # Obtener los datos actuales del registro
     cur.execute("""
-        SELECT 
-            al.id_acreditacion,
-            al.cargo,
-            al.nombre_comite,
-            al.tipo_participacion,
-            al.fecha_inicio,
-            al.fecha_fin,
-            al.numero_resolucion,
-            al.fecha_resolucion,
-            al.logros,
-            al.ruta_resolucion_nombramiento,
-            al.ruta_evidencias
+        SELECT al.*,
+               ia_ruta.ruta_imagen AS ruta_imagen_resolucion,
+               ia_evidencias.ruta_imagen AS ruta_imagen_evidencias
         FROM acreditacionlicenciamiento al
-        WHERE al.id_acreditacion = %s AND al.id_usuario = %s;
+        LEFT JOIN imagenesadjuntas ia_ruta ON al.id_imagen = ia_ruta.id_imagen
+        LEFT JOIN imagenesadjuntas ia_evidencias ON al.id_imagen_evidencias = ia_evidencias.id_imagen
+        WHERE al.id_acreditacion = %s AND al.id_usuario = %s
     """, (id_acreditacion, current_user.id))
     acreditacion = cur.fetchone()
     cur.close()
 
     if not acreditacion:
-        flash('Acreditación o Licenciamiento no encontrado.', 'danger')
-        return redirect(url_for('acreditacionlicenciamiento'))
+        flash('Acreditación no encontrada', 'danger')
+        return redirect(url_for('acreditacion_licenciamiento'))
 
     if form.validate_on_submit():
-        cargo = form.cargo.data
-        nombre_comite = form.nombre_comite.data
-        tipo_participacion = form.tipo_participacion.data
-        otro_tipo_participacion = form.otro_tipo_participacion.data
-        fecha_inicio = form.fecha_inicio.data
-        fecha_fin = form.fecha_fin.data
         numero_resolucion = form.numero_resolucion.data
         fecha_resolucion = form.fecha_resolucion.data
-        logros = form.logros.data
+        fecha_inicio = form.fecha_inicio.data
+        fecha_fin = form.fecha_fin.data
+        cargo_comite = form.cargo_comite.data
 
-        # Manejo de "Otro Tipo de Participación"
-        if tipo_participacion == 'Otro':
-            tipo_participacion = otro_tipo_participacion
+        archivo_resolucion = form.archivo_resolucion.data
+        id_resolucion_actual = acreditacion['id_imagen']
 
-        # Manejo de Resolución de Nombramiento (PDF)
-        resolucion_nombramiento = form.resolucion_nombramiento.data
-        ruta_resolucion_nombramiento = acreditacion['ruta_resolucion_nombramiento']
-        if resolucion_nombramiento:
-            if allowed_file(resolucion_nombramiento.filename, {'pdf'}):
-                # Eliminar el archivo anterior si existe
-                if ruta_resolucion_nombramiento:
-                    try:
-                        os.remove(os.path.join(app.config['UPLOAD_FOLDER'], ruta_resolucion_nombramiento))
-                    except Exception as e:
-                        print(f"Error al eliminar el archivo anterior: {e}")
-                filename = secure_filename(resolucion_nombramiento.filename)
+        if archivo_resolucion:
+            if allowed_file(archivo_resolucion.filename) and archivo_resolucion.filename.lower().endswith('.pdf'):
+                filename = secure_filename(archivo_resolucion.filename)
                 unique_filename = f"{int(time.time())}_{filename}"
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-                resolucion_nombramiento.save(file_path)
-                ruta_resolucion_nombramiento = unique_filename
+                archivo_resolucion.save(file_path)
+
+                cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+                if id_resolucion_actual:
+                    cur.execute("""
+                        UPDATE imagenesadjuntas
+                        SET ruta_imagen = %s, fecha_subida = NOW()
+                        WHERE id_imagen = %s AND id_usuario = %s
+                    """, (unique_filename, id_resolucion_actual, current_user.id))
+                else:
+                    cur.execute("""
+                        INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
+                        VALUES (%s, %s, %s, %s)
+                    """, (current_user.id, 'resolucion', 'Resolución de Acreditación y Licenciamiento', unique_filename))
+                    db.connection.commit()
+                    id_resolucion_nuevo = cur.lastrowid
+                    cur.execute("""
+                        UPDATE acreditacionlicenciamiento
+                        SET id_imagen = %s
+                        WHERE id_acreditacion = %s AND id_usuario = %s
+                    """, (id_resolucion_nuevo, id_acreditacion, current_user.id))
+                db.connection.commit()
+                cur.close()
             else:
-                flash('Archivo de Resolución de Nombramiento no permitido. Solo se permiten archivos PDF.', 'danger')
+                flash('Archivo no permitido. Debe ser un PDF válido.', 'danger')
                 return redirect(request.url)
 
-        # Manejo de Evidencias (PDF)
-        evidencias = form.evidencias.data
-        ruta_evidencias = acreditacion['ruta_evidencias']
-        if evidencias:
-            if allowed_file(evidencias.filename, {'pdf'}):
-                # Eliminar el archivo anterior si existe
-                if ruta_evidencias:
-                    try:
-                        os.remove(os.path.join(app.config['UPLOAD_FOLDER'], ruta_evidencias))
-                    except Exception as e:
-                        print(f"Error al eliminar el archivo anterior: {e}")
-                filename = secure_filename(evidencias.filename)
+        archivo_evidencias = form.evidencias.data
+        id_evidencias_actual = acreditacion['id_imagen_evidencias']
+
+        if archivo_evidencias:
+            if allowed_file(archivo_evidencias.filename):
+                filename = secure_filename(archivo_evidencias.filename)
                 unique_filename = f"{int(time.time())}_{filename}"
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-                evidencias.save(file_path)
-                ruta_evidencias = unique_filename
+                archivo_evidencias.save(file_path)
+
+                if archivo_evidencias.filename.lower().endswith('.pdf'):
+                    categoria = 'evidencias_pdf'
+                else:
+                    categoria = 'evidencias_imagen'
+
+                cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+                if id_evidencias_actual:
+                    cur.execute("""
+                        UPDATE imagenesadjuntas
+                        SET ruta_imagen = %s, categoria = %s, descripcion = %s, fecha_subida = NOW()
+                        WHERE id_imagen = %s AND id_usuario = %s
+                    """, (unique_filename, categoria, 'Evidencias de Acreditación y Licenciamiento', id_evidencias_actual, current_user.id))
+                else:
+                    cur.execute("""
+                        INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
+                        VALUES (%s, %s, %s, %s)
+                    """, (current_user.id, categoria, 'Evidencias de Acreditación y Licenciamiento', unique_filename))
+                    db.connection.commit()
+                    id_evidencias_nuevo = cur.lastrowid
+                    cur.execute("""
+                        UPDATE acreditacionlicenciamiento
+                        SET id_imagen_evidencias = %s
+                        WHERE id_acreditacion = %s AND id_usuario = %s
+                    """, (id_evidencias_nuevo, id_acreditacion, current_user.id))
+                db.connection.commit()
+                cur.close()
             else:
-                flash('Archivo de Evidencias no permitido. Solo se permiten archivos PDF.', 'danger')
+                flash('Archivo de evidencias no permitido. Solo imágenes o PDF.', 'danger')
                 return redirect(request.url)
 
-        # Actualizar el registro en la base de datos
-        cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+        cur = db.connection.cursor()
         cur.execute("""
             UPDATE acreditacionlicenciamiento
-            SET cargo = %s,
-                nombre_comite = %s,
-                tipo_participacion = %s,
+            SET numero_resolucion = %s,
+                fecha_resolucion = %s,
                 fecha_inicio = %s,
                 fecha_fin = %s,
-                numero_resolucion = %s,
-                fecha_resolucion = %s,
-                logros = %s,
-                ruta_resolucion_nombramiento = %s,
-                ruta_evidencias = %s
-            WHERE id_acreditacion = %s AND id_usuario = %s;
-        """, (
-            cargo, nombre_comite, tipo_participacion, fecha_inicio, fecha_fin,
-            numero_resolucion, fecha_resolucion, logros,
-            ruta_resolucion_nombramiento, ruta_evidencias,
-            id_acreditacion, current_user.id
-        ))
+                cargo_comite = %s
+            WHERE id_acreditacion = %s AND id_usuario = %s
+        """, (numero_resolucion, fecha_resolucion, fecha_inicio, fecha_fin, cargo_comite, id_acreditacion, current_user.id))
         db.connection.commit()
         cur.close()
 
-        flash('Acreditación/Licenciamiento actualizado correctamente.', 'success')
-        return redirect(url_for('acreditacionlicenciamiento'))
+        flash('Acreditación actualizada correctamente', 'success')
+        return redirect(url_for('acreditacion_licenciamiento'))
 
-    # Prellenar el formulario con los datos actuales
     if request.method == 'GET':
-        form.cargo.data = acreditacion['cargo']
-        form.nombre_comite.data = acreditacion['nombre_comite']
-        if acreditacion['tipo_participacion'] not in ['Acreditación', 'Licenciamiento']:
-            form.tipo_participacion.data = 'Otro'
-            form.otro_tipo_participacion.data = acreditacion['tipo_participacion']
-        else:
-            form.tipo_participacion.data = acreditacion['tipo_participacion']
-            form.otro_tipo_participacion.data = ''
-        form.fecha_inicio.data = acreditacion['fecha_inicio']
-        form.fecha_fin.data = acreditacion['fecha_fin']
         form.numero_resolucion.data = acreditacion['numero_resolucion']
         form.fecha_resolucion.data = acreditacion['fecha_resolucion']
-        form.logros.data = acreditacion['logros']
+        form.fecha_inicio.data = acreditacion['fecha_inicio']
+        form.fecha_fin.data = acreditacion['fecha_fin']
+        form.cargo_comite.data = acreditacion['cargo_comite']
 
-    return render_template('editar_acreditacionlicenciamiento.html', acreditacion=acreditacion, form=form)
+    return render_template('editar_acreditacion.html', acreditacion=acreditacion, form=form)
 
-@app.route('/eliminar_acreditacionlicenciamiento/<int:id_acreditacion>', methods=['POST'])
+@app.route('/eliminar_acreditacion_licenciamiento/<int:id_acreditacion>', methods=['POST'])
 @login_required
-def eliminar_acreditacionlicenciamiento(id_acreditacion):
+def eliminar_acreditacion_licenciamiento(id_acreditacion):
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
-
-    # Obtener los datos del registro para eliminar archivos
-    cur.execute("""
-        SELECT 
-            ruta_resolucion_nombramiento,
-            ruta_evidencias
-        FROM acreditacionlicenciamiento
-        WHERE id_acreditacion = %s AND id_usuario = %s;
-    """, (id_acreditacion, current_user.id))
-    acreditacion = cur.fetchone()
-
-    if acreditacion:
-        # Eliminar Resolución de Nombramiento si existe
-        if acreditacion['ruta_resolucion_nombramiento']:
-            try:
-                os.remove(os.path.join(app.config['UPLOAD_FOLDER'], acreditacion['ruta_resolucion_nombramiento']))
-            except:
-                pass
-
-        # Eliminar Evidencias si existen
-        if acreditacion['ruta_evidencias']:
-            try:
-                os.remove(os.path.join(app.config['UPLOAD_FOLDER'], acreditacion['ruta_evidencias']))
-            except:
-                pass
-
-        # Eliminar el registro de la base de datos
+    try:
         cur.execute("""
-            DELETE FROM acreditacionlicenciamiento
-            WHERE id_acreditacion = %s AND id_usuario = %s;
+            SELECT id_imagen, id_imagen_evidencias FROM acreditacionlicenciamiento
+            WHERE id_acreditacion = %s AND id_usuario = %s
         """, (id_acreditacion, current_user.id))
-        db.connection.commit()
+        result = cur.fetchone()
+
+        if result:
+            if result['id_imagen']:
+                cur.execute("""
+                    SELECT ruta_imagen FROM imagenesadjuntas
+                    WHERE id_imagen = %s AND id_usuario = %s
+                """, (result['id_imagen'], current_user.id))
+                resolucion = cur.fetchone()
+                if resolucion:
+                    ruta_resolucion = resolucion['ruta_imagen']
+                    file_path = os.path.join(app.config['UPLOAD_FOLDER'], ruta_resolucion)
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+
+            if result['id_imagen_evidencias']:
+                cur.execute("""
+                    SELECT ruta_imagen FROM imagenesadjuntas
+                    WHERE id_imagen = %s AND id_usuario = %s
+                """, (result['id_imagen_evidencias'], current_user.id))
+                evidencias = cur.fetchone()
+                if evidencias:
+                    ruta_evidencias = evidencias['ruta_imagen']
+                    file_path = os.path.join(app.config['UPLOAD_FOLDER'], ruta_evidencias)
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+
+            cur.execute("""
+                DELETE FROM acreditacionlicenciamiento
+                WHERE id_acreditacion = %s AND id_usuario = %s
+            """, (id_acreditacion, current_user.id))
+            db.connection.commit()
+
+            if result['id_imagen']:
+                cur.execute("""
+                    DELETE FROM imagenesadjuntas
+                    WHERE id_imagen = %s AND id_usuario = %s
+                """, (result['id_imagen'], current_user.id))
+                db.connection.commit()
+
+            if result['id_imagen_evidencias']:
+                cur.execute("""
+                    DELETE FROM imagenesadjuntas
+                    WHERE id_imagen = %s AND id_usuario = %s
+                """, (result['id_imagen_evidencias'], current_user.id))
+                db.connection.commit()
+
+            flash('Acreditación eliminada correctamente', 'success')
+        else:
+            flash('Acreditación no encontrada', 'danger')
+    except Exception as e:
+        db.connection.rollback()
+        flash(f'Error al eliminar la acreditación: {str(e)}', 'danger')
+    finally:
         cur.close()
 
-        flash('Acreditación/Licenciamiento eliminado correctamente.', 'success')
-    else:
-        flash('Acreditación/Licenciamiento no encontrado.', 'danger')
-
-    return redirect(url_for('acreditacionlicenciamiento'))
-
+    return redirect(url_for('acreditacion_licenciamiento'))
 
 
 # --- RUTA PARA AGREGAR Y LISTAR CARGOS DIRECTIVOS ---

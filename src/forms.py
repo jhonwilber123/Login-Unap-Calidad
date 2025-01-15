@@ -149,6 +149,11 @@ class EvaluacionDesempenoDocenteForm(FlaskForm):
     submit = SubmitField('Guardar')
 
 
+from flask_wtf import FlaskForm
+from wtforms import StringField, SelectField, SubmitField, FileField, DateField, TelField, EmailField
+from wtforms.validators import Optional, Length, Regexp, Email
+from flask_wtf.file import FileAllowed
+
 class InformacionPersonalForm(FlaskForm):
     # Subida de Imágenes y Archivos
     foto_docente = FileField('Foto del Docente', validators=[
@@ -174,8 +179,7 @@ class InformacionPersonalForm(FlaskForm):
     ])
     
     # Información Profesional
-    
-    colegio_profesional = StringField('Nombre de Colegio Profesional', validators=[Optional(), Length(max=50)])
+    colegio_profesional = StringField('Colegio Profesional', validators=[Optional(), Length(max=100)])
     numero_colegiatura = StringField('Número de Colegiatura', validators=[Optional(), Length(max=20)])
     codigo = StringField('Código UNAP', validators=[Optional(), Length(max=20)])
     condicion = SelectField(
@@ -236,6 +240,7 @@ class InformacionPersonalForm(FlaskForm):
     referencia = StringField('Referencia', validators=[Optional(), Length(max=200)])
     
     submit = SubmitField('Guardar Cambios')
+
 
 from flask_wtf import FlaskForm
 from wtforms import SelectField, StringField, FileField, IntegerField, TextAreaField, SubmitField
@@ -789,15 +794,15 @@ class GradostitulosForm(FlaskForm):
         ]
     )
     archivo = FileField(
-        'Adjuntar grado o título Escaneado (PDF)',
+        'Adjuntar grado o título (PDF)',
         validators=[
-            Optional(),
-            FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
+            DataRequired(message='Este campo es obligatorio.'),
+            FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'pdf'], 'Solo se permiten imágenes y archivos PDF.'),
             file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
         ]
     )
     archivo_sunedu = FileField(
-        'Adjuntar Constancia SUNEDU (PDF)',
+        'Adjuntar Constancia SUNEDU',
         validators=[
             Optional(),
             FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
@@ -1068,86 +1073,56 @@ class ExperienciaDocenteForm(FlaskForm):
 
 
 class AcreditacionLicenciamientoForm(FlaskForm):
-    cargo = StringField(
-        'Cargo en el Comité de Calidad, Licenciamiento y Acreditación',
+    numero_resolucion = StringField(
+        'Número de Resolución', 
         validators=[
             DataRequired(message='Este campo es obligatorio.'),
-            Length(max=255, message='Máximo 255 caracteres.')
-        ]
-    )
-    nombre_comite = StringField(
-        'Nombre del Comité o Proyecto',
-        validators=[
-            DataRequired(message='Este campo es obligatorio.'),
-            Length(max=255, message='Máximo 255 caracteres.')
-        ]
-    )
-    tipo_participacion = SelectField(
-        'Tipo de Participación',
-        choices=[
-            ('', '--- Seleccione una opción ---'),
-            ('Acreditación', 'Acreditación'),
-            ('Licenciamiento', 'Licenciamiento'),
-            ('Otro', 'Otro')
-        ],
-        validators=[DataRequired(message='Debe seleccionar un tipo de participación.')]
-    )
-    otro_tipo_participacion = StringField(
-        'Especificar Otro Tipo de Participación',
-        validators=[
-            Optional(),
             Length(max=100, message='Máximo 100 caracteres.')
         ]
     )
+    
+    fecha_resolucion = DateField(
+        'Fecha de Resolución',
+        format='%Y-%m-%d',
+        validators=[DataRequired(message='Este campo es obligatorio.')]
+    )
+    
     fecha_inicio = DateField(
         'Fecha de Inicio',
         format='%Y-%m-%d',
-        validators=[
-            DataRequired(message='Este campo es obligatorio.')
-        ]
+        validators=[DataRequired(message='Este campo es obligatorio.')]
     )
+    
     fecha_fin = DateField(
         'Fecha de Fin',
         format='%Y-%m-%d',
-        validators=[
-            DataRequired(message='Este campo es obligatorio.')
-        ]
+        validators=[DataRequired(message='Este campo es obligatorio.')]
     )
-    numero_resolucion = StringField(
-        'Número de Resolución de Nombramiento',
+    
+    cargo_comite = StringField(
+        'Cargo en el Comité', 
         validators=[
             DataRequired(message='Este campo es obligatorio.'),
-            Length(max=50, message='Máximo 50 caracteres.')
+            Length(max=255, message='Máximo 255 caracteres.')
         ]
     )
-    fecha_resolucion = DateField(
-        'Fecha de Resolución de Nombramiento',
-        format='%Y-%m-%d',
+    
+    archivo_resolucion = FileField(
+        'Archivo PDF de la Resolución', 
         validators=[
-            DataRequired(message='Este campo es obligatorio.')
-        ]
-    )
-    resolucion_nombramiento = FileField(
-        'Adjuntar Resolución (archivo PDF)',
-        validators=[
-            DataRequired(message='Este campo es obligatorio.'),
+            Optional(),
             FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
             file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
         ]
     )
-    logros = TextAreaField(
-        'Logros Alcanzados',
-        validators=[
-            Optional(),
-            Length(max=2000, message='Máximo 2000 caracteres.')
-        ]
-    )
+    
     evidencias = FileField(
-        'Adjuntar Informe de las Comisiones y/o Subcomisiones (PDF)',
+        'Archivo de Evidencias', 
         validators=[
             Optional(),
-            FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
+            FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'pdf'], 'Solo se permiten imágenes o PDF.'),
             file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
         ]
     )
+    
     submit = SubmitField('Guardar')

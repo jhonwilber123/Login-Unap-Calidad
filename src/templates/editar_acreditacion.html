@@ -1,0 +1,148 @@
+<!-- templates/editar_acreditacion.html -->
+{% extends './base.html' %}
+
+{% block title %}Editar Acreditación{% endblock %}
+
+{% block customCSS %}
+<!-- CSS específico para la página de Editar Acreditación -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
+<style>
+    /* Estilos adicionales si son necesarios */
+</style>
+{% endblock %}
+
+{% block body %}
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-center"><i class="bi bi-pencil-fill"></i> Editar Acreditación</h1>
+
+    <!-- Formulario para editar la acreditación -->
+    <div class="formularios-container">
+        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- Número de Resolución -->
+            <div class="mb-3">
+                {{ form.numero_resolucion.label(class="form-label") }}
+                {{ form.numero_resolucion(class="form-control", maxlength="100", placeholder="Número de Resolución", required=True) }}
+                {% for error in form.numero_resolucion.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Fecha de Resolución -->
+            <div class="mb-3">
+                {{ form.fecha_resolucion.label(class="form-label") }}
+                {{ form.fecha_resolucion(class="form-control", type="date", required=True) }}
+                {% for error in form.fecha_resolucion.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Fecha de Inicio -->
+            <div class="mb-3">
+                {{ form.fecha_inicio.label(class="form-label") }}
+                {{ form.fecha_inicio(class="form-control", type="date", required=True) }}
+                {% for error in form.fecha_inicio.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Fecha de Fin -->
+            <div class="mb-3">
+                {{ form.fecha_fin.label(class="form-label") }}
+                {{ form.fecha_fin(class="form-control", type="date", required=True) }}
+                {% for error in form.fecha_fin.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Cargo en el Comité -->
+            <div class="mb-3">
+                {{ form.cargo_comite.label(class="form-label") }}
+                {{ form.cargo_comite(class="form-control", maxlength="255", placeholder="Cargo en el Comité", required=True) }}
+                {% for error in form.cargo_comite.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Archivo PDF de la Resolución Actual -->
+            {% if acreditacion.ruta_imagen_resolucion %}
+            <div class="mb-3">
+                <label class="form-label">Resolución Actual:</label><br>
+                {% if acreditacion.ruta_imagen_resolucion.lower().endswith('.pdf') %}
+                    <a href="{{ url_for('uploaded_file', filename=acreditacion.ruta_imagen_resolucion) }}" target="_blank" class="btn btn-sm btn-info">
+                        <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF Actual
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('uploaded_file', filename=acreditacion.ruta_imagen_resolucion) }}" target="_blank" class="btn btn-sm btn-secondary">
+                        <i class="bi bi-file-earmark-fill"></i> Ver Archivo Actual
+                    </a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Archivo PDF de la Resolución -->
+            <div class="mb-3">
+                {{ form.archivo_resolucion.label(class="form-label") }}
+                {{ form.archivo_resolucion(class="form-control") }}
+                {% for error in form.archivo_resolucion.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+                <div class="form-text">Deja este campo vacío si no deseas actualizar la resolución actual.</div>
+            </div>
+
+            <!-- Archivo de Evidencias Actual -->
+            {% if acreditacion.ruta_imagen_evidencias %}
+            <div class="mb-3">
+                <label class="form-label">Evidencias Actuales:</label><br>
+                {% if acreditacion.ruta_imagen_evidencias.lower().endswith(('.jpg', '.jpeg', '.png', '.gif')) %}
+                    <img src="{{ url_for('uploaded_file', filename=acreditacion.ruta_imagen_evidencias) }}" alt="Evidencias" class="img-thumbnail" style="max-width: 200px;">
+                {% elif acreditacion.ruta_imagen_evidencias.lower().endswith('.pdf') %}
+                    <a href="{{ url_for('uploaded_file', filename=acreditacion.ruta_imagen_evidencias) }}" target="_blank" class="btn btn-sm btn-info">
+                        <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF Actual
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('uploaded_file', filename=acreditacion.ruta_imagen_evidencias) }}" target="_blank" class="btn btn-sm btn-secondary">
+                        <i class="bi bi-file-earmark-fill"></i> Ver Archivo Actual
+                    </a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Archivo de Evidencias -->
+            <div class="mb-3">
+                {{ form.evidencias.label(class="form-label") }}
+                {{ form.evidencias(class="form-control") }}
+                {% for error in form.evidencias.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+                <div class="form-text">Deja este campo vacío si no deseas actualizar las evidencias actuales.</div>
+            </div>
+
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('acreditacion_licenciamiento') }}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+
+<!-- JavaScript para control de formularios y validaciones -->
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        // Validación de formularios Bootstrap
+        var forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,17 @@
+[33mcommit f3585023005567d191c76b7007ddca2b3f426bb1[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: jhonwilber123 <jhonwaa123@gmail.com>
+Date:   Wed Jan 15 11:01:20 2025 -0500
+
+    Furmularios corregidos de grados titulos, carga, actualizacion capasitacion, y informacion personal...2
+
+ src/templates/gradostitulos.html | 158 [32m++++++++++++++++++++++++++++++++++++++[m[31m-[m
+ 1 file changed, 156 insertions(+), 2 deletions(-)
+
+[33mcommit a32268b4027d8fad473cf477a4eb29d264f19131[m
+Author: jhonwilber123 <jhonwaa123@gmail.com>
+Date:   Thu Dec 26 11:07:38 2024 -0500
+
+    Un esfuerzo por guardar el requitements que no quiere dejarme habrir otro proyecto
+
+ requirements.txt | Bin [31m1058[m -> [32m505[m bytes
+ 1 file changed, 0 insertions(+), 0 deletions(-)
