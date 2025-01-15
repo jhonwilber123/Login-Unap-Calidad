@@ -39,6 +39,15 @@
                 {% endfor %}
             </div>
 
+            <!-- País -->
+            <div class="mb-3">
+                {{ form.pais.label(class="form-label") }}
+                {{ form.pais(class="form-select", id="pais") }}
+                {% for error in form.pais.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
             <!-- Universidad -->
             <div class="mb-3">
                 {{ form.universidad.label(class="form-label") }}
@@ -53,15 +62,6 @@
                 {{ form.otro_universidad.label(class="form-label") }}
                 {{ form.otro_universidad(class="form-control", maxlength="255", placeholder="Nombre de otra universidad") }}
                 {% for error in form.otro_universidad.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
-
-            <!-- País -->
-            <div class="mb-3">
-                {{ form.pais.label(class="form-label") }}
-                {{ form.pais(class="form-select", id="pais") }}
-                {% for error in form.pais.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </div>
@@ -87,7 +87,7 @@
             <!-- Archivo -->
             <div class="mb-3">
                 {{ form.archivo.label(class="form-label") }}
-                {{ form.archivo(class="form-control") }}
+                {{ form.archivo(class="form-control", accept=".pdf") }}
                 {% for error in form.archivo.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
@@ -99,7 +99,7 @@
                     <label class="form-label mb-1"><i class="bi bi-file-earmark-person-fill"></i> Archivo Actual:</label>
                     {% if grado.categoria == 'imagen' %}
                         <button type="button" class="btn p-0 border-0" data-bs-toggle="modal" data-bs-target="#imageModal">
-                            <img src="{{ url_for('uploaded_file', filename=grado.ruta_imagen) }}" alt="Imagen Actual" class="preview-image" style="max-width: 200px;">
+                            <img src="{{ url_for('static', filename='uploads/' ~ grado.ruta_imagen) }}" alt="Imagen Actual" class="preview-image" style="max-width: 200px;">
                         </button>
                         <!-- Modal -->
                         <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
@@ -110,13 +110,13 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body text-center">
-                                        <img src="{{ url_for('uploaded_file', filename=grado.ruta_imagen) }}" class="img-fluid" alt="Imagen Completa">
+                                        <img src="{{ url_for('static', filename='uploads/' ~ grado.ruta_imagen) }}" class="img-fluid" alt="Imagen Completa">
                                     </div>
                                 </div>
                             </div>
                         </div>
                     {% elif grado.categoria == 'pdf' %}
-                        <a href="{{ url_for('uploaded_file', filename=grado.ruta_imagen) }}" target="_blank" class="preview-link d-block text-center">
+                        <a href="{{ url_for('static', filename='uploads/' ~ grado.ruta_imagen) }}" target="_blank" class="preview-link d-block text-center">
                             <i class="bi bi-file-earmark-pdf-fill"></i> Ver Archivo PDF
                         </a>
                     {% endif %}
@@ -126,7 +126,7 @@
             <!-- Archivo SUNEDU -->
             <div class="mb-3">
                 {{ form.archivo_sunedu.label(class="form-label") }}
-                {{ form.archivo_sunedu(class="form-control") }}
+                {{ form.archivo_sunedu(class="form-control", accept=".pdf") }}
                 {% for error in form.archivo_sunedu.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
@@ -136,7 +136,7 @@
             {% if grado.ruta_imagen_sunedu %}
                 <div class="mb-3 text-center">
                     <label class="form-label mb-1"><i class="bi bi-file-earmark-person-fill"></i> Archivo SUNEDU Actual:</label><br>
-                    <a href="{{ url_for('uploaded_file', filename=grado.ruta_imagen_sunedu) }}" target="_blank" class="preview-link d-block text-center">
+                    <a href="{{ url_for('static', filename='uploads/' ~ grado.ruta_imagen_sunedu) }}" target="_blank" class="preview-link d-block text-center">
                         <i class="bi bi-file-earmark-pdf-fill"></i> Ver Archivo SUNEDU
                     </a>
                 </div>
@@ -154,14 +154,89 @@
         </form>
     </div>
 
-    <!-- JavaScript para controlar la opción "Otra" -->
+    <!-- Incluir jQuery y Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- JavaScript para manejar la carga dinámica de universidades y validación de archivos PDF -->
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('.needs-validation');
+            const archivoInput = document.getElementById('archivo');
+            const archivoSuneduInput = document.getElementById('archivo_sunedu');
+
+            // Función para validar campos de archivo PDF
+            function validatePDFInput(input, feedbackElement) {
+                if (input.required && input.files.length === 0) {
+                    input.classList.add('is-invalid');
+                    input.classList.remove('is-valid');
+                    feedbackElement.textContent = input.id === 'archivo' ? 'Por favor, suba su archivo PDF.' : 'Por favor, suba su archivo SUNEDU PDF.';
+                    feedbackElement.style.display = 'block';
+                    return false;
+                }
+
+                if (input.files.length > 0) {
+                    const file = input.files[0];
+                    const fileType = file.type;
+                    const fileName = file.name.toLowerCase();
+
+                    if (fileType !== 'application/pdf' && !fileName.endsWith('.pdf')) {
+                        input.classList.add('is-invalid');
+                        input.classList.remove('is-valid');
+                        feedbackElement.textContent = 'Solo se admiten archivos PDF.';
+                        feedbackElement.style.display = 'block';
+                        return false;
+                    }
+
+                    input.classList.remove('is-invalid');
+                    input.classList.add('is-valid');
+                    feedbackElement.style.display = 'none';
+                    return true;
+                }
+
+                // Si no es obligatorio y no hay archivo, considerarlo válido
+                input.classList.remove('is-invalid');
+                input.classList.remove('is-valid');
+                feedbackElement.style.display = 'none';
+                return true;
+            }
+
+            // Manejar el envío del formulario
+            form.addEventListener('submit', function(event) {
+                // Validación de los campos estándar del formulario
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+
+                // Validación personalizada para los campos de archivo PDF
+                const archivoValid = validatePDFInput(archivoInput, archivoInput.nextElementSibling);
+                const archivoSuneduValid = validatePDFInput(archivoSuneduInput, archivoSuneduInput.nextElementSibling);
+
+                if (!archivoValid || !archivoSuneduValid) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+
+                form.classList.add('was-validated');
+            }, false);
+
+            // Validación en tiempo real para los campos de archivo PDF
+            archivoInput.addEventListener('change', function() {
+                validatePDFInput(archivoInput, archivoInput.nextElementSibling);
+            });
+
+            archivoSuneduInput.addEventListener('change', function() {
+                validatePDFInput(archivoSuneduInput, archivoSuneduInput.nextElementSibling);
+            });
+
+            // Manejo para mostrar u ocultar campos "Otra Universidad" y "Otro País"
+            const paisSelect = document.getElementById('pais');
             const universidadSelect = document.getElementById('universidad');
             const otroUniversidadDiv = document.getElementById('otro_universidad_div');
-            const paisSelect = document.getElementById('pais');
             const otroPaisDiv = document.getElementById('otro_pais_div');
 
+            // Función para mostrar u ocultar "Otra Universidad"
             function toggleOtroUniversidad() {
                 if (universidadSelect.value === 'Otra') {
                     otroUniversidadDiv.style.display = 'block';
@@ -170,6 +245,7 @@
                 }
             }
 
+            // Función para mostrar u ocultar "Otro País"
             function toggleOtroPais() {
                 if (paisSelect.value === 'Otro') {
                     otroPaisDiv.style.display = 'block';
@@ -178,16 +254,68 @@
                 }
             }
 
-            // Ejecutar al cargar la página
-            toggleOtroUniversidad();
-            toggleOtroPais();
+            // Manejar la carga dinámica de universidades
+            paisSelect.addEventListener('change', function() {
+                const selectedPais = this.value;
+                if (selectedPais && selectedPais !== 'Otro') {
+                    fetch('{{ url_for("get_universidades") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ form.csrf_token._value() }}'
+                        },
+                        body: JSON.stringify({ pais: selectedPais })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        universidadSelect.innerHTML = '';
+                        universidadSelect.innerHTML += '<option value="">--- Seleccione una universidad ---</option>';
+                        data.forEach(function(univ) {
+                            const option = document.createElement('option');
+                            option.value = univ;
+                            option.text = univ;
+                            universidadSelect.appendChild(option);
+                        });
+                        toggleOtroUniversidad();
+                    })
+                    .catch(error => {
+                        console.error('Error al obtener universidades:', error);
+                    });
+                } else if (selectedPais === 'Otro') {
+                    universidadSelect.innerHTML = '<option value="Otra">Otra</option>';
+                    toggleOtroUniversidad();
+                } else {
+                    universidadSelect.innerHTML = '<option value="">--- Seleccione un país primero ---</option>';
+                    toggleOtroUniversidad();
+                }
+                toggleOtroPais();
+            });
 
-            // Asignar el evento onchange a los select fields
             universidadSelect.addEventListener('change', toggleOtroUniversidad);
             paisSelect.addEventListener('change', toggleOtroPais);
+
+            // Inicializar el estado al cargar la página
+            toggleOtroUniversidad();
+            toggleOtroPais();
+        });
+
+    </script>
+    <!-- JavaScript para control de formularios y modales de eliminación -->
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Validación de formularios Bootstrap
+            var forms = document.querySelectorAll('.needs-validation');
+            Array.prototype.slice.call(forms).forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
         });
     </script>
 
-</div>
 
 {% endblock %}

@@ -1,4 +1,4 @@
-<!-- templates/gradostitulos.html --> 
+<!-- templates/gradostitulos.html -->
 
 {% extends './base.html' %}
 
@@ -16,12 +16,12 @@
 <div class="container mt-5">
     <h1 class="h3 mb-4 text-center"><i class="bi bi-mortarboard-fill"></i> Grados y Títulos Académicos</h1>
 
-    {% with messages = get_flashed_messages() %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-success alert-dismissible" role="alert">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
                     <strong>{{ message }}</strong>
-                    <button type="button" class="btn-close" aria-label="Close" onclick="this.parentElement.style.display='none';"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             {% endfor %}
         {% endif %}
@@ -32,7 +32,6 @@
         <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
             {{ form.hidden_tag() }}
 
-
             <!-- Tipo de Título -->
             <div class="mb-3">
                 {{ form.tipo.label(class="form-label") }}
@@ -41,6 +40,7 @@
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </div>
+
             <!-- Título -->
             <div class="mb-3">
                 {{ form.titulo.label(class="form-label") }}
@@ -53,7 +53,7 @@
             <!-- Archivo -->
             <div class="mb-3">
                 {{ form.archivo.label(class="form-label") }}
-                {{ form.archivo(class="form-control", id="archivo", required=true, accept="application/pdf") }}
+                {{ form.archivo(class="form-control", id="archivo", required=true, accept=".pdf") }}
                 <div class="invalid-feedback">
                     Por favor, suba un archivo PDF.
                 </div>
@@ -65,7 +65,7 @@
             <!-- Archivo SUNEDU --> 
             <div class="mb-3">
                 {{ form.archivo_sunedu.label(class="form-label") }}
-                {{ form.archivo_sunedu(class="form-control", id="archivo_sunedu", required=true, accept="application/pdf") }}
+                {{ form.archivo_sunedu(class="form-control", id="archivo_sunedu", required=true, accept=".pdf") }}
                 <div class="invalid-feedback">
                     Por favor, suba un archivo PDF para la Constancia SUNEDU.
                 </div>
@@ -73,8 +73,6 @@
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </div>
-
-
 
             <!-- País -->
             <div class="mb-3">
@@ -121,8 +119,6 @@
                 {% endfor %}
             </div>
 
-
-
             {{ form.submit(class="btn btn-primary") }}
         </form>
     </div>
@@ -154,9 +150,9 @@
                     <td>
                         {% if grado.ruta_imagen %}
                             {% if grado.categoria == 'imagen' %}
-                                <img src="{{ url_for('uploaded_file', filename=grado.ruta_imagen) }}" alt="Imagen" class="img-thumbnail" style="max-width: 100px;">
+                                <img src="{{ url_for('static', filename='uploads/' ~ grado.ruta_imagen) }}" alt="Imagen" class="img-thumbnail" style="max-width: 100px;">
                             {% elif grado.categoria == 'pdf' %}
-                                <a href="{{ url_for('uploaded_file', filename=grado.ruta_imagen) }}" target="_blank" class="btn btn-sm btn-info">
+                                <a href="{{ url_for('static', filename='uploads/' ~ grado.ruta_imagen) }}" target="_blank" class="btn btn-sm btn-info">
                                     <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
                                 </a>
                             {% endif %}
@@ -166,7 +162,7 @@
                     </td>
                     <td>
                         {% if grado.ruta_imagen_sunedu %}
-                            <a href="{{ url_for('uploaded_file', filename=grado.ruta_imagen_sunedu) }}" target="_blank" class="btn btn-sm btn-info">
+                            <a href="{{ url_for('static', filename='uploads/' ~ grado.ruta_imagen_sunedu) }}" target="_blank" class="btn btn-sm btn-info">
                                 <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
                             </a>
                         {% else %}
@@ -194,7 +190,7 @@
                               </div>
                               <div class="modal-footer">
                                 <form action="{{ url_for('eliminar_gradostitulos', id_grado=grado.id_grado) }}" method="POST">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="csrf_token" value="{{ form.csrf_token._value() }}">
                                     <button type="submit" class="btn btn-danger">Eliminar</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                                 </form>
@@ -210,7 +206,11 @@
     </div>
 </div>
 
-<!-- Actualizado JavaScript para controlar las opciones de universidad según el país seleccionado y validación de archivos PDF -->
+<!-- Incluir jQuery y Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- JavaScript para manejar la carga dinámica de universidades y validación de archivos PDF -->
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.querySelector('.needs-validation');
@@ -219,7 +219,7 @@
 
         // Función para validar campos de archivo PDF
         function validatePDFInput(input, feedbackElement) {
-            if (input.files.length === 0) {
+            if (input.required && input.files.length === 0) {
                 input.classList.add('is-invalid');
                 input.classList.remove('is-valid');
                 feedbackElement.textContent = input.id === 'archivo' ? 'Por favor, suba su archivo PDF.' : 'Por favor, suba su archivo SUNEDU PDF.';
@@ -227,20 +227,28 @@
                 return false;
             }
 
-            const file = input.files[0];
-            const fileType = file.type;
-            const fileName = file.name.toLowerCase();
+            if (input.files.length > 0) {
+                const file = input.files[0];
+                const fileType = file.type;
+                const fileName = file.name.toLowerCase();
 
-            if (fileType !== 'application/pdf' && !fileName.endsWith('.pdf')) {
-                input.classList.add('is-invalid');
-                input.classList.remove('is-valid');
-                feedbackElement.textContent = 'Solo se admiten archivos PDF.';
-                feedbackElement.style.display = 'block';
-                return false;
+                if (fileType !== 'application/pdf' && !fileName.endsWith('.pdf')) {
+                    input.classList.add('is-invalid');
+                    input.classList.remove('is-valid');
+                    feedbackElement.textContent = 'Solo se admiten archivos PDF.';
+                    feedbackElement.style.display = 'block';
+                    return false;
+                }
+
+                input.classList.remove('is-invalid');
+                input.classList.add('is-valid');
+                feedbackElement.style.display = 'none';
+                return true;
             }
 
+            // Si no es obligatorio y no hay archivo, considerarlo válido
             input.classList.remove('is-invalid');
-            input.classList.add('is-valid');
+            input.classList.remove('is-valid');
             feedbackElement.style.display = 'none';
             return true;
         }
@@ -274,32 +282,13 @@
             validatePDFInput(archivoSuneduInput, archivoSuneduInput.nextElementSibling);
         });
 
-        // Manejo existente para mostrar u ocultar campos "Otra Universidad" y "Otro País"
+        // Manejo para mostrar u ocultar campos "Otra Universidad" y "Otro País"
         const paisSelect = document.getElementById('pais');
         const universidadSelect = document.getElementById('universidad');
         const otroUniversidadDiv = document.getElementById('otro_universidad_div');
         const otroPaisDiv = document.getElementById('otro_pais_div');
 
-        const universidadesPeru = [
-            { value: '', text: 'Seleccione una universidad' },
-            { value: 'Universidad Nacional Del Altiplano', text: 'Universidad Nacional Del Altiplano' },
-            { value: 'Otra', text: 'Otra' }
-        ];
-
-        const universidadesDefault = [
-            { value: 'Otra', text: 'Otra' }
-        ];
-
-        function populateUniversidad(options) {
-            universidadSelect.innerHTML = '';
-            options.forEach(function(univ) {
-                const option = document.createElement('option');
-                option.value = univ.value;
-                option.text = univ.text;
-                universidadSelect.appendChild(option);
-            });
-        }
-
+        // Función para mostrar u ocultar "Otra Universidad"
         function toggleOtroUniversidad() {
             if (universidadSelect.value === 'Otra') {
                 otroUniversidadDiv.style.display = 'block';
@@ -308,22 +297,58 @@
             }
         }
 
-        function handlePaisChange() {
-            if (paisSelect.value === 'Perú') {
-                populateUniversidad(universidadesPeru);
+        // Función para mostrar u ocultar "Otro País"
+        function toggleOtroPais() {
+            if (paisSelect.value === 'Otro') {
+                otroPaisDiv.style.display = 'block';
             } else {
-                populateUniversidad(universidadesDefault);
+                otroPaisDiv.style.display = 'none';
             }
-            toggleOtroUniversidad();
         }
 
-        // Inicializar con Perú seleccionado por defecto
-        paisSelect.value = 'Perú';
-        handlePaisChange();
+        // Manejar la carga dinámica de universidades
+        paisSelect.addEventListener('change', function() {
+            const selectedPais = this.value;
+            if (selectedPais && selectedPais !== 'Otro') {
+                fetch('{{ url_for("get_universidades") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ form.csrf_token._value() }}'
+                    },
+                    body: JSON.stringify({ pais: selectedPais })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    universidadSelect.innerHTML = '';
+                    universidadSelect.innerHTML += '<option value="">--- Seleccione una universidad ---</option>';
+                    data.forEach(function(univ) {
+                        const option = document.createElement('option');
+                        option.value = univ;
+                        option.text = univ;
+                        universidadSelect.appendChild(option);
+                    });
+                    toggleOtroUniversidad();
+                })
+                .catch(error => {
+                    console.error('Error al obtener universidades:', error);
+                });
+            } else if (selectedPais === 'Otro') {
+                universidadSelect.innerHTML = '<option value="Otra">Otra</option>';
+                toggleOtroUniversidad();
+            } else {
+                universidadSelect.innerHTML = '<option value="">--- Seleccione un país primero ---</option>';
+                toggleOtroUniversidad();
+            }
+            toggleOtroPais();
+        });
 
-        // Eventos
-        paisSelect.addEventListener('change', handlePaisChange);
         universidadSelect.addEventListener('change', toggleOtroUniversidad);
+        paisSelect.addEventListener('change', toggleOtroPais);
+
+        // Inicializar el estado al cargar la página
+        toggleOtroUniversidad();
+        toggleOtroPais();
     });
 </script>
 

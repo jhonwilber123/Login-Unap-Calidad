@@ -16,6 +16,17 @@
 <div class="container mt-5">
     <h1 class="h3 mb-4 text-center"><i class="bi bi-journal-text"></i> Participaciones en Tesis</h1>
 
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success alert-dismissible" role="alert">
+                <strong>{{ message }}</strong>
+                <button type="button" class="btn-close" aria-label="Close" onclick="this.parentElement.style.display='none';"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+
     <!-- Formulario para agregar una nueva participación -->
     <div class="formularios-container">
         <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>

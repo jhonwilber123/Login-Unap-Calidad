@@ -81,15 +81,6 @@
                 <div class="form-text">Deja este campo vacío si no deseas actualizar el memorándum actual.</div>
             </div>
 
-            <!-- Categoría Docente -->
-            <div class="mb-3">
-                {{ form.categoria_docente.label(class="form-label") }}
-                {{ form.categoria_docente(class="form-select") }}
-                {% for error in form.categoria_docente.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
-
             <!-- Horas Asignadas -->
             <div class="mb-3">
                 {{ form.horas_asignadas.label(class="form-label") }}
@@ -99,14 +90,6 @@
                 {% endfor %}
             </div>
 
-            <!-- Observaciones -->
-            <div class="mb-3">
-                {{ form.observaciones.label(class="form-label") }}
-                {{ form.observaciones(class="form-control", rows="3", placeholder="Observaciones (opcional)") }}
-                {% for error in form.observaciones.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
 
             {{ form.submit(class="btn btn-primary") }}
             <a href="{{ url_for('carga_academica') }}" class="btn btn-secondary">Cancelar</a>

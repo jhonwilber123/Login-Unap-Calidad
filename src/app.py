@@ -88,7 +88,7 @@ def create_user():
         new_user = User(None, username, hashed_password, fullname, role)
         ModelUser.create_user(db, new_user)
         return redirect(url_for('ver_datos_personal'))  # Asegúrate de tener esta ruta o cámbiala según tu necesidad
-    return render_template('auth/create_user.html')
+    return render_template('users/create_user.html')
 
 # Ruta para listar usuarios
 @app.route('/users', methods=['GET'])
@@ -317,6 +317,7 @@ def informacion_personal():
             'lugar_nacimiento_provincia': form.lugar_nacimiento_provincia.data,
             'lugar_nacimiento_distrito': form.lugar_nacimiento_distrito.data,
             'dni': form.dni.data,
+            'colegio_profesional': form.colegio_profesional.data,
             'numero_colegiatura': form.numero_colegiatura.data or '',
             'codigo': form.codigo.data,
             'condicion': form.condicion.data,
@@ -352,6 +353,7 @@ def informacion_personal():
                     lugar_nacimiento_provincia=%(lugar_nacimiento_provincia)s, 
                     lugar_nacimiento_distrito=%(lugar_nacimiento_distrito)s, 
                     dni=%(dni)s,
+                    colegio_profesional=%(colegio_profesional)s, 
                     numero_colegiatura=%(numero_colegiatura)s, 
                     codigo=%(codigo)s, 
                     condicion=%(condicion)s, 
@@ -384,6 +386,7 @@ def informacion_personal():
                     lugar_nacimiento_provincia, 
                     lugar_nacimiento_distrito, 
                     dni,
+                    colegio_profesional,
                     numero_colegiatura, 
                     codigo, 
                     condicion, 
@@ -410,6 +413,7 @@ def informacion_personal():
                     %(lugar_nacimiento_provincia)s, 
                     %(lugar_nacimiento_distrito)s, 
                     %(dni)s,
+                    %(colegio_profesional)s,
                     %(numero_colegiatura)s, 
                     %(codigo)s, 
                     %(condicion)s, 
@@ -459,6 +463,7 @@ def informacion_personal():
         form.lugar_nacimiento_provincia.data = existing_data['lugar_nacimiento_provincia']
         form.lugar_nacimiento_distrito.data = existing_data['lugar_nacimiento_distrito']
         form.dni.data = existing_data['dni']
+        form.colegio_profesional.data = existing_data['colegio_profesional']
         form.numero_colegiatura.data = existing_data['numero_colegiatura']
         form.codigo.data = existing_data['codigo']
         form.condicion.data = existing_data['condicion']
@@ -961,10 +966,34 @@ def eliminar_participaciongestionuniversitaria(id):
     return redirect(url_for('participaciongestionuniversitaria'))
 
 # --- RUTA PARA AGREGAR Y LISTAR TÍTULOS --- 
+country_universities = {
+    '--- Seleccione un país ---': [''],  # Valor vacío para la selección predeterminada
+    'Perú': [
+        'Universidad Nacional Del Altiplano',
+        'Otra'
+    ],
+    # Agrega más países y universidades según sea necesario
+    'Otro': [
+        'Otra'
+    ]
+}
+
+
+# --- RUTA PARA AGREGAR Y LISTAR TÍTULOS ---
 @app.route('/gradostitulos', methods=['GET', 'POST'])
 @login_required
 def gradostitulos():
     form = GradostitulosForm()
+    
+    # Actualizar las opciones de país en el formulario
+    form.pais.choices = sorted([(country, country) for country in country_universities.keys()], key=lambda x: x[1])
+    
+    if request.method == 'POST':
+        # Establecer las opciones de universidad basadas en el país seleccionado antes de validar
+        selected_pais = form.pais.data
+        universidades = country_universities.get(selected_pais, ['Otra'])
+        form.universidad.choices = [('', '--- Seleccione una universidad ---')] + [(univ, univ) for univ in universidades]
+    
     if form.validate_on_submit():
         titulo = form.titulo.data or None
         tipo = form.tipo.data or None
@@ -977,10 +1006,24 @@ def gradostitulos():
         # Manejo de "Otra Universidad"
         if universidad == 'Otra':
             universidad = otro_universidad
+            if not universidad:
+                flash('Debe especificar otra universidad.', 'danger')
+                return redirect(request.url)
 
         # Manejo de "Otro País"
         if pais == 'Otro':
             pais = otro_pais
+            if not pais:
+                flash('Debe especificar otro país.', 'danger')
+                return redirect(request.url)
+
+        # Validación en backend para asegurar la integridad País-Universidad
+        # Si no es 'Otra', verificar que la universidad pertenezca al país seleccionado
+        if universidad != 'Otra':
+            universidades_del_pais = country_universities.get(form.pais.data, [])
+            if universidad not in universidades_del_pais:
+                flash('La universidad seleccionada no corresponde al país indicado.', 'danger')
+                return redirect(request.url)
 
         # Manejo de archivos (imagen o PDF)
         archivo = form.archivo.data
@@ -1015,7 +1058,7 @@ def gradostitulos():
                 flash('Archivo no permitido.', 'danger')
                 return redirect(request.url)
 
-        # Manejo de archivo_sunedu ( PDF)
+        # Manejo de archivo_sunedu (PDF)
         archivo_sunedu = form.archivo_sunedu.data
         id_imagen_sunedu = None
         if archivo_sunedu:
@@ -1033,7 +1076,7 @@ def gradostitulos():
                     flash('Debe seleccionar un archivo PDF.', 'danger')
                     return redirect(request.url)
 
-                # Insertar el archivo y obtener su id_imagen
+                # Insertar el archivo y obtener su id_imagen_sunedu
                 cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
                 cur.execute("""
                     INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
@@ -1043,7 +1086,7 @@ def gradostitulos():
                 id_imagen_sunedu = cur.lastrowid
                 cur.close()
             else:
-                flash('Archivo no permitido.', 'danger')
+                flash('Archivo SUNEDU no permitido.', 'danger')
                 return redirect(request.url)
 
         # Insertar el título académico
@@ -1055,7 +1098,7 @@ def gradostitulos():
         db.connection.commit()
         cur.close()
 
-        flash('Título académico agregado correctamente', 'success')
+        flash('Título académico agregado correctamente.', 'success')
         return redirect(url_for('gradostitulos'))
 
     # Obtener los títulos académicos del usuario actual
@@ -1076,7 +1119,6 @@ def gradostitulos():
         LEFT JOIN imagenesadjuntas ia ON gt.id_imagen = ia.id_imagen
         LEFT JOIN imagenesadjuntas ia_sunedu ON gt.id_imagen_sunedu = ia_sunedu.id_imagen
         WHERE gt.id_usuario = %s;
-
     """, [current_user.id])
     gradostitulos = cur.fetchall()
     cur.close()
@@ -1114,8 +1156,17 @@ def editar_gradostitulos(id_grado):
     cur.close()
 
     if not grado:
-        flash('Título académico no encontrado', 'danger')
+        flash('Título académico no encontrado.', 'danger')
         return redirect(url_for('gradostitulos'))
+
+    # Actualizar las opciones de país en el formulario
+    form.pais.choices = sorted([(country, country) for country in country_universities.keys()], key=lambda x: x[1])
+
+    if request.method == 'POST':
+        # Establecer las opciones de universidad basadas en el país seleccionado antes de validar
+        selected_pais = form.pais.data
+        universidades = country_universities.get(selected_pais, ['Otra'])
+        form.universidad.choices = [('', '--- Seleccione una universidad ---')] + [(univ, univ) for univ in universidades]
 
     if form.validate_on_submit():
         titulo = form.titulo.data or None
@@ -1133,10 +1184,23 @@ def editar_gradostitulos(id_grado):
         # Manejo de "Otra Universidad"
         if universidad == 'Otra':
             universidad = otro_universidad
+            if not universidad:
+                flash('Debe especificar otra universidad.', 'danger')
+                return redirect(request.url)
 
         # Manejo de "Otro País"
         if pais == 'Otro':
             pais = otro_pais
+            if not pais:
+                flash('Debe especificar otro país.', 'danger')
+                return redirect(request.url)
+
+        # Validación en backend para asegurar la integridad País-Universidad
+        if universidad != 'Otra':
+            universidades_del_pais = country_universities.get(form.pais.data, [])
+            if universidad not in universidades_del_pais:
+                flash('La universidad seleccionada no corresponde al país indicado.', 'danger')
+                return redirect(request.url)
 
         # Manejo del archivo adjunto
         if archivo:
@@ -1230,7 +1294,7 @@ def editar_gradostitulos(id_grado):
                 db.connection.commit()
                 cur.close()
             else:
-                flash('Archivo no permitido.', 'danger')
+                flash('Archivo SUNEDU no permitido.', 'danger')
                 return redirect(request.url)
         else:
             # Si no se carga un nuevo archivo sunedu, mantener el existente
@@ -1246,7 +1310,7 @@ def editar_gradostitulos(id_grado):
         db.connection.commit()
         cur.close()
 
-        flash('Título académico actualizado correctamente', 'success')
+        flash('Título académico actualizado correctamente.', 'success')
         return redirect(url_for('gradostitulos'))
 
     # Prellenar el formulario con los datos actuales
@@ -1254,7 +1318,7 @@ def editar_gradostitulos(id_grado):
         form.titulo.data = grado['titulo']
         form.tipo.data = grado['tipo']
         # Manejar "Otra Universidad"
-        predefined_universidades = ['Universidad Nacional Del Altiplano', 'Universidad Peruana Cayetano Heredia']
+        predefined_universidades = country_universities.get('Perú', []) + country_universities.get('España', [])  # Agrega más según sea necesario
         if grado['universidad'] not in predefined_universidades:
             form.universidad.data = 'Otra'
             form.otro_universidad.data = grado['universidad']
@@ -1263,7 +1327,7 @@ def editar_gradostitulos(id_grado):
             form.otro_universidad.data = ''
 
         # Manejar "Otro País"
-        predefined_paises = ['Perú', 'Chile']
+        predefined_paises = list(country_universities.keys())
         if grado['pais'] not in predefined_paises:
             form.pais.data = 'Otro'
             form.otro_pais.data = grado['pais']
@@ -1272,6 +1336,10 @@ def editar_gradostitulos(id_grado):
             form.otro_pais.data = ''
 
         form.fecha_expedicion.data = grado['fecha_expedicion']
+
+        # Establecer las opciones de universidad basadas en el país del título
+        universidades = country_universities.get(grado['pais'], ['Otra'])
+        form.universidad.choices = [('', '--- Seleccione una universidad ---')] + [(univ, univ) for univ in universidades]
 
     return render_template('editar_gradostitulos.html', grado=grado, form=form)
 
@@ -1304,6 +1372,7 @@ def eliminar_gradostitulos(id_grado):
             # Eliminar la imagen de la tabla imagenesadjuntas
             cur.execute("DELETE FROM imagenesadjuntas WHERE id_imagen = %s AND id_usuario = %s", (id_imagen, current_user.id))
             db.connection.commit()
+
     # Obtener id_imagen_sunedu para eliminar la imagen adjunta si existe sunedu
     cur.execute("""
         SELECT id_imagen_sunedu FROM gradostitulos
@@ -1332,9 +1401,20 @@ def eliminar_gradostitulos(id_grado):
     cur.execute("DELETE FROM gradostitulos WHERE id_grado = %s AND id_usuario = %s", (id_grado, current_user.id))
     db.connection.commit()
     cur.close()
-    flash('Título académico eliminado correctamente', 'success')
+    flash('Título académico eliminado correctamente.', 'success')
     return redirect(url_for('gradostitulos'))
 
+# --- RUTA PARA OBTENER UNIVERSIDADES BASADAS EN EL PAÍS SELECCIONADO ---
+@app.route('/get_universidades', methods=['POST'])
+@login_required
+def get_universidades():
+    data = request.get_json()
+    pais = data.get('pais')
+    if not pais:
+        return jsonify({'error': 'País no proporcionado.'}), 400
+
+    universidades = country_universities.get(pais, ['Otra'])
+    return jsonify(universidades)
 
 # --- RUTA  PARA AGREGAR Y LISTAR CARGA ACADEMICA LECTIVA ---
 @app.route('/carga_academica', methods=['GET', 'POST'])
@@ -1344,9 +1424,7 @@ def carga_academica():
     if form.validate_on_submit():
         periodo_academico = form.periodo_academico.data
         numero_memorandum = form.numero_memorandum.data
-        categoria_docente = form.categoria_docente.data
         horas_asignadas = form.horas_asignadas.data
-        observaciones = form.observaciones.data
 
         # Manejo del archivo PDF del Memorándum
         archivo = form.archivo_memorandum.data
@@ -1375,9 +1453,9 @@ def carga_academica():
         # Insertar el registro de carga académica lectiva
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
-            INSERT INTO carga_academica_lectiva (id_usuario, periodo_academico, numero_memorandum, id_memorandum, categoria_docente, horas_asignadas, observaciones)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (current_user.id, periodo_academico, numero_memorandum, id_memorandum, categoria_docente, horas_asignadas, observaciones))
+            INSERT INTO carga_academica_lectiva (id_usuario, periodo_academico, numero_memorandum, id_memorandum, horas_asignadas)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (current_user.id, periodo_academico, numero_memorandum, id_memorandum, horas_asignadas))
         db.connection.commit()
         cur.close()
 
@@ -1421,9 +1499,7 @@ def editar_carga_academica(id_carga):
     if form.validate_on_submit():
         periodo_academico = form.periodo_academico.data
         numero_memorandum = form.numero_memorandum.data
-        categoria_docente = form.categoria_docente.data
         horas_asignadas = form.horas_asignadas.data
-        observaciones = form.observaciones.data
 
         # Manejo del archivo PDF del Memorándum
         archivo = form.archivo_memorandum.data
@@ -1470,10 +1546,10 @@ def editar_carga_academica(id_carga):
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
             UPDATE carga_academica_lectiva
-            SET periodo_academico = %s, numero_memorandum = %s, categoria_docente = %s,
-                horas_asignadas = %s, observaciones = %s
+            SET periodo_academico = %s, numero_memorandum = %s,
+                horas_asignadas = %s
             WHERE id_carga = %s AND id_usuario = %s
-        """, (periodo_academico, numero_memorandum, categoria_docente, horas_asignadas, observaciones, id_carga, current_user.id))
+        """, (periodo_academico, numero_memorandum, horas_asignadas, id_carga, current_user.id))
         db.connection.commit()
         cur.close()
 
@@ -1484,46 +1560,63 @@ def editar_carga_academica(id_carga):
     if request.method == 'GET':
         form.periodo_academico.data = carga['periodo_academico']
         form.numero_memorandum.data = carga['numero_memorandum']
-        form.categoria_docente.data = carga['categoria_docente']
         form.horas_asignadas.data = carga['horas_asignadas']
-        form.observaciones.data = carga['observaciones']
 
     return render_template('editar_carga_academica.html', carga=carga, form=form)
 
+# --- RUTA PARA ELIMINAR UNA CARGA ACADÉMICA LECTIVA ---
 @app.route('/eliminar_carga_academica/<int:id_carga>', methods=['POST'])
 @login_required
 def eliminar_carga_academica(id_carga):
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
 
-    # Obtener id_memorandum para eliminar el PDF adjunto si existe
-    cur.execute("""
-        SELECT id_memorandum FROM carga_academica_lectiva
-        WHERE id_carga = %s AND id_usuario = %s
-    """, (id_carga, current_user.id))
-    result = cur.fetchone()
+    # Inicializar la variable id_memorandum
+    id_memorandum = None
 
-    if result and result['id_memorandum']:
-        id_memorandum = result['id_memorandum']
-        # Eliminar el archivo físico del servidor
+    try:
+        # Obtener id_memorandum para eliminar el PDF adjunto si existe
         cur.execute("""
-            SELECT ruta_imagen FROM imagenesadjuntas
-            WHERE id_imagen = %s AND id_usuario = %s
-        """, (id_memorandum, current_user.id))
-        imagen = cur.fetchone()
-        if imagen:
-            ruta_imagen = imagen['ruta_imagen']
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], ruta_imagen)
-            if os.path.exists(file_path):
-                os.remove(file_path)
-    # Eliminar el registro de carga académica lectiva
-    cur.execute("DELETE FROM carga_academica_lectiva WHERE id_carga = %s AND id_usuario = %s", (id_carga, current_user.id))
-    db.connection.commit()
+            SELECT id_memorandum FROM carga_academica_lectiva
+            WHERE id_carga = %s AND id_usuario = %s
+        """, (id_carga, current_user.id))
+        result = cur.fetchone()
 
-    # Eliminar el registro de la tabla imagenesadjuntas
-    cur.execute("DELETE FROM imagenesadjuntas WHERE id_imagen = %s AND id_usuario = %s", (id_memorandum, current_user.id))
-    db.connection.commit()
-    cur.close()
-    flash('Carga académica eliminada correctamente', 'success')
+        if result and result['id_memorandum']:
+            id_memorandum = result['id_memorandum']
+            # Obtener la ruta del archivo adjunto
+            cur.execute("""
+                SELECT ruta_imagen FROM imagenesadjuntas
+                WHERE id_imagen = %s AND id_usuario = %s
+            """, (id_memorandum, current_user.id))
+            imagen = cur.fetchone()
+            if imagen:
+                ruta_imagen = imagen['ruta_imagen']
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], ruta_imagen)
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+        
+        # Eliminar el registro de carga académica lectiva
+        cur.execute("""
+            DELETE FROM carga_academica_lectiva 
+            WHERE id_carga = %s AND id_usuario = %s
+        """, (id_carga, current_user.id))
+        db.connection.commit()
+
+        # Eliminar el registro de la tabla imagenesadjuntas si id_memorandum está definido
+        if id_memorandum:
+            cur.execute("""
+                DELETE FROM imagenesadjuntas 
+                WHERE id_imagen = %s AND id_usuario = %s
+            """, (id_memorandum, current_user.id))
+            db.connection.commit()
+
+        flash('Carga académica eliminada correctamente', 'success')
+    except Exception as e:
+        db.connection.rollback()
+        flash(f'Error al eliminar la carga académica: {str(e)}', 'danger')
+    finally:
+        cur.close()
+
     return redirect(url_for('carga_academica'))
 
 # Ruta para manejar actividades de proyección social

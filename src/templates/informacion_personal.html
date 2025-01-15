@@ -98,7 +98,8 @@
             <div class="form-group">
                 <label><i class="bi bi-file-earmark-person-fill"></i> Documentos de Identidad</label>
                 <div class="row">
-                    {% for field, placeholder in [('numero_colegiatura', 'Número de Colegiatura'), 
+                    {% for field, placeholder in [('colegio_profesional', 'Colegio Profesional'),
+                                                    ('numero_colegiatura', 'Número de Colegiatura'), 
                                                   ('codigo', 'Código UNAP')] %}
                     <div class="col-md-6">
                         {{ form[field].label(class="form-label") }}

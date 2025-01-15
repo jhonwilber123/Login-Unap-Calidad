@@ -16,6 +16,17 @@
 <div class="container mt-5">
     <h1 class="h3 mb-4 text-center"><i class="bi bi-briefcase-fill"></i> Actualizaciones y Capacitaciones en su Especialidad y en Docencia Universitaria</h1>
 
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success alert-dismissible" role="alert">
+                <strong>{{ message }}</strong>
+                <button type="button" class="btn-close" aria-label="Close" onclick="this.parentElement.style.display='none';"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+
     <!-- Formulario para agregar una nueva actualización -->
     <div class="formularios-container">
         <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
@@ -55,6 +66,7 @@
                 {% for error in form.creditos.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
+                <div class="form-text">En caso de no tener creditos poner 0.</div>
             </div>
 
             <!-- Semestres Concluidos -->
@@ -78,11 +90,13 @@
             <!-- Archivo -->
             <div class="mb-3">
                 {{ form.archivo.label(class="form-label") }}
-                {{ form.archivo(class="form-control") }}
+                {{ form.archivo(class="form-control", id="archivo", required=True) }} <!-- Asignar un ID y agregar 'required' -->
+                <div class="invalid-feedback">
+                    Debe subir un archivo PDF o una imagen válida relacionada con la capacitación.
+                </div>
                 {% for error in form.archivo.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
-                <div class="form-text">Subir una imagen o PDF relacionado con la capacitación.</div>
             </div>
 
             {{ form.submit(class="btn btn-primary") }}
@@ -116,7 +130,7 @@
                             Semestres Concluidos: {{ actualizacion.semestres_concluidos if actualizacion.semestres_concluidos is not none else 'N/A' }}
                         {% elif actualizacion.tipo in tipos_por_horas_creditos %}
                             Horas: {{ actualizacion.horas if actualizacion.horas is not none else 'N/A' }}, 
-                            Créditos: {{ actualizacion.creditos if actualizacion.creditos is not none else 'N/A' }}
+                            Créditos: {{ actualizacion.creditos if actualizacion.creditos is not none else 'Sin creditos' }}
                         {% else %}
                             Información no disponible
                         {% endif %}
@@ -172,32 +186,111 @@
     </div>
 </div>
 
-<!-- JavaScript para controlar la visibilidad de los campos según el tipo de capacitación -->
+<!-- JavaScript para controlar la visibilidad de los campos según el tipo de capacitación y validaciones de archivo -->
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('.needs-validation');
+        const archivoInput = document.getElementById('archivo');
+
+        // Función para validar campos de archivo (imagen o PDF)
+        function validateArchivoInput(input, feedbackElement) {
+            if (input.files.length === 0) {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                feedbackElement.textContent = 'Debe subir un archivo PDF.';
+                feedbackElement.style.display = 'block';
+                return false;
+            }
+
+            const file = input.files[0];
+            const fileType = file.type;
+            const fileName = file.name.toLowerCase();
+            const allowedTypes = ['application/pdf'];
+            const isValidType = allowedTypes.includes(fileType) || fileName.endsWith('.pdf');
+            const isValidSize = file.size <= 10 * 1024 * 1024; // 10 MB
+
+            if (!isValidType) {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                feedbackElement.textContent = 'Solo se admiten archivos PDF.';
+                feedbackElement.style.display = 'block';
+                return false;
+            }
+
+            if (!isValidSize) {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                feedbackElement.textContent = 'El archivo no debe exceder los 10 MB.';
+                feedbackElement.style.display = 'block';
+                return false;
+            }
+
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+            feedbackElement.style.display = 'none';
+            return true;
+        }
+
+        // Manejar el envío del formulario
+        form.addEventListener('submit', function(event) {
+            // Validación estándar del formulario
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            // Validación personalizada para el campo archivo
+            const archivoValid = validateArchivoInput(archivoInput, archivoInput.nextElementSibling);
+
+            if (!archivoValid) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            form.classList.add('was-validated');
+        }, false);
+
+        // Validación en tiempo real para el campo archivo
+        archivoInput.addEventListener('change', function() {
+            validateArchivoInput(archivoInput, archivoInput.nextElementSibling);
+        });
+
+        // Controlar la visibilidad de los campos según el tipo de capacitación
         const tipoSelect = document.getElementById('tipo');
         const divHoras = document.getElementById('div-horas');
         const divCreditos = document.getElementById('div-creditos');
         const divSemestres = document.getElementById('div-semestres');
 
+        const tiposPorSemestres = ['Segunda Especialidad', 'Maestría', 'Doctorado', 'Especialización en Docencia Universitaria'];
+        const tiposPorHorasCreditos = ['Curso Presencial', 'Curso Virtual', 'Diplomado Presencial', 'Diplomado Virtual'];
+
         function actualizarCampos() {
             const tipo = tipoSelect.value;
-            const tiposPorSemestres = ['Segunda Especialidad', 'Maestría', 'Doctorado', 'Especialización en Docencia Universitaria'];
-            const tiposPorHorasCreditos = ['Curso Presencial', 'Curso Virtual', 'Diplomado Presencial', 'Diplomado Virtual'];
 
             if (tiposPorSemestres.includes(tipo)) {
                 divHoras.style.display = 'none';
                 divCreditos.style.display = 'none';
                 divSemestres.style.display = 'block';
+                // Opcional: agregar 'required' a semestres_concluidos si es necesario
+                document.getElementById('semestres_concluidos').setAttribute('required', 'required');
+                document.getElementById('horas').removeAttribute('required');
+                document.getElementById('creditos').removeAttribute('required');
             } else if (tiposPorHorasCreditos.includes(tipo)) {
                 divHoras.style.display = 'block';
                 divCreditos.style.display = 'block';
                 divSemestres.style.display = 'none';
+                // Opcional: agregar 'required' a horas y creditos si es necesario
+                document.getElementById('horas').setAttribute('required', 'required');
+                document.getElementById('creditos').setAttribute('required', 'required');
+                document.getElementById('semestres_concluidos').removeAttribute('required');
             } else {
                 // Si no se ha seleccionado un tipo válido, ocultar todos
                 divHoras.style.display = 'none';
                 divCreditos.style.display = 'none';
                 divSemestres.style.display = 'none';
+                document.getElementById('horas').removeAttribute('required');
+                document.getElementById('creditos').removeAttribute('required');
+                document.getElementById('semestres_concluidos').removeAttribute('required');
             }
         }
 
@@ -207,41 +300,6 @@
         // Asignar el evento onchange al campo 'tipo'
         tipoSelect.addEventListener('change', actualizarCampos);
     });
-</script>
-
-<!-- JavaScript para controlar la confirmación de eliminación -->
-<script type="text/javascript">
-    function mostrarConfirmacion(id) {
-        document.getElementById('confirmacion-' + id).style.display = 'block';
-    }
-
-    function ocultarConfirmacion(id) {
-        document.getElementById('confirmacion-' + id).style.display = 'none';
-    }
-</script>
-
-<!-- Validación de formularios con Bootstrap -->
-<script>
-    // Ejemplo de validación de formularios con Bootstrap
-    (function () {
-      'use strict'
-
-      // Fetch all the forms we want to apply custom Bootstrap validation styles to
-      var forms = document.querySelectorAll('.needs-validation')
-
-      // Loop over them and prevent submission
-      Array.prototype.slice.call(forms)
-        .forEach(function (form) {
-          form.addEventListener('submit', function (event) {
-            if (!form.checkValidity()) {
-              event.preventDefault()
-              event.stopPropagation()
-            }
-
-            form.classList.add('was-validated')
-          }, false)
-        })
-    })()
 </script>
 
 {% endblock %}

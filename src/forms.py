@@ -174,6 +174,8 @@ class InformacionPersonalForm(FlaskForm):
     ])
     
     # Información Profesional
+    
+    colegio_profesional = StringField('Nombre de Colegio Profesional', validators=[Optional(), Length(max=50)])
     numero_colegiatura = StringField('Número de Colegiatura', validators=[Optional(), Length(max=20)])
     codigo = StringField('Código UNAP', validators=[Optional(), Length(max=20)])
     condicion = SelectField(
@@ -235,12 +237,36 @@ class InformacionPersonalForm(FlaskForm):
     
     submit = SubmitField('Guardar Cambios')
 
-class CargaAcademicaLectivaForm(FlaskForm):
+from flask_wtf import FlaskForm
+from wtforms import SelectField, StringField, FileField, IntegerField, TextAreaField, SubmitField
+from wtforms.validators import Optional, Length, NumberRange
+from flask_wtf.file import FileAllowed
+import requests
+
+# Suponiendo que file_size_limit ya está definido en alguna parte de tu código
+def file_size_limit(max_size):
+    # Implementación de una función personalizada para limitar el tamaño de archivos
+    from wtforms import ValidationError
+    def _file_size_limit(form, field):
+        if field.data:
+            if len(field.data.read()) > max_size:
+                raise ValidationError(f'El archivo no debe exceder los {max_size / (1024 * 1024)} MB.')
+            field.data.seek(0)  # Resetear el puntero del archivo después de leer
+    return _file_size_limit
+
+class CargaAcademicaLectivaForm(FlaskForm): 
     periodo_academico = SelectField(
         'Período Académico',
-        choices=[('', '--- Seleccione una opción ---'), ('2023-I', '2023-I'), ('2023-II', '2023-II'), ('2024-I', '2024-I'), ('2024-II', '2024-II')],
+        choices=[
+            ('', '--- Seleccione una opción ---'), 
+            ('2023-I', '2023-I'), 
+            ('2023-II', '2023-II'), 
+            ('2024-I', '2024-I'), 
+            ('2024-II', '2024-II')
+        ],
         validators=[DataRequired(message='Este campo es obligatorio.')]
     )
+    
     numero_memorandum = StringField(
         'Número de Memorándum de Carga Académica', 
         validators=[
@@ -248,19 +274,16 @@ class CargaAcademicaLectivaForm(FlaskForm):
             Length(max=50, message='Máximo 50 caracteres.')
         ]
     )
+    
     archivo_memorandum = FileField(
         'Archivo PDF del Memorándum de Carga Académica', 
         validators=[
-            DataRequired(message='Este campo es obligatorio.'),
+            Optional(),  # Cambiado de DataRequired a Optional
             FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
             file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
         ]
     )
-    categoria_docente = SelectField(
-        'Categoría Docente durante el Período Académico', 
-        choices=[('', 'Seleccione una opción'), ('Auxiliar', 'Auxiliar'), ('Asociado', 'Asociado'), ('Principal', 'Principal')], 
-        validators=[DataRequired(message='Debe seleccionar una categoría.')]
-    )
+      
     horas_asignadas = IntegerField(
         'Horas Asignadas durante el Período Académico', 
         validators=[
@@ -268,11 +291,14 @@ class CargaAcademicaLectivaForm(FlaskForm):
             NumberRange(min=1, max=30, message='Las horas asignadas deben estar entre 1 y 30.')
         ]
     )
-    observaciones = TextAreaField(
-        'Observaciones',
-        validators=[Optional(), Length(max=500, message='Máximo 500 caracteres.')]
-    )
+    
     submit = SubmitField('Guardar')
+
+    
+    def __init__(self, *args, **kwargs):
+        super(CargaAcademicaLectivaForm, self).__init__(*args, **kwargs)
+        # Si tienes lógica adicional para inicializar campos, colócala aquí
+        # Por ejemplo, cargar opciones dinámicas desde una API
 
 class TutoriaForm(FlaskForm):
     descripcion = TextAreaField('Descripción', validators=[DataRequired(message='Este campo es obligatorio.')])
@@ -734,13 +760,14 @@ class GradostitulosForm(FlaskForm):
         ],
         validators=[DataRequired(message='Debe seleccionar un tipo de título.')]
     )
+    pais = SelectField(
+        'País',
+        choices=[],  # Se actualizará dinámicamente desde app.py
+        validators=[DataRequired(message='Debe seleccionar un país.')]
+    )
     universidad = SelectField(
         'Universidad',
-        choices=[
-            ('', '--- Seleccione una opción ---'),
-            ('Universidad Nacional Del Altiplano', 'Universidad Nacional Del Altiplano'),
-            ('Otra', 'Otra')
-        ],
+        choices=[('', '--- Seleccione un país primero ---')],
         validators=[DataRequired(message='Debe seleccionar una universidad.')]
     )
     otro_universidad = StringField(
@@ -749,203 +776,6 @@ class GradostitulosForm(FlaskForm):
             Optional(),
             Length(max=255, message='Máximo 255 caracteres.')
         ]
-    )
-    pais = SelectField(
-        'País',
-        choices=[
-            ('', '--- Seleccione una opción ---'),
-            ('Afganistán', 'Afganistán'),
-            ('Albania', 'Albania'),
-            ('Alemania', 'Alemania'),
-            ('Andorra', 'Andorra'),
-            ('Angola', 'Angola'),
-            ('Antigua y Barbuda', 'Antigua y Barbuda'),
-            ('Arabia Saudita', 'Arabia Saudita'),
-            ('Argelia', 'Argelia'),
-            ('Argentina', 'Argentina'),
-            ('Armenia', 'Armenia'),
-            ('Australia', 'Australia'),
-            ('Austria', 'Austria'),
-            ('Azerbaiyán', 'Azerbaiyán'),
-            ('Bahamas', 'Bahamas'),
-            ('Bangladés', 'Bangladés'),
-            ('Barbados', 'Barbados'),
-            ('Baréin', 'Baréin'),
-            ('Bélgica', 'Bélgica'),
-            ('Belice', 'Belice'),
-            ('Benín', 'Benín'),
-            ('Bielorrusia', 'Bielorrusia'),
-            ('Birmania', 'Birmania'),
-            ('Bolivia', 'Bolivia'),
-            ('Bosnia y Herzegovina', 'Bosnia y Herzegovina'),
-            ('Botsuana', 'Botsuana'),
-            ('Brasil', 'Brasil'),
-            ('Brunéi', 'Brunéi'),
-            ('Bulgaria', 'Bulgaria'),
-            ('Burkina Faso', 'Burkina Faso'),
-            ('Burundi', 'Burundi'),
-            ('Bután', 'Bután'),
-            ('Cabo Verde', 'Cabo Verde'),
-            ('Camboya', 'Camboya'),
-            ('Camerún', 'Camerún'),
-            ('Canadá', 'Canadá'),
-            ('Centroafricana', 'Centroafricana'),
-            ('Chad', 'Chad'),
-            ('Chile', 'Chile'),
-            ('China', 'China'),
-            ('Chipre', 'Chipre'),
-            ('Colombia', 'Colombia'),
-            ('Comoras', 'Comoras'),
-            ('Corea del Norte', 'Corea del Norte'),
-            ('Corea del Sur', 'Corea del Sur'),
-            ('Costa de Marfil', 'Costa de Marfil'),
-            ('Costa Rica', 'Costa Rica'),
-            ('Croacia', 'Croacia'),
-            ('Cuba', 'Cuba'),
-            ('Dinamarca', 'Dinamarca'),
-            ('Dominica', 'Dominica'),
-            ('Ecuador', 'Ecuador'),
-            ('Egipto', 'Egipto'),
-            ('El Salvador', 'El Salvador'),
-            ('Emiratos Árabes Unidos', 'Emiratos Árabes Unidos'),
-            ('Eritrea', 'Eritrea'),
-            ('Eslovaquia', 'Eslovaquia'),
-            ('Eslovenia', 'Eslovenia'),
-            ('España', 'España'),
-            ('Estados Unidos', 'Estados Unidos'),
-            ('Estonia', 'Estonia'),
-            ('Etiopía', 'Etiopía'),
-            ('Filipinas', 'Filipinas'),
-            ('Finlandia', 'Finlandia'),
-            ('Fiyi', 'Fiyi'),
-            ('Francia', 'Francia'),
-            ('Gabón', 'Gabón'),
-            ('Gambia', 'Gambia'),
-            ('Georgia', 'Georgia'),
-            ('Ghana', 'Ghana'),
-            ('Granada', 'Granada'),
-            ('Grecia', 'Grecia'),
-            ('Guatemala', 'Guatemala'),
-            ('Guinea', 'Guinea'),
-            ('Guinea-Bisáu', 'Guinea-Bisáu'),
-            ('Guinea Ecuatorial', 'Guinea Ecuatorial'),
-            ('Guyana', 'Guyana'),
-            ('Haití', 'Haití'),
-            ('Honduras', 'Honduras'),
-            ('Hungría', 'Hungría'),
-            ('India', 'India'),
-            ('Indonesia', 'Indonesia'),
-            ('Irán', 'Irán'),
-            ('Iraq', 'Iraq'),
-            ('Irlanda', 'Irlanda'),
-            ('Islandia', 'Islandia'),
-            ('Islas Marshall', 'Islas Marshall'),
-            ('Islas Salomón', 'Islas Salomón'),
-            ('Israel', 'Israel'),
-            ('Italia', 'Italia'),
-            ('Jamaica', 'Jamaica'),
-            ('Japón', 'Japón'),
-            ('Jordania', 'Jordania'),
-            ('Kazajistán', 'Kazajistán'),
-            ('Kenia', 'Kenia'),
-            ('Kirguistán', 'Kirguistán'),
-            ('Kiribati', 'Kiribati'),
-            ('Kuwait', 'Kuwait'),
-            ('Laos', 'Laos'),
-            ('Lesoto', 'Lesoto'),
-            ('Letonia', 'Letonia'),
-            ('Líbano', 'Líbano'),
-            ('Liberia', 'Liberia'),
-            ('Libia', 'Libia'),
-            ('Liechtenstein', 'Liechtenstein'),
-            ('Lituania', 'Lituania'),
-            ('Luxemburgo', 'Luxemburgo'),
-            ('Madagascar', 'Madagascar'),
-            ('Malasia', 'Malasia'),
-            ('Malaui', 'Malaui'),
-            ('Maldivas', 'Maldivas'),
-            ('Malí', 'Malí'),
-            ('Malta', 'Malta'),
-            ('Marruecos', 'Marruecos'),
-            ('Mauricio', 'Mauricio'),
-            ('Mauritania', 'Mauritania'),
-            ('México', 'México'),
-            ('Micronesia', 'Micronesia'),
-            ('Moldavia', 'Moldavia'),
-            ('Mónaco', 'Mónaco'),
-            ('Mongolia', 'Mongolia'),
-            ('Montenegro', 'Montenegro'),
-            ('Mozambique', 'Mozambique'),
-            ('Namibia', 'Namibia'),
-            ('Nauru', 'Nauru'),
-            ('Nepal', 'Nepal'),
-            ('Nicaragua', 'Nicaragua'),
-            ('Níger', 'Níger'),
-            ('Nigeria', 'Nigeria'),
-            ('Noruega', 'Noruega'),
-            ('Nueva Zelanda', 'Nueva Zelanda'),
-            ('Omán', 'Omán'),
-            ('Pakistán', 'Pakistán'),
-            ('Palaos', 'Palaos'),
-            ('Palestina', 'Palestina'),
-            ('Panamá', 'Panamá'),
-            ('Papúa Nueva Guinea', 'Papúa Nueva Guinea'),
-            ('Paraguay', 'Paraguay'),
-            ('Perú', 'Perú'),
-            ('Polonia', 'Polonia'),
-            ('Portugal', 'Portugal'),
-            ('Reino Unido', 'Reino Unido'),
-            ('República Centroafricana', 'República Centroafricana'),
-            ('República Checa', 'República Checa'),
-            ('República Dominicana', 'República Dominicana'),
-            ('Ruanda', 'Ruanda'),
-            ('Rumania', 'Rumania'),
-            ('Rusia', 'Rusia'),
-            ('Samoa', 'Samoa'),
-            ('San Cristóbal y Nieves', 'San Cristóbal y Nieves'),
-            ('San Marino', 'San Marino'),
-            ('San Vicente y las Granadinas', 'San Vicente y las Granadinas'),
-            ('Santa Lucía', 'Santa Lucía'),
-            ('Santo Tomé y Príncipe', 'Santo Tomé y Príncipe'),
-            ('Senegal', 'Senegal'),
-            ('Serbia', 'Serbia'),
-            ('Seychelles', 'Seychelles'),
-            ('Sierra Leona', 'Sierra Leona'),
-            ('Singapur', 'Singapur'),
-            ('Siria', 'Siria'),
-            ('Somalia', 'Somalia'),
-            ('Sri Lanka', 'Sri Lanka'),
-            ('Sudáfrica', 'Sudáfrica'),
-            ('Sudán', 'Sudán'),
-            ('Sudán del Sur', 'Sudán del Sur'),
-            ('Suecia', 'Suecia'),
-            ('Suiza', 'Suiza'),
-            ('Surinam', 'Surinam'),
-            ('Tailandia', 'Tailandia'),
-            ('Tanzania', 'Tanzania'),
-            ('Tayikistán', 'Tayikistán'),
-            ('Timor Oriental', 'Timor Oriental'),
-            ('Togo', 'Togo'),
-            ('Tonga', 'Tonga'),
-            ('Trinidad y Tobago', 'Trinidad y Tobago'),
-            ('Túnez', 'Túnez'),
-            ('Turkmenistán', 'Turkmenistán'),
-            ('Turquía', 'Turquía'),
-            ('Tuvalu', 'Tuvalu'),
-            ('Ucrania', 'Ucrania'),
-            ('Uganda', 'Uganda'),
-            ('Uruguay', 'Uruguay'),
-            ('Uzbekistán', 'Uzbekistán'),
-            ('Vanuatu', 'Vanuatu'),
-            ('Venezuela', 'Venezuela'),
-            ('Vietnam', 'Vietnam'),
-            ('Yemen', 'Yemen'),
-            ('Yibuti', 'Yibuti'),
-            ('Zambia', 'Zambia'),
-            ('Zimbabue', 'Zimbabue'),
-            ('Otro', 'Otro')
-        ],
-        validators=[DataRequired(message='Debe seleccionar un país.')]
     )
     otro_pais = StringField(
         'Otro País',
@@ -958,20 +788,6 @@ class GradostitulosForm(FlaskForm):
             DataRequired(message='Este campo es obligatorio.')
         ]
     )
-    def __init__(self, *args, **kwargs):
-        super(GradostitulosForm, self).__init__(*args, **kwargs)
-        try:
-            response = requests.get('https://restcountries.com/v3.1/all')
-            response.raise_for_status()
-            countries = response.json()
-            country_choices = [('', '--- Seleccione una opción ---')]
-            for country in countries:
-                country_name = country.get('translations', {}).get('spa', {}).get('common')
-                if country_name:
-                    country_choices.append((country_name, country_name))
-            self.pais.choices = sorted(country_choices, key=lambda x: x[1])
-        except Exception:
-            self.pais.choices = [('', '--- Seleccione una opción ---')]
     archivo = FileField(
         'Adjuntar grado o título Escaneado (PDF)',
         validators=[
@@ -984,7 +800,7 @@ class GradostitulosForm(FlaskForm):
         'Adjuntar Constancia SUNEDU (PDF)',
         validators=[
             Optional(),
-            FileAllowed(['pdf'], 'Solo se permiten Archivos PDF.'),
+            FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
             file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
         ]
     )
@@ -1119,10 +935,10 @@ class ActualizacionesCapacitacionesForm(FlaskForm):
     )
 
     archivo = FileField(
-        'Adjuntar Archivo (PDF)',
+        'Adjuntar Constancia o Certificado (PDF)',
         validators=[
             Optional(),
-            FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'pdf'], 'Solo se permiten imágenes y archivos PDF.'),
+            FileAllowed(['pdf'], 'Solo archivos PDF.'),
             file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
         ]
     )
