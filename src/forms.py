@@ -19,7 +19,6 @@ from wtforms.validators import DataRequired, NumberRange, Optional, ValidationEr
 from flask_wtf.file import FileAllowed, FileRequired
 from datetime import datetime, date
 import re
-import requests
 import os
 
 def file_size_limit(max_size):
@@ -148,12 +147,6 @@ class EvaluacionDesempenoDocenteForm(FlaskForm):
     )
     submit = SubmitField('Guardar')
 
-
-from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField, SubmitField, FileField, DateField, TelField, EmailField
-from wtforms.validators import Optional, Length, Regexp, Email
-from flask_wtf.file import FileAllowed
-
 class InformacionPersonalForm(FlaskForm):
     # Subida de Imágenes y Archivos
     foto_docente = FileField('Foto del Docente', validators=[
@@ -242,11 +235,6 @@ class InformacionPersonalForm(FlaskForm):
     submit = SubmitField('Guardar Cambios')
 
 
-from flask_wtf import FlaskForm
-from wtforms import SelectField, StringField, FileField, IntegerField, TextAreaField, SubmitField
-from wtforms.validators import Optional, Length, NumberRange
-from flask_wtf.file import FileAllowed
-import requests
 
 # Suponiendo que file_size_limit ya está definido en alguna parte de tu código
 def file_size_limit(max_size):
@@ -375,10 +363,7 @@ class SoftwareEspecializadoForm(FlaskForm):
             Length(max=100, message='Máximo 100 caracteres.')
         ]
     )
-    top_1000 = BooleanField(
-        '¿Fue en una de las 1000 mejores universidades del mundo?',
-        default=False
-    )
+
     fecha = DateField(
         'Fecha', 
         format='%Y-%m-%d', 

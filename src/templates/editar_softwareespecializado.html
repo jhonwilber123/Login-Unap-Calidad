@@ -66,15 +66,6 @@
                 {% endfor %}
             </div>
 
-            <!-- ¿Fue en una de las 1000 mejores universidades del mundo? -->
-            <div class="mb-3 form-check">
-                {{ form.top_1000(class="form-check-input", id="top_1000") }}
-                {{ form.top_1000.label(class="form-check-label", for="top_1000") }}
-                {% for error in form.top_1000.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
-
             <!-- Fecha -->
             <div class="mb-3">
                 {{ form.fecha.label(class="form-label") }}
@@ -142,27 +133,6 @@
               }, false)
             })
         })()
-    </script>
-
-    <!-- JavaScript para manejar la lógica de Institución y Top 1000 -->
-    <script type="text/javascript">
-        function toggleTop1000() {
-            const institucion = document.getElementById('institucion');
-            const top1000 = document.getElementById('top_1000');
-
-            if (institucion.value === 'Universidad') {
-                top1000.disabled = false;
-            } else {
-                top1000.checked = false;
-                top1000.disabled = true;
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            toggleTop1000();
-
-            document.getElementById('institucion').addEventListener('change', toggleTop1000);
-        });
     </script>
 
     <!-- JavaScript para manejar la previsualización de archivos -->

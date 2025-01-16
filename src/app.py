@@ -30,12 +30,12 @@ from models.entities.User import User
 # Configuración de Flask
 app = Flask(__name__)
 
-# Configuración para subir archivos
-UPLOAD_FOLDER = 'uploads/'  # Carpeta donde se guardarán las imágenes
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')  # Carpeta relativa a la ubicación del script
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}  # Tipos de archivo permitidos
-app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'uploads')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Limitar el tamaño máximo de la carga a 100 MB
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 Megabytes
+
 
 
 csrf = CSRFProtect()
@@ -3902,7 +3902,6 @@ def softwareespecializado():
         horas = form.horas.data
         institucion = form.institucion.data
         nombre_institucion = form.nombre_institucion.data.strip() if form.nombre_institucion.data else None
-        top_1000 = int(form.top_1000.data)
         fecha = form.fecha.data
 
         # Manejo de archivos (imagen o PDF)
@@ -3938,13 +3937,13 @@ def softwareespecializado():
                 flash('Archivo no permitido.', 'danger')
                 return redirect(request.url)
 
-        # Insertar el software especializado, incluyendo 'nombre_institucion' y 'top_1000'
+        # Insertar el software especializado, incluyendo 'nombre_institucion'
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
             INSERT INTO softwareespecializado 
-            (id_usuario, nombre_curso, modalidad, horas, institucion, nombre_institucion, top_1000, fecha, id_imagen)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (current_user.id, nombre_curso, modalidad, horas, institucion, nombre_institucion, top_1000, fecha, id_imagen))
+            (id_usuario, nombre_curso, modalidad, horas, institucion, nombre_institucion, fecha, id_imagen)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """, (current_user.id, nombre_curso, modalidad, horas, institucion, nombre_institucion, fecha, id_imagen))
         db.connection.commit()
         cur.close()
 
@@ -3954,7 +3953,7 @@ def softwareespecializado():
     # Obtener los registros de software especializado del usuario actual
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
     cur.execute("""
-        SELECT se.id_software, se.nombre_curso, se.modalidad, se.horas, se.institucion, se.nombre_institucion, se.top_1000, se.fecha,
+        SELECT se.id_software, se.nombre_curso, se.modalidad, se.horas, se.institucion, se.nombre_institucion, se.fecha,
                ia.ruta_imagen, ia.categoria
         FROM softwareespecializado se
         LEFT JOIN imagenesadjuntas ia ON se.id_imagen = ia.id_imagen
@@ -3973,7 +3972,7 @@ def editar_softwareespecializado(id_software):
 
     # Obtener los datos actuales del software especializado
     cur.execute("""
-        SELECT se.id_software, se.nombre_curso, se.modalidad, se.horas, se.institucion, se.nombre_institucion, se.top_1000, se.fecha,
+        SELECT se.id_software, se.nombre_curso, se.modalidad, se.horas, se.institucion, se.nombre_institucion, se.fecha,
                ia.id_imagen, ia.ruta_imagen, ia.categoria
         FROM softwareespecializado se
         LEFT JOIN imagenesadjuntas ia ON se.id_imagen = ia.id_imagen
@@ -3992,7 +3991,6 @@ def editar_softwareespecializado(id_software):
         horas = form.horas.data
         institucion = form.institucion.data
         nombre_institucion = form.nombre_institucion.data.strip() if form.nombre_institucion.data else None
-        top_1000 = int(form.top_1000.data)
         fecha = form.fecha.data
         archivo = form.archivo.data
         id_imagen_actual = software['id_imagen']
@@ -4004,9 +4002,9 @@ def editar_softwareespecializado(id_software):
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
             UPDATE softwareespecializado 
-            SET nombre_curso = %s, modalidad = %s, horas = %s, institucion = %s, nombre_institucion = %s, top_1000 = %s, fecha = %s
+            SET nombre_curso = %s, modalidad = %s, horas = %s, institucion = %s, nombre_institucion = %s, fecha = %s
             WHERE id_software = %s AND id_usuario = %s
-        """, (nombre_curso, modalidad, horas, institucion, nombre_institucion, top_1000, fecha, id_software, current_user.id))
+        """, (nombre_curso, modalidad, horas, institucion, nombre_institucion, fecha, id_software, current_user.id))
         db.connection.commit()
         cur.close()
 
@@ -4020,7 +4018,6 @@ def editar_softwareespecializado(id_software):
         form.horas.data = software['horas']
         form.institucion.data = software['institucion']
         form.nombre_institucion.data = software['nombre_institucion']
-        form.top_1000.data = bool(software['top_1000'])
         form.fecha.data = software['fecha']
 
     return render_template('editar_softwareespecializado.html', software=software, form=form)

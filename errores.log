@@ -31,3 +31,6 @@ cannot import name 'COMMAND' from 'MySQLdb.constants' (D:\UNAP CCS CURRICULUM\Ma
 (1265, "Data truncated for column 'rol' at row 1")
 (1265, "Data truncated for column 'rol' at row 1")
 (1062, "Duplicate entry 'admin' for key 'usuarios.usuario'")
+(1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+(1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+(1045, "Access denied for user 'root'@'localhost' (using password: NO)")
