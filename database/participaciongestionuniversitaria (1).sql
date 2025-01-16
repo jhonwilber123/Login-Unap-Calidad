@@ -38,7 +38,7 @@ CREATE TABLE `participaciongestionuniversitaria` (
   `fecha_fin` date NOT NULL,
   `logros_contribuciones` text,
   `adjuntar_documentacion` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Volcado de datos para la tabla `participaciongestionuniversitaria`

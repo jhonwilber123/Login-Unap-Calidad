@@ -37,7 +37,7 @@ CREATE TABLE `acreditacionlicenciamiento` (
   `numero_resolucion` varchar(100) DEFAULT NULL,
   `fecha_resolucion` date DEFAULT NULL,
   `cargo_comite` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Índices para tablas volcadas

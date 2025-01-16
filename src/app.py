@@ -287,7 +287,6 @@ def informacion_personal():
             unique_filename = f"{int(time.time())}_{filename}"
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
             foto_docente.save(file_path)
-            
             cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
             cur.execute("""
                 INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
@@ -297,12 +296,12 @@ def informacion_personal():
             id_foto_docente = cur.lastrowid
             cur.close()
         else:
-            # si la foto no se actualiza, mantener la anterior
             cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
             cur.execute("SELECT id_foto_docente FROM datospersonales WHERE id_usuario = %s", [current_user.id])
             existing_data = cur.fetchone()
-            id_foto_docente = existing_data['id_foto_docente']
             cur.close()
+            if existing_data and 'id_foto_docente' in existing_data:
+                id_foto_docente = existing_data['id_foto_docente']
 
         # Manejar la carga de constancia de habilitación
         id_constancia_habilitacion = None
@@ -312,7 +311,6 @@ def informacion_personal():
             unique_filename = f"{int(time.time())}_{filename}"
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
             constancia_habilitacion.save(file_path)
-            
             cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
             cur.execute("""
                 INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
@@ -322,12 +320,12 @@ def informacion_personal():
             id_constancia_habilitacion = cur.lastrowid
             cur.close()
         else:
-            # si la constancia no se actualiza, mantener la anterior
             cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
             cur.execute("SELECT id_constancia_habilitacion FROM datospersonales WHERE id_usuario = %s", [current_user.id])
             existing_data = cur.fetchone()
-            id_constancia_habilitacion = existing_data['id_constancia_habilitacion']
             cur.close()
+            if existing_data and 'id_constancia_habilitacion' in existing_data:
+                id_constancia_habilitacion = existing_data['id_constancia_habilitacion']
 
         # Capturar datos del formulario
         data = {
@@ -358,13 +356,11 @@ def informacion_personal():
             'ID_ORCID': form.ID_ORCID.data
         }
 
-        # Verificar si ya existen datos personales para el usuario
+        # Verificar si ya existen datos personales
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("SELECT id_datos FROM datospersonales WHERE id_usuario = %s", [current_user.id])
         existing_data = cur.fetchone()
-
         if existing_data:
-            # Actualizar datos existentes
             cur.execute("""
                 UPDATE datospersonales SET 
                     apellido_paterno=%(apellido_paterno)s, 
@@ -392,11 +388,9 @@ def informacion_personal():
                     `ID_CTI`=%(ID_CTI)s,
                     `ID_Scopus`=%(ID_Scopus)s,
                     `ID_ORCID`=%(ID_ORCID)s
-                    
                 WHERE id_usuario=%(id_usuario)s
             """, {**data, 'id_usuario': current_user.id})
         else:
-            # Insertar nuevos datos
             cur.execute("""
                 INSERT INTO datospersonales (
                     id_usuario, 
@@ -454,14 +448,12 @@ def informacion_personal():
                     %(ID_ORCID)s
                 )
             """, {**data, 'id_usuario': current_user.id})
-        
         db.connection.commit()
         cur.close()
         flash('Información personal actualizada correctamente', 'success')
         return redirect(url_for('home'))
 
-    
-    # Obtener datos personales actuales para prellenar el formulario
+    # Obtener datos personales actuales
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
     cur.execute("""
         SELECT dp.*, 
@@ -476,7 +468,6 @@ def informacion_personal():
     cur.close()
 
     if existing_data and request.method == 'GET':
-        # Prellenar datos del formulario
         form.apellido_paterno.data = existing_data['apellido_paterno']
         form.apellido_materno.data = existing_data['apellido_materno']
         form.nombres.data = existing_data['nombres']
@@ -501,9 +492,12 @@ def informacion_personal():
         form.ID_Scopus.data = existing_data['ID_Scopus']
         form.ID_ORCID.data = existing_data['ID_ORCID']
 
-    return render_template('informacion_personal.html', form=form, 
-                           foto_url=existing_data.get('foto_ruta') if existing_data else None,
-                           constancia_url=existing_data.get('constancia_ruta') if existing_data else None)
+    return render_template(
+        'informacion_personal.html',
+        form=form,
+        foto_url=existing_data.get('foto_ruta') if existing_data else None,
+        constancia_url=existing_data.get('constancia_ruta') if existing_data else None
+    )
 
 
 @app.route('/uploads/<filename>')

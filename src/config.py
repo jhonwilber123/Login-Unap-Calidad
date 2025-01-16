@@ -7,7 +7,7 @@ class DevelopmentConfig(Config):
     DEBUG = True
     MYSQL_HOST = 'localhost'
     MYSQL_USER = 'root'
-    MYSQL_PASSWORD = 'root'  # Usuario root sin contraseña
+    MYSQL_PASSWORD = ''  # Usuario root sin contraseña
     MYSQL_DB = 'unap_ccs_system'  # Cambiado a 'unap_ccs_system'
 
 class ProductionConfig(Config):

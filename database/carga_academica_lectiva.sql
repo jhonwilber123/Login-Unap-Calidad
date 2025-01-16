@@ -35,7 +35,7 @@ CREATE TABLE `carga_academica_lectiva` (
   `id_memorandum` int DEFAULT NULL,
   `horas_asignadas` int NOT NULL,
   `observaciones` text
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Volcado de datos para la tabla `carga_academica_lectiva`
