@@ -152,7 +152,8 @@
                             {% if grado.categoria == 'imagen' %}
                                 <img src="{{ url_for('static', filename='uploads/' ~ grado.ruta_imagen) }}" alt="Imagen" class="img-thumbnail" style="max-width: 100px;">
                             {% elif grado.categoria == 'pdf' %}
-                                <a href="{{ url_for('static', filename='uploads/' ~ grado.ruta_imagen) }}" target="_blank" class="btn btn-sm btn-info">
+                                <a href="{{ url_for('uploaded_file', filename=grado.ruta_imagen) }}" target="_blank" class="btn btn-sm btn-info">
+                                    
                                     <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
                                 </a>
                             {% endif %}
@@ -162,7 +163,7 @@
                     </td>
                     <td>
                         {% if grado.ruta_imagen_sunedu %}
-                            <a href="{{ url_for('static', filename='uploads/' ~ grado.ruta_imagen_sunedu) }}" target="_blank" class="btn btn-sm btn-info">
+                            <a href="{{ url_for('uploaded_file', filename=grado.ruta_imagen_sunedu) }}" target="_blank" class="btn btn-sm btn-info">
                                 <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
                             </a>
                         {% else %}

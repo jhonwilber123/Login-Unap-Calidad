@@ -30,9 +30,10 @@ from models.entities.User import User
 # Configuración de Flask
 app = Flask(__name__)
 
-UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')  # Carpeta relativa a la ubicación del script
+# Configuración para subir archivos 
+UPLOAD_FOLDER = 'uploads/'  # Carpeta donde se guardarán las imágenes
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}  # Tipos de archivo permitidos
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'uploads')
 # Limitar el tamaño máximo de la carga a 100 MB
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 Megabytes
 
@@ -499,6 +500,7 @@ def informacion_personal():
         constancia_url=existing_data.get('constancia_ruta') if existing_data else None
     )
 
+# Uploads forma de llamar archivos en la app.py
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
@@ -982,15 +984,14 @@ def eliminar_participaciongestionuniversitaria(id):
     return redirect(url_for('participaciongestionuniversitaria'))
 
 # --- RUTA PARA AGREGAR Y LISTAR TÍTULOS --- 
-country_universities = {
-    '--- Seleccione un país ---': [''],  # Valor vacío para la selección predeterminada
+country_universities = {  # Valor vacío para la selección predeterminada
     'Perú': [
         'Universidad Nacional Del Altiplano',
-        'Otra'
+        'Otra universidad de peru'
     ],
     # Agrega más países y universidades según sea necesario
     'Otro': [
-        'Otra'
+        'Otra universidad del extranjero'
     ]
 }
 
@@ -1001,47 +1002,67 @@ country_universities = {
 def gradostitulos():
     form = GradostitulosForm()
     
-    # Actualizar las opciones de país en el formulario
-    form.pais.choices = sorted([(country, country) for country in country_universities.keys()], key=lambda x: x[1])
+    # 1. Configurar el campo 'pais' con los países del diccionario + la opción "Otro"
+    #    (Si no la tienes, agrégala manualmente)
+    paises_disponibles = sorted(list(country_universities.keys()))
+    if 'Otro' not in paises_disponibles:
+        paises_disponibles.append('Otro')
     
-    if request.method == 'POST':
-        # Establecer las opciones de universidad basadas en el país seleccionado antes de validar
-        selected_pais = form.pais.data
-        universidades = country_universities.get(selected_pais, ['Otra'])
-        form.universidad.choices = [('', '--- Seleccione una universidad ---')] + [(univ, univ) for univ in universidades]
+    form.pais.choices = [('', '--- Seleccione un país ---')] + \
+                        [(pais, pais) for pais in paises_disponibles]
+
+    # 2. Determinar el país seleccionado para cargar universidades
+    selected_pais = form.pais.data
+    if selected_pais == 'Otro':
+        # Si seleccionó "Otro", entonces en universidad ponemos solo "Otra" como opción
+        form.universidad.choices = [('', '--- Seleccione una universidad ---'),
+                                    ('Otra', 'Otra')]
+    else:
+        # Caso normal: cargar universidades del diccionario
+        universidades = country_universities.get(selected_pais, [])
+        # Asegurarnos de que esté la opción 'Otra' al final
+        if 'Otra' not in universidades:
+            universidades.append('Otra')
+        
+        # Construir choices con esas universidades
+        form.universidad.choices = [('', '--- Seleccione una universidad ---')] + \
+                                   [(univ, univ) for univ in sorted(universidades)]
     
+    # 3. Validar si se ha enviado el formulario con datos correctos
     if form.validate_on_submit():
+        # Extraer datos
         titulo = form.titulo.data or None
         tipo = form.tipo.data or None
-        universidad = form.universidad.data or None
-        otro_universidad = form.otro_universidad.data or None
         pais = form.pais.data or None
         otro_pais = form.otro_pais.data or None
+        universidad = form.universidad.data or None
+        otro_universidad = form.otro_universidad.data or None
         fecha_expedicion = form.fecha_expedicion.data or None
-
-        # Manejo de "Otra Universidad"
-        if universidad == 'Otra':
-            universidad = otro_universidad
-            if not universidad:
-                flash('Debe especificar otra universidad.', 'danger')
-                return redirect(request.url)
-
-        # Manejo de "Otro País"
+        
+        # 3.1. Manejo de "Otro País"
         if pais == 'Otro':
+            # Reemplazar por el valor escrito en 'otro_pais'
             pais = otro_pais
             if not pais:
-                flash('Debe especificar otro país.', 'danger')
+                flash('Debe especificar el nombre del país cuando seleccione "Otro".', 'danger')
                 return redirect(request.url)
 
-        # Validación en backend para asegurar la integridad País-Universidad
-        # Si no es 'Otra', verificar que la universidad pertenezca al país seleccionado
-        if universidad != 'Otra':
-            universidades_del_pais = country_universities.get(form.pais.data, [])
-            if universidad not in universidades_del_pais:
-                flash('La universidad seleccionada no corresponde al país indicado.', 'danger')
+        # 3.2. Manejo de "Otra Universidad"
+        if universidad == 'Otra':
+            # Reemplazar por el valor en 'otro_universidad'
+            universidad = otro_universidad
+            if not universidad:
+                flash('Debe especificar el nombre de la universidad cuando seleccione "Otra".', 'danger')
                 return redirect(request.url)
+        else:
+            # Validar que la universidad esté en la lista para ese país (si no es "Otro país")
+            if form.pais.data != 'Otro':  # Solo si no se seleccionó "Otro" como país
+                universidades_validas = country_universities.get(form.pais.data, [])
+                if universidad not in universidades_validas:
+                    flash('La universidad seleccionada no corresponde al país indicado.', 'danger')
+                    return redirect(request.url)
 
-        # Manejo de archivos (imagen o PDF)
+        # 4. Manejo del archivo principal (archivo)
         archivo = form.archivo.data
         id_imagen = None
         if archivo:
@@ -1050,8 +1071,8 @@ def gradostitulos():
                 unique_filename = f"{int(time.time())}_{filename}"
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 archivo.save(file_path)
-
-                # Determinar el tipo de archivo
+                
+                # Determinar extensión
                 file_extension = filename.rsplit('.', 1)[1].lower()
                 if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
                     categoria = 'imagen'
@@ -1060,8 +1081,8 @@ def gradostitulos():
                 else:
                     flash('Debe seleccionar un archivo válido (imagen o PDF).', 'danger')
                     return redirect(request.url)
-
-                # Insertar el archivo y obtener su id_imagen
+                
+                # Insertar en BD
                 cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
                 cur.execute("""
                     INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
@@ -1074,7 +1095,7 @@ def gradostitulos():
                 flash('Archivo no permitido.', 'danger')
                 return redirect(request.url)
 
-        # Manejo de archivo_sunedu (PDF)
+        # 5. Manejo del archivo SUNEDU (archivo_sunedu)
         archivo_sunedu = form.archivo_sunedu.data
         id_imagen_sunedu = None
         if archivo_sunedu:
@@ -1084,15 +1105,14 @@ def gradostitulos():
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 archivo_sunedu.save(file_path)
 
-                # Determinar el tipo de archivo
                 file_extension = filename.rsplit('.', 1)[1].lower()
                 if file_extension == 'pdf':
                     categoria = 'pdf'
                 else:
-                    flash('Debe seleccionar un archivo PDF.', 'danger')
+                    flash('El archivo de SUNEDU debe ser un PDF.', 'danger')
                     return redirect(request.url)
 
-                # Insertar el archivo y obtener su id_imagen_sunedu
+                # Insertar en BD
                 cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
                 cur.execute("""
                     INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
@@ -1105,10 +1125,11 @@ def gradostitulos():
                 flash('Archivo SUNEDU no permitido.', 'danger')
                 return redirect(request.url)
 
-        # Insertar el título académico
+        # 6. Insertar el registro en la tabla gradostitulos
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
-            INSERT INTO gradostitulos (id_usuario, titulo, tipo, universidad, pais, fecha_expedicion, id_imagen, id_imagen_sunedu)
+            INSERT INTO gradostitulos 
+            (id_usuario, titulo, tipo, universidad, pais, fecha_expedicion, id_imagen, id_imagen_sunedu)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """, (current_user.id, titulo, tipo, universidad, pais, fecha_expedicion, id_imagen, id_imagen_sunedu))
         db.connection.commit()
@@ -1117,7 +1138,7 @@ def gradostitulos():
         flash('Título académico agregado correctamente.', 'success')
         return redirect(url_for('gradostitulos'))
 
-    # Obtener los títulos académicos del usuario actual
+    # 7. Si no se ha enviado o se re-rinde la página, obtener los títulos académicos del usuario
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
     cur.execute("""
         SELECT 
@@ -1132,8 +1153,10 @@ def gradostitulos():
             ia_sunedu.ruta_imagen AS ruta_imagen_sunedu, 
             ia_sunedu.categoria AS categoria_sunedu
         FROM gradostitulos gt
-        LEFT JOIN imagenesadjuntas ia ON gt.id_imagen = ia.id_imagen
-        LEFT JOIN imagenesadjuntas ia_sunedu ON gt.id_imagen_sunedu = ia_sunedu.id_imagen
+        LEFT JOIN imagenesadjuntas ia 
+            ON gt.id_imagen = ia.id_imagen
+        LEFT JOIN imagenesadjuntas ia_sunedu 
+            ON gt.id_imagen_sunedu = ia_sunedu.id_imagen
         WHERE gt.id_usuario = %s;
     """, [current_user.id])
     gradostitulos = cur.fetchall()
@@ -1141,14 +1164,13 @@ def gradostitulos():
 
     return render_template('gradostitulos.html', gradostitulos=gradostitulos, form=form)
 
-# --- RUTA PARA EDITAR UN TÍTULO ---
 @app.route('/editar_gradostitulos/<int:id_grado>', methods=['GET', 'POST'])
 @login_required
 def editar_gradostitulos(id_grado):
     form = GradostitulosForm()
+    
+    # 1. Obtener los datos del título a editar desde la BD
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
-
-    # Obtener los datos actuales del título
     cur.execute("""
         SELECT 
             gt.id_grado, 
@@ -1164,61 +1186,89 @@ def editar_gradostitulos(id_grado):
             ia_sunedu.ruta_imagen AS ruta_imagen_sunedu, 
             ia_sunedu.categoria AS categoria_sunedu
         FROM gradostitulos gt
-        LEFT JOIN imagenesadjuntas ia ON gt.id_imagen = ia.id_imagen
-        LEFT JOIN imagenesadjuntas ia_sunedu ON gt.id_imagen_sunedu = ia_sunedu.id_imagen
-        WHERE gt.id_grado = %s AND gt.id_usuario = %s;
+        LEFT JOIN imagenesadjuntas ia 
+            ON gt.id_imagen = ia.id_imagen
+        LEFT JOIN imagenesadjuntas ia_sunedu 
+            ON gt.id_imagen_sunedu = ia_sunedu.id_imagen
+        WHERE gt.id_grado = %s 
+          AND gt.id_usuario = %s;
     """, (id_grado, current_user.id))
     grado = cur.fetchone()
     cur.close()
 
+    # Si no hay registro, redirigir con mensaje de error
     if not grado:
         flash('Título académico no encontrado.', 'danger')
         return redirect(url_for('gradostitulos'))
+    
+    # 2. Construir lista de países para el SelectField "pais", incluyendo la opción "Otro"
+    paises_disponibles = sorted(list(country_universities.keys()))
+    if 'Otro' not in paises_disponibles:
+        paises_disponibles.append('Otro')
 
-    # Actualizar las opciones de país en el formulario
-    form.pais.choices = sorted([(country, country) for country in country_universities.keys()], key=lambda x: x[1])
+    form.pais.choices = [('', '--- Seleccione un país ---')] + \
+                        [(p, p) for p in paises_disponibles]
 
-    if request.method == 'POST':
-        # Establecer las opciones de universidad basadas en el país seleccionado antes de validar
-        selected_pais = form.pais.data
-        universidades = country_universities.get(selected_pais, ['Otra'])
-        form.universidad.choices = [('', '--- Seleccione una universidad ---')] + [(univ, univ) for univ in universidades]
+    # 3. Determinar el país "actual" (puede venir del formulario en POST o del registro en BD para GET)
+    #    - Si estamos en POST, form.pais.data tiene prioridad (porque el usuario ya está enviando un cambio).
+    #    - Si estamos en GET, usamos el valor actual de la BD (grado['pais']).
+    selected_pais = form.pais.data if request.method == 'POST' else grado['pais']
 
+    # 4. Ajustar las opciones de "universidad" en función de selected_pais
+    if selected_pais == 'Otro':
+        # Solo existe la opción "Otra" en el select, para luego usar el campo texto
+        form.universidad.choices = [('', '--- Seleccione una universidad ---'),
+                                    ('Otra', 'Otra')]
+    else:
+        # Cargar las universidades según el país
+        universidades = country_universities.get(selected_pais, [])
+        # Aseguramos que siempre exista la opción 'Otra'
+        if 'Otra' not in universidades:
+            universidades.append('Otra')
+        form.universidad.choices = [('', '--- Seleccione una universidad ---')] + \
+                                   [(univ, univ) for univ in sorted(universidades)]
+
+    # 5. Procesar envío del formulario (POST)
     if form.validate_on_submit():
+        # Extraer campos
         titulo = form.titulo.data or None
         tipo = form.tipo.data or None
-        universidad = form.universidad.data or None
-        otro_universidad = form.otro_universidad.data or None
         pais = form.pais.data or None
         otro_pais = form.otro_pais.data or None
+        universidad = form.universidad.data or None
+        otro_universidad = form.otro_universidad.data or None
         fecha_expedicion = form.fecha_expedicion.data or None
-        archivo_sunedu = form.archivo_sunedu.data
-        id_imagen_actual_sunedu = grado['id_imagen_sunedu']
+        
+        # Archivos
         archivo = form.archivo.data
+        archivo_sunedu = form.archivo_sunedu.data
+
+        # IDs de archivos existentes en la BD
         id_imagen_actual = grado['id_imagen']
+        id_imagen_actual_sunedu = grado['id_imagen_sunedu']
 
-        # Manejo de "Otra Universidad"
-        if universidad == 'Otra':
-            universidad = otro_universidad
-            if not universidad:
-                flash('Debe especificar otra universidad.', 'danger')
-                return redirect(request.url)
-
-        # Manejo de "Otro País"
+        # 5.1 Manejo de "Otro País"
         if pais == 'Otro':
             pais = otro_pais
             if not pais:
-                flash('Debe especificar otro país.', 'danger')
+                flash('Debe especificar un nombre de país cuando selecciona "Otro".', 'danger')
                 return redirect(request.url)
 
-        # Validación en backend para asegurar la integridad País-Universidad
-        if universidad != 'Otra':
-            universidades_del_pais = country_universities.get(form.pais.data, [])
-            if universidad not in universidades_del_pais:
-                flash('La universidad seleccionada no corresponde al país indicado.', 'danger')
+        # 5.2 Manejo de "Otra Universidad"
+        if universidad == 'Otra':
+            universidad = otro_universidad
+            if not universidad:
+                flash('Debe especificar el nombre de la universidad cuando selecciona "Otra".', 'danger')
                 return redirect(request.url)
+        else:
+            # Si el país no es "Otro", validamos que la universidad pertenezca a esa lista
+            if form.pais.data != 'Otro':
+                universidades_validas = country_universities.get(form.pais.data, [])
+                if universidad not in universidades_validas:
+                    flash('La universidad seleccionada no corresponde al país indicado.', 'danger')
+                    return redirect(request.url)
 
-        # Manejo del archivo adjunto
+        # 5.3 Manejo del archivo principal (imagen/PDF)
         if archivo:
             if allowed_file(archivo.filename):
                 filename = secure_filename(archivo.filename)
@@ -1226,7 +1276,6 @@ def editar_gradostitulos(id_grado):
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 archivo.save(file_path)
 
-                # Determinar el tipo de archivo
                 file_extension = filename.rsplit('.', 1)[1].lower()
                 if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
                     categoria = 'imagen'
@@ -1252,8 +1301,7 @@ def editar_gradostitulos(id_grado):
                     """, (current_user.id, categoria, titulo, unique_filename))
                     db.connection.commit()
                     id_imagen_nueva = cur.lastrowid
-
-                    # Actualizar el título con el nuevo id_imagen
+                    # Actualizar el gradotitulo para vincular el nuevo archivo
                     cur.execute("""
                         UPDATE gradostitulos
                         SET id_imagen = %s
@@ -1262,13 +1310,11 @@ def editar_gradostitulos(id_grado):
                 db.connection.commit()
                 cur.close()
             else:
-                flash('Archivo no permitido.', 'danger')
+                flash('Archivo principal no permitido.', 'danger')
                 return redirect(request.url)
-        else:
-            # Si no se carga un nuevo archivo, mantener el existente
-            id_imagen_nueva = grado['id_imagen']
+        # Si no sube un nuevo archivo, se mantiene el que ya existe.
 
-        # Manejo del archivo adjunto sunedu
+        # 5.4 Manejo del archivo SUNEDU (solo PDF)
         if archivo_sunedu:
             if allowed_file(archivo_sunedu.filename):
                 filename = secure_filename(archivo_sunedu.filename)
@@ -1276,32 +1322,30 @@ def editar_gradostitulos(id_grado):
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 archivo_sunedu.save(file_path)
 
-                # Determinar el tipo de archivo
                 file_extension = filename.rsplit('.', 1)[1].lower()
                 if file_extension == 'pdf':
                     categoria = 'pdf'
                 else:
-                    flash('Debe seleccionar un archivo PDF.', 'danger')
+                    flash('El archivo SUNEDU debe ser un PDF.', 'danger')
                     return redirect(request.url)
 
                 cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
                 if id_imagen_actual_sunedu:
-                    # Actualizar el archivo existente
+                    # Actualizar archivo SUNEDU existente
                     cur.execute("""
                         UPDATE imagenesadjuntas
                         SET ruta_imagen = %s, categoria = %s, descripcion = %s, fecha_subida = NOW()
                         WHERE id_imagen = %s AND id_usuario = %s
                     """, (unique_filename, categoria, titulo, id_imagen_actual_sunedu, current_user.id))
                 else:
-                    # Insertar un nuevo archivo
+                    # Insertar nuevo archivo SUNEDU
                     cur.execute("""
                         INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
                         VALUES (%s, %s, %s, %s)
                     """, (current_user.id, categoria, titulo, unique_filename))
                     db.connection.commit()
                     id_imagen_nueva_sunedu = cur.lastrowid
-
-                    # Actualizar el título con el nuevo id_imagen_sunedu
+                    # Actualizar el gradotitulo
                     cur.execute("""
                         UPDATE gradostitulos
                         SET id_imagen_sunedu = %s
@@ -1312,11 +1356,9 @@ def editar_gradostitulos(id_grado):
             else:
                 flash('Archivo SUNEDU no permitido.', 'danger')
                 return redirect(request.url)
-        else:
-            # Si no se carga un nuevo archivo sunedu, mantener el existente
-            id_imagen_nueva_sunedu = grado['id_imagen_sunedu']
+        # Si no sube un nuevo archivo SUNEDU, se mantiene el existente.
 
-        # Actualizar los datos del título académico
+        # 5.5 Actualizar los datos del título en la tabla `gradostitulos`
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
             UPDATE gradostitulos
@@ -1328,34 +1370,36 @@ def editar_gradostitulos(id_grado):
 
         flash('Título académico actualizado correctamente.', 'success')
         return redirect(url_for('gradostitulos'))
-
-    # Prellenar el formulario con los datos actuales
+    
+    # 6. Si es GET o si hay que mostrar el formulario inicial, prellenar datos
     if request.method == 'GET':
+        # Llenar los campos con los valores actuales de la BD
         form.titulo.data = grado['titulo']
         form.tipo.data = grado['tipo']
-        # Manejar "Otra Universidad"
-        predefined_universidades = country_universities.get('Perú', []) + country_universities.get('España', [])  # Agrega más según sea necesario
-        if grado['universidad'] not in predefined_universidades:
+        form.fecha_expedicion.data = grado['fecha_expedicion']
+
+        # Verificar si el país actual está en el diccionario
+        predefined_paises = list(country_universities.keys())
+        if grado['pais'] not in predefined_paises:
+            form.pais.data = 'Otro'
+            form.otro_pais.data = grado['pais']  # Rellenamos con el texto original
+        else:
+            form.pais.data = grado['pais']
+            form.otro_pais.data = ''  # Vacío si no es "Otro"
+        
+        # Verificar si la universidad actual está en la lista de su país
+        if grado['pais'] in country_universities:
+            lista_universidades = country_universities[grado['pais']]
+        else:
+            lista_universidades = []
+        
+        if grado['universidad'] not in lista_universidades:
+            # Entonces en el select pondremos 'Otra' y en el campo texto la uni real
             form.universidad.data = 'Otra'
             form.otro_universidad.data = grado['universidad']
         else:
             form.universidad.data = grado['universidad']
             form.otro_universidad.data = ''
-
-        # Manejar "Otro País"
-        predefined_paises = list(country_universities.keys())
-        if grado['pais'] not in predefined_paises:
-            form.pais.data = 'Otro'
-            form.otro_pais.data = grado['pais']
-        else:
-            form.pais.data = grado['pais']
-            form.otro_pais.data = ''
-
-        form.fecha_expedicion.data = grado['fecha_expedicion']
-
-        # Establecer las opciones de universidad basadas en el país del título
-        universidades = country_universities.get(grado['pais'], ['Otra'])
-        form.universidad.choices = [('', '--- Seleccione una universidad ---')] + [(univ, univ) for univ in universidades]
 
     return render_template('editar_gradostitulos.html', grado=grado, form=form)
 

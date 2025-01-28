@@ -160,7 +160,7 @@
             <div class="form-group">
                 <label><i class="bi bi-telephone-fill"></i> Información de Contacto</label>
                 <div class="row">
-                    {% for field, placeholder in [('telefono_fijo', 'Teléfono Fijo'), ('movil', 'Teléfono Móvil')] %}
+                    {% for field, placeholder in [('movil', 'Teléfono Móvil'), ('telefono_fijo', 'Teléfono Fijo')] %}
                     <div class="col-md-6">
                         {{ form[field].label(class="form-label") }}
                         {{ form[field](class="form-control", placeholder=placeholder) }}
@@ -189,7 +189,7 @@
 
             <!-- Domicilio Actual -->
             <div class="form-group">
-                <label for="domicilio_actual"><i class="bi bi-house-fill"></i> Domicilio Real</label>
+                <label for="domicilio_actual"><i class="bi bi-house-fill"></i> Domicilio Actual</label>
                 {{ form.domicilio_actual(class="form-control", placeholder="Domicilio Actual") }}
                 {% for error in form.domicilio_actual.errors %}
                 <div class="text-danger">{{ error }}</div>

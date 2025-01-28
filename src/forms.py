@@ -278,7 +278,7 @@ class CargaAcademicaLectivaForm(FlaskForm):
     )
       
     horas_asignadas = IntegerField(
-        'Horas Asignadas durante el Período Académico', 
+        'Horas Lectivas Asignadas durante el Período Académico', 
         validators=[
             DataRequired(message='Este campo es obligatorio.'),
             NumberRange(min=1, max=30, message='Las horas asignadas deben estar entre 1 y 30.')
@@ -781,8 +781,8 @@ class GradostitulosForm(FlaskForm):
     archivo = FileField(
         'Adjuntar grado o título (PDF)',
         validators=[
-            DataRequired(message='Este campo es obligatorio.'),
-            FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'pdf'], 'Solo se permiten imágenes y archivos PDF.'),
+            Optional(),
+            FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
             file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
         ]
     )
