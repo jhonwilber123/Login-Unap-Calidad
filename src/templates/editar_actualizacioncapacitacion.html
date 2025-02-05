@@ -42,7 +42,7 @@
             <!-- Horas -->
             <div class="mb-3" id="div-horas">
                 {{ form.horas.label(class="form-label") }}
-                {{ form.horas(class="form-control", type="number", min="1", placeholder="Número de horas", required=True) }}
+                {{ form.horas(class="form-control", type="number", min="1", placeholder="Número de horas", required=True, id="horas") }}
                 {% for error in form.horas.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
@@ -51,7 +51,7 @@
             <!-- Créditos -->
             <div class="mb-3" id="div-creditos">
                 {{ form.creditos.label(class="form-label") }}
-                {{ form.creditos(class="form-control", type="number", min="0", placeholder="Número de créditos", required=True) }}
+                {{ form.creditos(class="form-control", type="number", min="0", placeholder="Número de créditos", required=True, id="creditos") }}
                 {% for error in form.creditos.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
@@ -60,7 +60,7 @@
             <!-- Semestres Concluidos -->
             <div class="mb-3" id="div-semestres">
                 {{ form.semestres_concluidos.label(class="form-label") }}
-                {{ form.semestres_concluidos(class="form-control", type="number", min="0", placeholder="Semestres concluidos", required=True) }}
+                {{ form.semestres_concluidos(class="form-control", type="number", min="0", placeholder="Semestres concluidos", required=True, id="semestres_concluidos") }}
                 {% for error in form.semestres_concluidos.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
@@ -71,6 +71,15 @@
                 {{ form.institucion_otorga.label(class="form-label") }}
                 {{ form.institucion_otorga(class="form-control", maxlength="255", placeholder="Nombre de la institución que otorga", required=True) }}
                 {% for error in form.institucion_otorga.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Fecha de Actualización -->
+            <div class="mb-3">
+                {{ form.fecha.label(class="form-label") }}
+                {{ form.fecha(class="form-control", type="date", placeholder="Seleccione la fecha", required=True) }}
+                {% for error in form.fecha.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </div>
@@ -112,24 +121,33 @@
         const divCreditos = document.getElementById('div-creditos');
         const divSemestres = document.getElementById('div-semestres');
 
+        const tiposPorSemestres = ['Segunda Especialidad', 'Maestría', 'Doctorado', 'Especialización en Docencia Universitaria'];
+        const tiposPorHorasCreditos = ['Curso Presencial', 'Curso Virtual', 'Diplomado Presencial', 'Diplomado Virtual', 'Curso taller', 'otro tipo de capacitación'];
+
         function actualizarCampos() {
             const tipo = tipoSelect.value;
-            const tiposPorSemestres = ['Segunda Especialidad', 'Maestría', 'Doctorado', 'Especialización en Docencia Universitaria'];
-            const tiposPorHorasCreditos = ['Curso Presencial', 'Curso Virtual', 'Diplomado Presencial', 'Diplomado Virtual'];
-
             if (tiposPorSemestres.includes(tipo)) {
                 divHoras.style.display = 'none';
                 divCreditos.style.display = 'none';
                 divSemestres.style.display = 'block';
+                document.getElementById('semestres_concluidos').setAttribute('required', 'required');
+                document.getElementById('horas').removeAttribute('required');
+                document.getElementById('creditos').removeAttribute('required');
             } else if (tiposPorHorasCreditos.includes(tipo)) {
                 divHoras.style.display = 'block';
                 divCreditos.style.display = 'block';
                 divSemestres.style.display = 'none';
+                document.getElementById('horas').setAttribute('required', 'required');
+                document.getElementById('creditos').setAttribute('required', 'required');
+                document.getElementById('semestres_concluidos').removeAttribute('required');
             } else {
                 // Si no se ha seleccionado un tipo válido, ocultar todos
                 divHoras.style.display = 'none';
                 divCreditos.style.display = 'none';
                 divSemestres.style.display = 'none';
+                document.getElementById('horas').removeAttribute('required');
+                document.getElementById('creditos').removeAttribute('required');
+                document.getElementById('semestres_concluidos').removeAttribute('required');
             }
         }
 

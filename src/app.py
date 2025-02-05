@@ -723,119 +723,137 @@ def eliminar_evaluacion_desempeno_docente(id_evaluacion):
 
     return redirect(url_for('listar_evaluaciones_desempeno_docente'))
 
-# --- RUTA PARA AGREGAR Y LISTAR participacionengestionuniversitaria ---
+# RUTA PARA AGREGAR Y LISTAR PARTICIPACIÓN/GESTIÓN UNIVERSITARIA
 @app.route('/participaciongestionuniversitaria', methods=['GET', 'POST'])
 @login_required
 def participaciongestionuniversitaria():
     form = ParticipacionGestionUniversitariaForm()
     if form.validate_on_submit():
-        area_gestion = form.area_gestion.data
-        otro_area_gestion = form.otro_area_gestion.data
-        rol_gestion = form.rol_gestion.data
-        otro_rol_gestion = form.otro_rol_gestion.data
-        descripcion_responsabilidades = form.descripcion_responsabilidades.data
+        # Nuevos campos:
+        cargo = form.cargo.data
         fecha_inicio = form.fecha_inicio.data
         fecha_fin = form.fecha_fin.data
-        logros_contribuciones = form.logros_contribuciones.data
+        curso_relevante = form.curso_relevante.data
 
-        # Manejo de "Otro" en area_gestion
-        if area_gestion == 'Otro':
-            area_gestion = otro_area_gestion
-
-        # Manejo de "Otro" en rol_gestion
-        if rol_gestion == 'Otro':
-            rol_gestion = otro_rol_gestion
-
-        # Manejo del archivo adjunto
-        archivo = form.adjuntar_documentacion.data
-        id_imagen = None
-        if archivo:
-            if allowed_file(archivo.filename):
-                filename = secure_filename(archivo.filename)
+        # Manejo de archivos: adjuntar_plan, adjuntar_informe, adjuntar_curso
+        id_plan = None
+        plan_file = form.adjuntar_plan.data
+        if plan_file:
+            if allowed_file(plan_file.filename):
+                filename = secure_filename(plan_file.filename)
                 unique_filename = f"{int(time.time())}_{filename}"
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-                archivo.save(file_path)
-
-                # Determinar el tipo de archivo
+                plan_file.save(file_path)
                 file_extension = filename.rsplit('.', 1)[1].lower()
-                if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
-                    categoria = 'imagen'
-                elif file_extension == 'pdf':
-                    categoria = 'pdf'
-                else:
-                    flash('Debe seleccionar un archivo válido (imagen o PDF).', 'danger')
-                    return redirect(request.url)
-
-                # Insertar el archivo y obtener su id_imagen
+                categoria = 'imagen' if file_extension in ['jpg','jpeg','png','gif'] else 'pdf'
                 cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
                 cur.execute("""
                     INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
                     VALUES (%s, %s, %s, %s)
-                """, (current_user.id, categoria, "Documento Gestión Universitaria", unique_filename))
+                """, (current_user.id, categoria, "Plan de Participación", unique_filename))
                 db.connection.commit()
-                id_imagen = cur.lastrowid
+                id_plan = cur.lastrowid
                 cur.close()
             else:
-                flash('Archivo no permitido.', 'danger')
+                flash('Archivo de plan no permitido.', 'danger')
                 return redirect(request.url)
 
-        # Insertar la participación en gestión universitaria
+        id_informe = None
+        informe_file = form.adjuntar_informe.data
+        if informe_file:
+            if allowed_file(informe_file.filename):
+                filename = secure_filename(informe_file.filename)
+                unique_filename = f"{int(time.time())}_{filename}"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                informe_file.save(file_path)
+                file_extension = filename.rsplit('.', 1)[1].lower()
+                categoria = 'imagen' if file_extension in ['jpg','jpeg','png','gif'] else 'pdf'
+                cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+                cur.execute("""
+                    INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
+                    VALUES (%s, %s, %s, %s)
+                """, (current_user.id, categoria, "Informe de Participación", unique_filename))
+                db.connection.commit()
+                id_informe = cur.lastrowid
+                cur.close()
+            else:
+                flash('Archivo de informe no permitido.', 'danger')
+                return redirect(request.url)
+
+        id_curso = None
+        curso_file = form.adjuntar_curso.data
+        if curso_file:
+            if allowed_file(curso_file.filename):
+                filename = secure_filename(curso_file.filename)
+                unique_filename = f"{int(time.time())}_{filename}"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                curso_file.save(file_path)
+                file_extension = filename.rsplit('.', 1)[1].lower()
+                categoria = 'imagen' if file_extension in ['jpg','jpeg','png','gif'] else 'pdf'
+                cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+                cur.execute("""
+                    INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
+                    VALUES (%s, %s, %s, %s)
+                """, (current_user.id, categoria, "Adjunto Curso Relevante", unique_filename))
+                db.connection.commit()
+                id_curso = cur.lastrowid
+                cur.close()
+            else:
+                flash('Archivo del curso no permitido.', 'danger')
+                return redirect(request.url)
+
+        # Insertar la nueva participación en gestión universitaria
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
             INSERT INTO participaciongestionuniversitaria 
-            (area_gestion, rol_gestion, descripcion_responsabilidades, fecha_inicio, fecha_fin, logros_contribuciones, adjuntar_documentacion)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (area_gestion, rol_gestion, descripcion_responsabilidades, fecha_inicio, fecha_fin, logros_contribuciones, id_imagen))
+            (id_usuario, cargo, fecha_inicio, fecha_fin, curso_relevante, adjuntar_plan, adjuntar_informe, adjuntar_curso)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """, (current_user.id, cargo, fecha_inicio, fecha_fin, curso_relevante, id_plan, id_informe, id_curso))
         db.connection.commit()
         cur.close()
 
-        flash('Participación en gestión universitaria agregada correctamente', 'success')
+        flash('Participación en Gestión Universitaria agregada correctamente', 'success')
         return redirect(url_for('participaciongestionuniversitaria'))
 
-    # Obtener las participaciones en gestión universitaria
+    # Listar las participaciones con LEFT JOIN para cada archivo
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
     cur.execute("""
         SELECT 
-            p.id,
-            p.area_gestion,
-            p.rol_gestion,
-            p.descripcion_responsabilidades,
-            p.fecha_inicio,
-            p.fecha_fin,
-            p.logros_contribuciones,
-            ia.ruta_imagen,
-            ia.categoria
+            p.id, p.cargo, p.fecha_inicio, p.fecha_fin, p.curso_relevante,
+            ia_plan.ruta_imagen AS ruta_plan, ia_plan.categoria AS categoria_plan,
+            ia_informe.ruta_imagen AS ruta_informe, ia_informe.categoria AS categoria_informe,
+            ia_curso.ruta_imagen AS ruta_curso, ia_curso.categoria AS categoria_curso
         FROM participaciongestionuniversitaria p
-        LEFT JOIN imagenesadjuntas ia ON p.adjuntar_documentacion = ia.id_imagen
-    """)
+        LEFT JOIN imagenesadjuntas ia_plan ON p.adjuntar_plan = ia_plan.id_imagen
+        LEFT JOIN imagenesadjuntas ia_informe ON p.adjuntar_informe = ia_informe.id_imagen
+        LEFT JOIN imagenesadjuntas ia_curso ON p.adjuntar_curso = ia_curso.id_imagen
+        WHERE p.id_usuario = %s
+    """, [current_user.id])
     participaciones = cur.fetchall()
     cur.close()
 
     return render_template('participaciongestionuniversitaria.html', participaciones=participaciones, form=form)
 
+
+# RUTA PARA EDITAR PARTICIPACIÓN/GESTIÓN UNIVERSITARIA
 @app.route('/editar_participaciongestionuniversitaria/<int:id>', methods=['GET', 'POST'])
 @login_required
 def editar_participaciongestionuniversitaria(id):
     form = ParticipacionGestionUniversitariaForm()
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
-
-    # Obtener datos actuales
     cur.execute("""
         SELECT 
-            p.id,
-            p.area_gestion,
-            p.rol_gestion,
-            p.descripcion_responsabilidades,
-            p.fecha_inicio,
-            p.fecha_fin,
-            p.logros_contribuciones,
-            p.adjuntar_documentacion,
-            ia.ruta_imagen,
-            ia.categoria
+            p.id, p.cargo, p.fecha_inicio, p.fecha_fin, p.curso_relevante,
+            p.adjuntar_plan, p.adjuntar_informe, p.adjuntar_curso,
+            ia_plan.ruta_imagen AS ruta_plan, ia_plan.categoria AS categoria_plan,
+            ia_informe.ruta_imagen AS ruta_informe, ia_informe.categoria AS categoria_informe,
+            ia_curso.ruta_imagen AS ruta_curso, ia_curso.categoria AS categoria_curso
         FROM participaciongestionuniversitaria p
-        LEFT JOIN imagenesadjuntas ia ON p.adjuntar_documentacion = ia.id_imagen
-        WHERE p.id = %s
-    """, (id,))
+        LEFT JOIN imagenesadjuntas ia_plan ON p.adjuntar_plan = ia_plan.id_imagen
+        LEFT JOIN imagenesadjuntas ia_informe ON p.adjuntar_informe = ia_informe.id_imagen
+        LEFT JOIN imagenesadjuntas ia_curso ON p.adjuntar_curso = ia_curso.id_imagen
+        WHERE p.id = %s AND p.id_usuario = %s
+    """, (id, current_user.id))
     participacion = cur.fetchone()
     cur.close()
 
@@ -844,142 +862,171 @@ def editar_participaciongestionuniversitaria(id):
         return redirect(url_for('participaciongestionuniversitaria'))
 
     if form.validate_on_submit():
-        area_gestion = form.area_gestion.data
-        otro_area_gestion = form.otro_area_gestion.data
-        rol_gestion = form.rol_gestion.data
-        otro_rol_gestion = form.otro_rol_gestion.data
-        descripcion_responsabilidades = form.descripcion_responsabilidades.data
+        cargo = form.cargo.data
         fecha_inicio = form.fecha_inicio.data
         fecha_fin = form.fecha_fin.data
-        logros_contribuciones = form.logros_contribuciones.data
-        archivo = form.adjuntar_documentacion.data
-        id_imagen_actual = participacion['adjuntar_documentacion']
+        curso_relevante = form.curso_relevante.data
 
-        # Manejo de "Otro"
-        if area_gestion == 'Otro':
-            area_gestion = otro_area_gestion
-
-        if rol_gestion == 'Otro':
-            rol_gestion = otro_rol_gestion
-
-        if archivo:
-            if allowed_file(archivo.filename):
-                filename = secure_filename(archivo.filename)
+        # Para cada archivo se procesa si se sube un nuevo, sino se conserva el actual.
+        # Adjuntar Plan
+        plan_file = form.adjuntar_plan.data
+        id_plan_actual = participacion.get('adjuntar_plan')
+        if plan_file:
+            if allowed_file(plan_file.filename):
+                filename = secure_filename(plan_file.filename)
                 unique_filename = f"{int(time.time())}_{filename}"
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-                archivo.save(file_path)
-
+                plan_file.save(file_path)
                 file_extension = filename.rsplit('.', 1)[1].lower()
-                if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
-                    categoria = 'imagen'
-                elif file_extension == 'pdf':
-                    categoria = 'pdf'
-                else:
-                    flash('Debe seleccionar un archivo válido (imagen o PDF).', 'danger')
-                    return redirect(request.url)
-
+                categoria = 'imagen' if file_extension in ['jpg','jpeg','png','gif'] else 'pdf'
                 cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
-                if id_imagen_actual:
-                    # Actualizar archivo existente
+                if id_plan_actual:
                     cur.execute("""
                         UPDATE imagenesadjuntas
                         SET ruta_imagen = %s, categoria = %s, descripcion = %s, fecha_subida = NOW()
                         WHERE id_imagen = %s AND id_usuario = %s
-                    """, (unique_filename, categoria, "Documento Gestión Universitaria", id_imagen_actual, current_user.id))
+                    """, (unique_filename, categoria, "Plan de Participación", id_plan_actual, current_user.id))
                 else:
-                    # Insertar nuevo archivo
                     cur.execute("""
                         INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
                         VALUES (%s, %s, %s, %s)
-                    """, (current_user.id, categoria, "Documento Gestión Universitaria", unique_filename))
+                    """, (current_user.id, categoria, "Plan de Participación", unique_filename))
                     db.connection.commit()
-                    id_imagen_nueva = cur.lastrowid
-                    # Actualizar la participación
+                    id_plan_actual = cur.lastrowid
                     cur.execute("""
                         UPDATE participaciongestionuniversitaria
-                        SET adjuntar_documentacion = %s
-                        WHERE id = %s
-                    """, (id_imagen_nueva, id))
+                        SET adjuntar_plan = %s
+                        WHERE id = %s AND id_usuario = %s
+                    """, (id_plan_actual, id, current_user.id))
                 db.connection.commit()
                 cur.close()
             else:
-                flash('Archivo no permitido.', 'danger')
+                flash('Archivo de plan no permitido.', 'danger')
                 return redirect(request.url)
 
-        # Actualizar datos
+        # Adjuntar Informe
+        informe_file = form.adjuntar_informe.data
+        id_informe_actual = participacion.get('adjuntar_informe')
+        if informe_file:
+            if allowed_file(informe_file.filename):
+                filename = secure_filename(informe_file.filename)
+                unique_filename = f"{int(time.time())}_{filename}"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                informe_file.save(file_path)
+                file_extension = filename.rsplit('.', 1)[1].lower()
+                categoria = 'imagen' if file_extension in ['jpg','jpeg','png','gif'] else 'pdf'
+                cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+                if id_informe_actual:
+                    cur.execute("""
+                        UPDATE imagenesadjuntas
+                        SET ruta_imagen = %s, categoria = %s, descripcion = %s, fecha_subida = NOW()
+                        WHERE id_imagen = %s AND id_usuario = %s
+                    """, (unique_filename, categoria, "Informe de Participación", id_informe_actual, current_user.id))
+                else:
+                    cur.execute("""
+                        INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
+                        VALUES (%s, %s, %s, %s)
+                    """, (current_user.id, categoria, "Informe de Participación", unique_filename))
+                    db.connection.commit()
+                    id_informe_actual = cur.lastrowid
+                    cur.execute("""
+                        UPDATE participaciongestionuniversitaria
+                        SET adjuntar_informe = %s
+                        WHERE id = %s AND id_usuario = %s
+                    """, (id_informe_actual, id, current_user.id))
+                db.connection.commit()
+                cur.close()
+            else:
+                flash('Archivo de informe no permitido.', 'danger')
+                return redirect(request.url)
+
+        # Adjuntar Curso Relevante
+        curso_file = form.adjuntar_curso.data
+        id_curso_actual = participacion.get('adjuntar_curso')
+        if curso_file:
+            if allowed_file(curso_file.filename):
+                filename = secure_filename(curso_file.filename)
+                unique_filename = f"{int(time.time())}_{filename}"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                curso_file.save(file_path)
+                file_extension = filename.rsplit('.', 1)[1].lower()
+                categoria = 'imagen' if file_extension in ['jpg','jpeg','png','gif'] else 'pdf'
+                cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+                if id_curso_actual:
+                    cur.execute("""
+                        UPDATE imagenesadjuntas
+                        SET ruta_imagen = %s, categoria = %s, descripcion = %s, fecha_subida = NOW()
+                        WHERE id_imagen = %s AND id_usuario = %s
+                    """, (unique_filename, categoria, "Adjunto Curso Relevante", id_curso_actual, current_user.id))
+                else:
+                    cur.execute("""
+                        INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
+                        VALUES (%s, %s, %s, %s)
+                    """, (current_user.id, categoria, "Adjunto Curso Relevante", unique_filename))
+                    db.connection.commit()
+                    id_curso_actual = cur.lastrowid
+                    cur.execute("""
+                        UPDATE participaciongestionuniversitaria
+                        SET adjuntar_curso = %s
+                        WHERE id = %s AND id_usuario = %s
+                    """, (id_curso_actual, id, current_user.id))
+                db.connection.commit()
+                cur.close()
+            else:
+                flash('Archivo del curso no permitido.', 'danger')
+                return redirect(request.url)
+
+        # Actualizar los datos de la participación
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
             UPDATE participaciongestionuniversitaria
-            SET area_gestion = %s, rol_gestion = %s, descripcion_responsabilidades = %s,
-                fecha_inicio = %s, fecha_fin = %s, logros_contribuciones = %s
-            WHERE id = %s
-        """, (area_gestion, rol_gestion, descripcion_responsabilidades, fecha_inicio, fecha_fin, logros_contribuciones, id))
+            SET cargo = %s, fecha_inicio = %s, fecha_fin = %s, curso_relevante = %s
+            WHERE id = %s AND id_usuario = %s
+        """, (cargo, fecha_inicio, fecha_fin, curso_relevante, id, current_user.id))
         db.connection.commit()
         cur.close()
 
         flash('Participación actualizada correctamente', 'success')
         return redirect(url_for('participaciongestionuniversitaria'))
 
-    # Prellenar el formulario
     if request.method == 'GET':
-        # Verificar si el valor actual de area_gestion está en la lista predefinida
-        valores_area = ['Administración Académica','Administración Financiera','Desarrollo de Infraestructura','Innovación y Tecnología']
-        if participacion['area_gestion'] not in valores_area:
-            form.area_gestion.data = 'Otro'
-            form.otro_area_gestion.data = participacion['area_gestion']
-        else:
-            form.area_gestion.data = participacion['area_gestion']
-            form.otro_area_gestion.data = ''
-
-        valores_rol = ['Coordinador','Secretario','Miembro del Comité']
-        if participacion['rol_gestion'] not in valores_rol:
-            form.rol_gestion.data = 'Otro'
-            form.otro_rol_gestion.data = participacion['rol_gestion']
-        else:
-            form.rol_gestion.data = participacion['rol_gestion']
-            form.otro_rol_gestion.data = ''
-
-        form.descripcion_responsabilidades.data = participacion['descripcion_responsabilidades']
+        form.cargo.data = participacion['cargo']
         form.fecha_inicio.data = participacion['fecha_inicio']
         form.fecha_fin.data = participacion['fecha_fin']
-        form.logros_contribuciones.data = participacion['logros_contribuciones']
+        form.curso_relevante.data = participacion['curso_relevante']
 
     return render_template('editar_participaciongestionuniversitaria.html', participacion=participacion, form=form)
 
+
+# RUTA PARA ELIMINAR PARTICIPACIÓN/GESTIÓN UNIVERSITARIA
 @app.route('/eliminar_participaciongestionuniversitaria/<int:id>', methods=['POST'])
 @login_required
 def eliminar_participaciongestionuniversitaria(id):
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
-
-    # Obtener id_imagen para eliminar si existe
     cur.execute("""
-        SELECT adjuntar_documentacion FROM participaciongestionuniversitaria
+        SELECT adjuntar_plan, adjuntar_informe, adjuntar_curso FROM participaciongestionuniversitaria
         WHERE id = %s
     """, (id,))
     result = cur.fetchone()
-
-    if result and result['adjuntar_documentacion']:
-        id_imagen = result['adjuntar_documentacion']
-        # Eliminar archivo físico
-        cur.execute("""
-            SELECT ruta_imagen FROM imagenesadjuntas
-            WHERE id_imagen = %s AND id_usuario = %s
-        """, (id_imagen, current_user.id))
-        imagen = cur.fetchone()
-        if imagen:
-            ruta_imagen = imagen['ruta_imagen']
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], ruta_imagen)
-            if os.path.exists(file_path):
-                os.remove(file_path)
-            # Eliminar imagen de la tabla imagenesadjuntas
-            cur.execute("DELETE FROM imagenesadjuntas WHERE id_imagen = %s AND id_usuario = %s", (id_imagen, current_user.id))
-            db.connection.commit()
-
-    # Eliminar la participación
+    if result:
+        for key in ['adjuntar_plan', 'adjuntar_informe', 'adjuntar_curso']:
+            if result.get(key):
+                file_id = result[key]
+                cur.execute("""
+                    SELECT ruta_imagen FROM imagenesadjuntas
+                    WHERE id_imagen = %s AND id_usuario = %s
+                """, (file_id, current_user.id))
+                imagen = cur.fetchone()
+                if imagen:
+                    ruta_imagen = imagen['ruta_imagen']
+                    file_path = os.path.join(app.config['UPLOAD_FOLDER'], ruta_imagen)
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                    cur.execute("DELETE FROM imagenesadjuntas WHERE id_imagen = %s AND id_usuario = %s", (file_id, current_user.id))
+                    db.connection.commit()
     cur.execute("DELETE FROM participaciongestionuniversitaria WHERE id = %s", (id,))
     db.connection.commit()
     cur.close()
-
     flash('Participación eliminada correctamente', 'success')
     return redirect(url_for('participaciongestionuniversitaria'))
 
@@ -1888,8 +1935,7 @@ def eliminar_actividadesproyeccionsocial(id_actividad):
     return redirect(url_for('actividadesproyeccionsocial'))
 
 # Nueva Ruta para manejar Actualizaciones y Capacitaciones
-# --- RUTA PARA AGREGAR Y LISTAR ACTUALIZACIONES DE CAPACITACIONES ---
-# --- RUTA PARA AGREGAR Y LISTAR ACTUALIZACIONES DE CAPACITACIONES ---
+# RUTA PARA AGREGAR Y LISTAR ACTUALIZACIONES DE CAPACITACIONES
 @app.route('/actualizacionescapacitaciones', methods=['GET', 'POST'])
 @login_required
 def actualizacionescapacitaciones():
@@ -1900,8 +1946,9 @@ def actualizacionescapacitaciones():
         horas = form.horas.data if form.horas.data else None
         creditos = form.creditos.data if form.creditos.data else None
         semestres_concluidos = form.semestres_concluidos.data if form.semestres_concluidos.data else None
-        institucion_otorga = form.institucion_otorga.data  # Nuevo campo
-
+        institucion_otorga = form.institucion_otorga.data
+        fecha = form.fecha.data  # NUEVO CAMPO
+        
         # Manejo de archivos (imagen o PDF)
         archivo = form.archivo.data
         id_imagen = None
@@ -1911,8 +1958,6 @@ def actualizacionescapacitaciones():
                 unique_filename = f"{int(time.time())}_{filename}"
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 archivo.save(file_path)
-
-                # Determinar el tipo de archivo
                 file_extension = filename.rsplit('.', 1)[1].lower()
                 if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
                     categoria = 'imagen'
@@ -1921,8 +1966,6 @@ def actualizacionescapacitaciones():
                 else:
                     flash('Debe seleccionar un archivo válido (imagen o PDF).', 'danger')
                     return redirect(request.url)
-
-                # Insertar el archivo y obtener su id_imagen
                 cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
                 cur.execute("""
                     INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
@@ -1934,24 +1977,24 @@ def actualizacionescapacitaciones():
             else:
                 flash('Archivo no permitido.', 'danger')
                 return redirect(request.url)
-
-        # Insertar la actualización de capacitación
+                
+        # Actualizamos la consulta INSERT para incluir el campo fecha.
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
-            INSERT INTO actualizacionescapacitaciones (id_usuario, tipo, descripcion, horas, creditos, semestres_concluidos, institucion_otorga, id_imagen)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-        """, (current_user.id, tipo, descripcion, horas, creditos, semestres_concluidos, institucion_otorga, id_imagen))
+            INSERT INTO actualizacionescapacitaciones 
+            (id_usuario, tipo, descripcion, horas, creditos, semestres_concluidos, institucion_otorga, fecha, id_imagen)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (current_user.id, tipo, descripcion, horas, creditos, semestres_concluidos, institucion_otorga, fecha, id_imagen))
         db.connection.commit()
         cur.close()
 
         flash('Actualización de capacitación agregada correctamente', 'success')
         return redirect(url_for('actualizacionescapacitaciones'))
 
-    # Obtener las actualizaciones de capacitaciones del usuario actual
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
     cur.execute("""
         SELECT ac.id_capacitacion, ac.tipo, ac.descripcion, ac.horas, ac.creditos, ac.semestres_concluidos,
-               ac.institucion_otorga, ia.ruta_imagen, ia.categoria
+               ac.institucion_otorga, ac.fecha, ia.ruta_imagen, ia.categoria
         FROM actualizacionescapacitaciones ac
         LEFT JOIN imagenesadjuntas ia ON ac.id_imagen = ia.id_imagen
         WHERE ac.id_usuario = %s
@@ -1961,17 +2004,16 @@ def actualizacionescapacitaciones():
 
     return render_template('actualizacionescapacitaciones.html', actualizaciones=actualizaciones, form=form)
 
-# --- RUTA PARA EDITAR UNA ACTUALIZACIÓN DE CAPACITACIÓN ---
+# RUTA PARA EDITAR UNA ACTUALIZACIÓN DE CAPACITACIÓN
 @app.route('/editar_actualizacioncapacitacion/<int:id_capacitacion>', methods=['GET', 'POST'])
 @login_required
 def editar_actualizacioncapacitacion(id_capacitacion):
     form = ActualizacionesCapacitacionesForm()
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
 
-    # Obtener los datos actuales de la actualización
     cur.execute("""
         SELECT ac.id_capacitacion, ac.tipo, ac.descripcion, ac.horas, ac.creditos, ac.semestres_concluidos,
-               ac.institucion_otorga, ia.id_imagen, ia.ruta_imagen, ia.categoria
+               ac.institucion_otorga, ac.fecha, ia.id_imagen, ia.ruta_imagen, ia.categoria
         FROM actualizacionescapacitaciones ac
         LEFT JOIN imagenesadjuntas ia ON ac.id_imagen = ia.id_imagen
         WHERE ac.id_capacitacion = %s AND ac.id_usuario = %s
@@ -1989,19 +2031,17 @@ def editar_actualizacioncapacitacion(id_capacitacion):
         horas = form.horas.data if form.horas.data else None
         creditos = form.creditos.data if form.creditos.data else None
         semestres_concluidos = form.semestres_concluidos.data if form.semestres_concluidos.data else None
-        institucion_otorga = form.institucion_otorga.data  # Nuevo campo
+        institucion_otorga = form.institucion_otorga.data
+        fecha = form.fecha.data  # NUEVO CAMPO
         archivo = form.archivo.data
         id_imagen_actual = actualizacion['id_imagen']
 
-        # Manejo del archivo adjunto
         if archivo:
             if allowed_file(archivo.filename):
                 filename = secure_filename(archivo.filename)
                 unique_filename = f"{int(time.time())}_{filename}"
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 archivo.save(file_path)
-
-                # Determinar el tipo de archivo
                 file_extension = filename.rsplit('.', 1)[1].lower()
                 if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
                     categoria = 'imagen'
@@ -2010,25 +2050,20 @@ def editar_actualizacioncapacitacion(id_capacitacion):
                 else:
                     flash('Debe seleccionar un archivo válido (imagen o PDF).', 'danger')
                     return redirect(request.url)
-
                 cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
                 if id_imagen_actual:
-                    # Actualizar el archivo existente
                     cur.execute("""
                         UPDATE imagenesadjuntas
                         SET ruta_imagen = %s, categoria = %s, descripcion = %s, fecha_subida = NOW()
                         WHERE id_imagen = %s AND id_usuario = %s
                     """, (unique_filename, categoria, descripcion, id_imagen_actual, current_user.id))
                 else:
-                    # Insertar un nuevo archivo
                     cur.execute("""
                         INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
                         VALUES (%s, %s, %s, %s)
                     """, (current_user.id, categoria, descripcion, unique_filename))
                     db.connection.commit()
                     id_imagen_nueva = cur.lastrowid
-
-                    # Actualizar la actualización de capacitación con el nuevo id_imagen
                     cur.execute("""
                         UPDATE actualizacionescapacitaciones
                         SET id_imagen = %s
@@ -2040,37 +2075,36 @@ def editar_actualizacioncapacitacion(id_capacitacion):
                 flash('Archivo no permitido.', 'danger')
                 return redirect(request.url)
 
-        # Actualizar los datos de la actualización de capacitación
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
             UPDATE actualizacionescapacitaciones
-            SET tipo = %s, descripcion = %s, horas = %s, creditos = %s, semestres_concluidos = %s, institucion_otorga = %s
+            SET tipo = %s, descripcion = %s, horas = %s, creditos = %s, semestres_concluidos = %s,
+                institucion_otorga = %s, fecha = %s
             WHERE id_capacitacion = %s AND id_usuario = %s
-        """, (tipo, descripcion, horas, creditos, semestres_concluidos, institucion_otorga, id_capacitacion, current_user.id))
+        """, (tipo, descripcion, horas, creditos, semestres_concluidos, institucion_otorga, fecha, id_capacitacion, current_user.id))
         db.connection.commit()
         cur.close()
 
         flash('Actualización de capacitación actualizada correctamente', 'success')
         return redirect(url_for('actualizacionescapacitaciones'))
 
-    # Prellenar el formulario con los datos actuales
     if request.method == 'GET':
         form.tipo.data = actualizacion['tipo']
         form.descripcion.data = actualizacion['descripcion']
         form.horas.data = actualizacion['horas']
         form.creditos.data = actualizacion['creditos']
         form.semestres_concluidos.data = actualizacion['semestres_concluidos']
-        form.institucion_otorga.data = actualizacion['institucion_otorga']  # Nuevo campo
+        form.institucion_otorga.data = actualizacion['institucion_otorga']
+        form.fecha.data = actualizacion['fecha']  # Asignar el valor de fecha
 
     return render_template('editar_actualizacioncapacitacion.html', actualizacion=actualizacion, form=form)
 
-# --- RUTA PARA ELIMINAR UNA ACTUALIZACIÓN DE CAPACITACIÓN ---
+# RUTA PARA ELIMINAR UNA ACTUALIZACIÓN DE CAPACITACIÓN
 @app.route('/eliminar_actualizacioncapacitacion/<int:id_capacitacion>', methods=['POST'])
 @login_required
 def eliminar_actualizacioncapacitacion(id_capacitacion):
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
 
-    # Obtener id_imagen para eliminar la imagen adjunta si existe
     cur.execute("""
         SELECT id_imagen FROM actualizacionescapacitaciones
         WHERE id_capacitacion = %s AND id_usuario = %s
@@ -2079,7 +2113,6 @@ def eliminar_actualizacioncapacitacion(id_capacitacion):
 
     if result and result['id_imagen']:
         id_imagen = result['id_imagen']
-        # Eliminar el archivo físico del servidor
         cur.execute("""
             SELECT ruta_imagen FROM imagenesadjuntas
             WHERE id_imagen = %s AND id_usuario = %s
@@ -2090,16 +2123,15 @@ def eliminar_actualizacioncapacitacion(id_capacitacion):
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], ruta_imagen)
             if os.path.exists(file_path):
                 os.remove(file_path)
-            # Eliminar la imagen de la tabla imagenesadjuntas
             cur.execute("DELETE FROM imagenesadjuntas WHERE id_imagen = %s AND id_usuario = %s", (id_imagen, current_user.id))
             db.connection.commit()
 
-    # Eliminar la actualización de capacitación
     cur.execute("DELETE FROM actualizacionescapacitaciones WHERE id_capacitacion = %s AND id_usuario = %s", (id_capacitacion, current_user.id))
     db.connection.commit()
     cur.close()
     flash('Actualización de capacitación eliminada correctamente', 'success')
     return redirect(url_for('actualizacionescapacitaciones'))
+
 
 #ruta para participacion en acreditacion y licenciamiento
 # --- RUTA PARA AGREGAR Y LISTAR PARTICIPACIONES EN ACREDITACIÓN Y LICENCIAMIENTO ---

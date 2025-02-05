@@ -39,6 +39,7 @@
                 {% for error in form.tipo.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
+                <div class="form-text">La actualización o capacitación debería haberse completado en un período de los últimos tres años.</div>
             </div>
 
             <!-- Descripción -->
@@ -53,7 +54,7 @@
             <!-- Horas -->
             <div class="mb-3" id="div-horas" style="display: none;">
                 {{ form.horas.label(class="form-label") }}
-                {{ form.horas(class="form-control", type="number", min="1", placeholder="Número de horas", required=False) }}
+                {{ form.horas(class="form-control", type="number", min="1", placeholder="Número de horas", required=False, id="horas") }}
                 {% for error in form.horas.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
@@ -62,17 +63,17 @@
             <!-- Créditos -->
             <div class="mb-3" id="div-creditos" style="display: none;">
                 {{ form.creditos.label(class="form-label") }}
-                {{ form.creditos(class="form-control", type="number", min="0", placeholder="Número de créditos", required=False) }}
+                {{ form.creditos(class="form-control", type="number", min="0", placeholder="Número de créditos", required=False, id="creditos") }}
                 {% for error in form.creditos.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
-                <div class="form-text">En caso de no tener creditos poner 0.</div>
+                <div class="form-text">En caso de no tener créditos poner 0.</div>
             </div>
 
             <!-- Semestres Concluidos -->
             <div class="mb-3" id="div-semestres" style="display: none;">
                 {{ form.semestres_concluidos.label(class="form-label") }}
-                {{ form.semestres_concluidos(class="form-control", type="number", min="0", placeholder="Semestres concluidos", required=False) }}
+                {{ form.semestres_concluidos(class="form-control", type="number", min="0", placeholder="Semestres concluidos", required=False, id="semestres_concluidos") }}
                 {% for error in form.semestres_concluidos.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
@@ -87,10 +88,19 @@
                 {% endfor %}
             </div>
 
+            <!-- Fecha de Actualización -->
+            <div class="mb-3">
+                {{ form.fecha.label(class="form-label") }}
+                {{ form.fecha(class="form-control", type="date", placeholder="Seleccione la fecha", required=True) }}
+                {% for error in form.fecha.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
             <!-- Archivo -->
             <div class="mb-3">
                 {{ form.archivo.label(class="form-label") }}
-                {{ form.archivo(class="form-control", id="archivo", required=True) }} <!-- Asignar un ID y agregar 'required' -->
+                {{ form.archivo(class="form-control", id="archivo", required=True) }}
                 <div class="invalid-feedback">
                     Debe subir un archivo PDF o una imagen válida relacionada con la capacitación.
                 </div>
@@ -113,6 +123,7 @@
                     <th>Descripción</th>
                     <th>Detalles</th>
                     <th>Institución</th>
+                    <th>Fecha</th>
                     <th>Archivo</th>
                     <th>Acciones</th>
                 </tr>
@@ -124,18 +135,19 @@
                     <td>{{ actualizacion.descripcion }}</td>
                     <td>
                         {% set tipos_por_semestres = ['Segunda Especialidad', 'Maestría', 'Doctorado', 'Especialización en Docencia Universitaria'] %}
-                        {% set tipos_por_horas_creditos = ['Curso Presencial', 'Curso Virtual', 'Diplomado Presencial', 'Diplomado Virtual'] %}
+                        {% set tipos_por_horas_creditos = ['Curso Presencial', 'Curso Virtual', 'Diplomado Presencial', 'Diplomado Virtual', 'Curso taller', 'otro tipo de capacitación'] %}
                         
                         {% if actualizacion.tipo in tipos_por_semestres %}
                             Semestres Concluidos: {{ actualizacion.semestres_concluidos if actualizacion.semestres_concluidos is not none else 'N/A' }}
                         {% elif actualizacion.tipo in tipos_por_horas_creditos %}
                             Horas: {{ actualizacion.horas if actualizacion.horas is not none else 'N/A' }}, 
-                            Créditos: {{ actualizacion.creditos if actualizacion.creditos is not none else 'Sin creditos' }}
+                            Créditos: {{ actualizacion.creditos if actualizacion.creditos is not none else 'Sin créditos' }}
                         {% else %}
                             Información no disponible
                         {% endif %}
                     </td>
                     <td>{{ actualizacion.institucion_otorga }}</td>
+                    <td>{{ actualizacion.fecha }}</td>
                     <td>
                         {% if actualizacion.ruta_imagen %}
                             {% if actualizacion.categoria == 'imagen' %}
@@ -192,7 +204,6 @@
         const form = document.querySelector('.needs-validation');
         const archivoInput = document.getElementById('archivo');
 
-        // Función para validar campos de archivo (imagen o PDF)
         function validateArchivoInput(input, feedbackElement) {
             if (input.files.length === 0) {
                 input.classList.add('is-invalid');
@@ -201,7 +212,6 @@
                 feedbackElement.style.display = 'block';
                 return false;
             }
-
             const file = input.files[0];
             const fileType = file.type;
             const fileName = file.name.toLowerCase();
@@ -216,7 +226,6 @@
                 feedbackElement.style.display = 'block';
                 return false;
             }
-
             if (!isValidSize) {
                 input.classList.add('is-invalid');
                 input.classList.remove('is-valid');
@@ -224,54 +233,43 @@
                 feedbackElement.style.display = 'block';
                 return false;
             }
-
             input.classList.remove('is-invalid');
             input.classList.add('is-valid');
             feedbackElement.style.display = 'none';
             return true;
         }
 
-        // Manejar el envío del formulario
         form.addEventListener('submit', function(event) {
-            // Validación estándar del formulario
             if (!form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();
             }
-
-            // Validación personalizada para el campo archivo
             const archivoValid = validateArchivoInput(archivoInput, archivoInput.nextElementSibling);
-
             if (!archivoValid) {
                 event.preventDefault();
                 event.stopPropagation();
             }
-
             form.classList.add('was-validated');
         }, false);
 
-        // Validación en tiempo real para el campo archivo
         archivoInput.addEventListener('change', function() {
             validateArchivoInput(archivoInput, archivoInput.nextElementSibling);
         });
 
-        // Controlar la visibilidad de los campos según el tipo de capacitación
         const tipoSelect = document.getElementById('tipo');
         const divHoras = document.getElementById('div-horas');
         const divCreditos = document.getElementById('div-creditos');
         const divSemestres = document.getElementById('div-semestres');
 
         const tiposPorSemestres = ['Segunda Especialidad', 'Maestría', 'Doctorado', 'Especialización en Docencia Universitaria'];
-        const tiposPorHorasCreditos = ['Curso Presencial', 'Curso Virtual', 'Diplomado Presencial', 'Diplomado Virtual'];
+        const tiposPorHorasCreditos = ['Curso Presencial', 'Curso Virtual', 'Diplomado Presencial', 'Diplomado Virtual', 'Curso taller', 'otro tipo de capacitación'];
 
         function actualizarCampos() {
             const tipo = tipoSelect.value;
-
             if (tiposPorSemestres.includes(tipo)) {
                 divHoras.style.display = 'none';
                 divCreditos.style.display = 'none';
                 divSemestres.style.display = 'block';
-                // Opcional: agregar 'required' a semestres_concluidos si es necesario
                 document.getElementById('semestres_concluidos').setAttribute('required', 'required');
                 document.getElementById('horas').removeAttribute('required');
                 document.getElementById('creditos').removeAttribute('required');
@@ -279,12 +277,10 @@
                 divHoras.style.display = 'block';
                 divCreditos.style.display = 'block';
                 divSemestres.style.display = 'none';
-                // Opcional: agregar 'required' a horas y creditos si es necesario
                 document.getElementById('horas').setAttribute('required', 'required');
                 document.getElementById('creditos').setAttribute('required', 'required');
                 document.getElementById('semestres_concluidos').removeAttribute('required');
             } else {
-                // Si no se ha seleccionado un tipo válido, ocultar todos
                 divHoras.style.display = 'none';
                 divCreditos.style.display = 'none';
                 divSemestres.style.display = 'none';
@@ -294,12 +290,49 @@
             }
         }
 
-        // Ejecutar al cargar la página
         actualizarCampos();
-
-        // Asignar el evento onchange al campo 'tipo'
         tipoSelect.addEventListener('change', actualizarCampos);
     });
 </script>
+<!-- Agrega este código dentro del script existente, cerca de la validación del archivo -->
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('.needs-validation');
+        const fechaInput = document.getElementById('fecha');
+    
+        function validateFechaInput(input, feedbackElement) {
+            if (!input.value) {
+                input.classList.add('is-invalid');
+                feedbackElement.textContent = 'Debe ingresar una fecha.';
+                feedbackElement.style.display = 'block';
+                return false;
+            }
+            const selectedDate = new Date(input.value);
+            const now = new Date();
+            const threeYearsAgo = new Date(now.getFullYear() - 3, now.getMonth(), now.getDate());
+            
+            if (selectedDate < threeYearsAgo || selectedDate > now) {
+                input.classList.add('is-invalid');
+                feedbackElement.textContent = 'La fecha debe estar dentro de los últimos 3 años.';
+                feedbackElement.style.display = 'block';
+                return false;
+            }
+            input.classList.remove('is-invalid');
+            feedbackElement.style.display = 'none';
+            return true;
+        }
+    
+        form.addEventListener('submit', function(event) {
+            if (!validateFechaInput(fechaInput, fechaInput.nextElementSibling)) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }, false);
+    
+        fechaInput.addEventListener('change', function() {
+            validateFechaInput(fechaInput, fechaInput.nextElementSibling);
+        });
+    });
+    </script>
 
 {% endblock %}

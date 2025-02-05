@@ -22,18 +22,18 @@
                         <i class="bi bi-menu-button-wide-fill me-1"></i> Menú
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="menuDropdown">
-                        <li><a class="dropdown-item" href="{{ url_for('home') }}">
+                        <li><a class="dropdown-item" style="color: white;" href="{{ url_for('home') }}">
                             <i class="bi bi-house-door-fill me-2"></i> Inicio
                         </a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('change_password') }}">
+                        <li><a class="dropdown-item" style="color: white;" href="{{ url_for('change_password') }}">
                             <i class="bi bi-lock-fill me-2"></i> Cambiar Contraseña
                         </a></li>
                         {% if current_user.role == 'Administrador' %}
                         <li>
-                            <a class="dropdown-item" href="{{ url_for('create_user') }}">
+                            <a class="dropdown-item" style="color: white;" href="{{ url_for('create_user') }}">
                                 <i class="bi bi-person-plus-fill me-2"></i> Crear Usuario
                             </a>
-                            <a class="dropdown-item" href="{{ url_for('list_users') }}">
+                            <a class="dropdown-item" style="color: white;" href="{{ url_for('list_users') }}">
                                 <i class="bi bi-people-fill me-2"></i> Gestionar Usuarios
                             </a>
                         </li>
@@ -48,21 +48,71 @@
                         <i class="bi bi-file-earmark-person-fill me-1"></i> Curriculum
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="curriculumDropdown">
-                        <li><a class="dropdown-item" href="{{ url_for('informacion_personal') }}"><i class="bi bi-person-fill me-2"></i> Información Personal</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('gradostitulos') }}"><i class="bi bi-mortarboard-fill me-2"></i> Grados y Títulos</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('carga_academica') }}"><i class="bi bi-book-fill me-2"></i> Carga Académica Lectiva</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('actualizacionescapacitaciones') }}"><i class="bi bi-calendar-check-fill me-2"></i> Actualizaciones y Capacitaciones</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('acreditacion_licenciamiento') }}"><i class="bi bi-shield-lock-fill me-2"></i> Acreditación y Licenciamiento</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('listar_evaluaciones_desempeno_docente') }}"><i class="bi bi-bar-chart-fill me-2"></i> Evaluación del Desempeño Docente</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('participaciongestionuniversitaria') }}"><i class="bi bi-gear-fill me-2"></i> Gestión Universitaria</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('cargosdirectivos') }}"><i class="bi bi-person-badge-fill me-2"></i> Cargos Directivos y Comisiones</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('actividadesproyeccionsocial') }}"><i class="bi bi-people-fill me-2"></i> Proyección Social y Extensión Cultural</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('produccion_intelectual') }}"><i class="bi bi-lightbulb-fill me-2"></i> Producción Intelectual para la Enseñanza</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('investigaciones') }}"><i class="bi bi-search-heart me-2"></i> Investigación, Producción Científica y Tecnológica</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('softwareespecializado') }}"><i class="bi bi-controller me-2"></i> Uso de Software Especializado</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('idiomas') }}"><i class="bi bi-translate me-2"></i> Idiomas</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('tutorias') }}"><i class="bi bi-people-fill me-2"></i> Apoyo al Estudiante</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('reconocimientos') }}"><i class="bi bi-award-fill me-2"></i> Reconocimientos y Distinciones</a></li>
+                        <li>
+                            <a class="dropdown-item text-white" style="color: white;" href="{{ url_for('informacion_personal') }}">
+                                <i class="bi bi-person-fill me-2"></i> Información Personal
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-white" style="color: white;" href="{{ url_for('gradostitulos') }}">
+                                <i class="bi bi-mortarboard-fill me-2"></i> Grados y Títulos
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-white" style="color: white;" href="{{ url_for('carga_academica') }}">
+                                <i class="bi bi-book-fill me-2"></i> Carga Académica Lectiva
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-white" style="color: white;" href="{{ url_for('actualizacionescapacitaciones') }}">
+                                <i class="bi bi-calendar-check-fill me-2"></i> Actualizaciones y Capacitaciones
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-white" style="color: white;" href="{{ url_for('acreditacion_licenciamiento') }}">
+                                <i class="bi bi-shield-lock-fill me-2"></i> Acreditación y Licenciamiento
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-white" style="color: white;" href="{{ url_for('participaciongestionuniversitaria') }}">
+                                <i class="bi bi-gear-fill me-2"></i> Gestión Universitaria
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-white" style="color: white;" href="{{ url_for('actividadesproyeccionsocial') }}">
+                                <i class="bi bi-people-fill me-2"></i> Proyección Social y Extensión Cultural
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-white" style="color: white;" href="{{ url_for('produccion_intelectual') }}">
+                                <i class="bi bi-lightbulb-fill me-2"></i> Producción Intelectual para la Enseñanza
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-white" style="color: white;" href="{{ url_for('investigaciones') }}">
+                                <i class="bi bi-search-heart me-2"></i> Investigación, Producción Científica y Tecnológica
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-white" style="color: white;" href="{{ url_for('softwareespecializado') }}">
+                                <i class="bi bi-controller me-2"></i> Uso de Software Especializado
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-white" style="color: white;" href="{{ url_for('idiomas') }}">
+                                <i class="bi bi-translate me-2"></i> Idiomas
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-white" style="color: white;" href="{{ url_for('tutorias') }}">
+                                <i class="bi bi-people-fill me-2"></i> Apoyo al Estudiante
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-white" style="color: white;" href="{{ url_for('reconocimientos') }}">
+                                <i class="bi bi-award-fill me-2"></i> Reconocimientos y Distinciones
+                            </a>
+                        </li>
                     </ul>
                 </li>
 
@@ -92,13 +142,13 @@
                     <!-- Opcional: menú desplegable al hacer clic en la foto -->
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="fotoDropdown">
                         <li>
-                            <a class="dropdown-item" href="{{ url_for('informacion_personal') }}">
+                            <a class="dropdown-item" style="color: white;" href="{{ url_for('informacion_personal') }}">
                                 Mi Perfil
                             </a>
                         </li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
-                            <a class="dropdown-item" href="{{ url_for('logout') }}">
+                            <a class="dropdown-item" style="color: white;" href="{{ url_for('logout') }}">
                                 Cerrar Sesión
                             </a>
                         </li>

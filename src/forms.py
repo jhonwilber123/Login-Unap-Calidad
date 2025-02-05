@@ -42,61 +42,15 @@ class EditUserForm(FlaskForm):
     submit = SubmitField('Guardar Cambios')
 
 class ParticipacionGestionUniversitariaForm(FlaskForm):
-    area_gestion = SelectField(
-        'Área de Gestión',
-        choices=[
-            ('Administración Académica', 'Administración Académica'),
-            ('Administración Financiera', 'Administración Financiera'),
-            ('Desarrollo de Infraestructura', 'Desarrollo de Infraestructura'),
-            ('Innovación y Tecnología', 'Innovación y Tecnología'),
-            ('Otro', 'Otro')
-        ],
-        validators=[DataRequired()]
-    )
-    otro_area_gestion = StringField(
-        'Otra Área de Gestión',
-        validators=[Optional(), Length(max=255)]
-    )
-    rol_gestion = SelectField(
-        'Rol de Gestión',
-        choices=[
-            ('Coordinador', 'Coordinador'),
-            ('Secretario', 'Secretario'),
-            ('Miembro del Comité', 'Miembro del Comité'),
-            ('Otro', 'Otro')
-        ],
-        validators=[DataRequired()]
-    )
-    otro_rol_gestion = StringField(
-        'Otro Rol de Gestión',
-        validators=[Optional(), Length(max=255)]
-    )
-    descripcion_responsabilidades = TextAreaField(
-        'Descripción de Responsabilidades',
-        validators=[DataRequired()]
-    )
-    fecha_inicio = DateField(
-        'Fecha de Inicio',
-        validators=[DataRequired()],
-        format='%Y-%m-%d'
-    )
-    fecha_fin = DateField(
-        'Fecha de Fin',
-        validators=[DataRequired()],
-        format='%Y-%m-%d'
-    )
-    logros_contribuciones = TextAreaField(
-        'Logros y Contribuciones',
-        validators=[Optional()]
-    )
-    adjuntar_documentacion = FileField(
-        'Adjuntar Documentación',
-        validators=[
-            Optional(),
-            FileAllowed(['pdf', 'jpg', 'jpeg', 'png'], 'Solo se permiten archivos PDF o imágenes.')
-        ]
-    )
+    cargo = StringField('Cargo', validators=[DataRequired(), Length(max=255)])
+    fecha_inicio = DateField('Fecha de Inicio', validators=[DataRequired()], format='%Y-%m-%d')
+    fecha_fin = DateField('Fecha de Fin', validators=[DataRequired()], format='%Y-%m-%d')
+    curso_relevante = StringField('Curso Relevante', validators=[Optional(), Length(max=255)])
+    adjuntar_plan = FileField('Adjuntar Plan', validators=[Optional(), FileAllowed(['pdf', 'jpg', 'jpeg', 'png'], 'Solo se permiten archivos PDF.')])
+    adjuntar_informe = FileField('Adjuntar Informe', validators=[Optional(), FileAllowed(['pdf', 'jpg', 'jpeg', 'png'], 'Solo se permiten archivos PDF.')])
+    adjuntar_curso = FileField('Adjuntar Certificado o Constancia de Curso Relevante', validators=[Optional(), FileAllowed(['pdf', 'jpg', 'jpeg', 'png'], 'Solo se permiten archivos PDF.')])
     submit = SubmitField('Guardar')
+
 
 class EvaluacionDesempenoDocenteForm(FlaskForm):
     periodo_academico_evaluado = StringField(
@@ -255,7 +209,9 @@ class CargaAcademicaLectivaForm(FlaskForm):
             ('2023-I', '2023-I'), 
             ('2023-II', '2023-II'), 
             ('2024-I', '2024-I'), 
-            ('2024-II', '2024-II')
+            ('2024-II', '2024-II'),
+            ('2025-I', '2025-I'), 
+            ('2025-II', '2025-II')
         ],
         validators=[DataRequired(message='Este campo es obligatorio.')]
     )
@@ -879,15 +835,31 @@ class ActualizacionesCapacitacionesForm(FlaskForm):
             ('', '--- Seleccione una opción ---'),
             ('Curso Presencial', 'Curso Presencial'),
             ('Curso Virtual', 'Curso Virtual'),
+            ('Curso taller', 'Curso taller'),
             ('Diplomado Presencial', 'Diplomado Presencial'),
             ('Diplomado Virtual', 'Diplomado Virtual'),
             ('Segunda Especialidad', 'Estudios de Segunda Especialidad'),
             ('Maestría', 'Estudios de Maestría'),
             ('Doctorado', 'Estudios de Doctorado'),
-            ('Especialización en Docencia Universitaria', 'Estudios de Especialización en Docencia Universitaria')
+            ('Especialización en Docencia Universitaria', 'Estudios de Especialización en Docencia Universitaria'),
+            ('otro tipo de capacitación', 'otro tipo de capacitación')
         ],
         validators=[DataRequired(message='Debe seleccionar un tipo de capacitación.')]
     )
+    
+    fecha = DateField(
+        'Fecha',
+        format='%Y-%m-%d',
+        validators=[
+            DataRequired(message='Este campo es obligatorio.')
+        ]
+    )
+
+    def validate_fecha(self, field):
+        min_date = date.today().replace(year=date.today().year - 4)
+        if field.data < min_date:
+            raise ValidationError('La fecha debe ser de los últimos 3 años.')
+    
     descripcion = StringField(
         'Denominación de la Actualización Profesional o Los Estudios',
         validators=[
@@ -953,7 +925,9 @@ class ActualizacionesCapacitacionesForm(FlaskForm):
             'Curso Presencial',
             'Curso Virtual',
             'Diplomado Presencial',
-            'Diplomado Virtual'
+            'Diplomado Virtual',
+            'Curso taller',
+            'otro tipo de capacitación'
         ]
 
         tipo_seleccionado = self.tipo.data
