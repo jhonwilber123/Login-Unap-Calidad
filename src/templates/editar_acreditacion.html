@@ -4,7 +4,6 @@
 {% block title %}Editar Acreditación{% endblock %}
 
 {% block customCSS %}
-<!-- CSS específico para la página de Editar Acreditación -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
@@ -131,7 +130,6 @@
 <!-- JavaScript para control de formularios y validaciones -->
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function() {
-        // Validación de formularios Bootstrap
         var forms = document.querySelectorAll('.needs-validation');
         Array.prototype.slice.call(forms).forEach(function(form) {
             form.addEventListener('submit', function(event) {

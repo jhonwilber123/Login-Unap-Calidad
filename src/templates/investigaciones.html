@@ -14,7 +14,7 @@
 {% block body %}
 
 <div class="container mt-5">
-    <h1 class="h3 mb-4 text-center"><i class="bi bi-journal-richtext"></i> Producción intelectual para la Investigación Científica y Tecnológica</h1>
+    <h1 class="h3 mb-4 text-center"><i class="bi bi-journal-richtext"></i> Producción intelectual para la Investigación Científica</h1>
 
     {% with messages = get_flashed_messages() %}
     {% if messages %}
@@ -29,7 +29,7 @@
 
     <!-- Formulario para agregar una nueva investigación -->
     <div class="formularios-container">
-        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate id="investigacionForm">
             {{ form.hidden_tag() }}
 
             <!-- Tipo de Investigación -->
@@ -46,33 +46,6 @@
                 {{ form.titulo.label(class="form-label") }}
                 {{ form.titulo(class="form-control", maxlength="255", placeholder="Título de la investigación", required=True) }}
                 {% for error in form.titulo.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
-
-            <!-- Descripción -->
-            <div class="mb-3">
-                {{ form.descripcion.label(class="form-label") }}
-                {{ form.descripcion(class="form-control", rows="4", placeholder="Descripción detallada de la investigación", required=True) }}
-                {% for error in form.descripcion.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
-
-            <!-- Fecha de Inicio -->
-            <div class="mb-3">
-                {{ form.fecha_inicio.label(class="form-label") }}
-                {{ form.fecha_inicio(class="form-control", type="date", required=True) }}
-                {% for error in form.fecha_inicio.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
-
-            <!-- Fecha de Fin -->
-            <div class="mb-3">
-                {{ form.fecha_fin.label(class="form-label") }}
-                {{ form.fecha_fin(class="form-control", type="date", required=True) }}
-                {% for error in form.fecha_fin.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </div>
@@ -125,14 +98,16 @@
             <!-- Archivo -->
             <div class="mb-3">
                 {{ form.archivo.label(class="form-label") }}
-                {{ form.archivo(class="form-control", placeholder="Subir archivo en PDF o imagen", required=False) }}
+                {# Se agrega el atributo required para forzar la subida del PDF #}
+                {{ form.archivo(class="form-control", id="archivo", placeholder="Subir archivo PDF", required=True) }}
                 {% for error in form.archivo.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
-                <div class="form-text">Dejar en blanco si no deseas subir un archivo.</div>
+                <div class="form-text">Debe subir un archivo PDF.</div>
+                <div id="archivoError" class="text-danger"></div>
             </div>
 
-            {{ form.submit(class="btn btn-primary") }}
+            <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
         </form>
     </div>
 
@@ -144,9 +119,6 @@
                 <tr>
                     <th>Tipo</th>
                     <th>Título</th>
-                    <th>Descripción</th>
-                    <th>Fecha de Inicio</th>
-                    <th>Fecha de Fin</th>
                     <th>Revista</th>
                     <th>Índice</th>
                     <th>Fecha de Publicación</th>
@@ -161,23 +133,16 @@
                 <tr>
                     <td>{{ investigacion.tipo }}</td>
                     <td>{{ investigacion.titulo }}</td>
-                    <td>{{ investigacion.descripcion }}</td>
-                    <td>{{ investigacion.fecha_inicio.strftime('%d/%m/%Y') }}</td>
-                    <td>{{ investigacion.fecha_fin.strftime('%d/%m/%Y') }}</td>
                     <td>{{ investigacion.revista }}</td>
                     <td>{{ investigacion.indice }}</td>
                     <td>{{ investigacion.fecha_publicacion.strftime('%d/%m/%Y') }}</td>
                     <td>{{ 'Sí' if investigacion.autor else 'No' }}</td>
                     <td>{{ 'Sí' if investigacion.coautor else 'No' }}</td>
                     <td>
-                        {% if investigacion.ruta_imagen %}
-                            {% if investigacion.categoria == 'imagen' %}
-                                <img src="{{ url_for('uploaded_file', filename=investigacion.ruta_imagen) }}" alt="Imagen" class="img-thumbnail" style="max-width: 100px;">
-                            {% elif investigacion.categoria == 'pdf' %}
-                                <a href="{{ url_for('uploaded_file', filename=investigacion.ruta_imagen) }}" target="_blank" class="btn btn-sm btn-info">
-                                    <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
-                                </a>
-                            {% endif %}
+                        {% if investigacion.ruta_imagen and investigacion.categoria == 'pdf' %}
+                            <a href="{{ url_for('uploaded_file', filename=investigacion.ruta_imagen) }}" target="_blank" class="btn btn-sm btn-info">
+                                <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
+                            </a>
                         {% else %}
                             N/A
                         {% endif %}
@@ -189,7 +154,6 @@
                         <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal-{{ investigacion.id_investigacion }}">
                             <i class="bi bi-trash-fill"></i> Eliminar
                         </button>
-
                         <!-- Modal de Confirmación de Eliminación -->
                         <div class="modal fade" id="confirmDeleteModal-{{ investigacion.id_investigacion }}" tabindex="-1" aria-labelledby="confirmDeleteLabel-{{ investigacion.id_investigacion }}" aria-hidden="true">
                           <div class="modal-dialog">
@@ -219,27 +183,49 @@
     </div>
 </div>
 
-<!-- Validación de formularios con Bootstrap -->
+<!-- Validación de formularios con Bootstrap y validaciones personalizadas -->
 <script>
-    // Ejemplo de validación de formularios con Bootstrap
     (function () {
       'use strict'
+      
+      const form = document.getElementById('investigacionForm');
+      const autorCheckbox = document.getElementById('autor-checkbox');
+      const coautorCheckbox = document.getElementById('coautor-checkbox');
+      const archivoInput = document.getElementById('archivo');
+      const archivoError = document.getElementById('archivoError');
 
-      // Fetch all the forms we want to apply custom Bootstrap validation styles to
-      var forms = document.querySelectorAll('.needs-validation')
+      form.addEventListener('submit', function (event) {
+        let customError = false;
 
-      // Loop over them and prevent submission
-      Array.prototype.slice.call(forms)
-        .forEach(function (form) {
-          form.addEventListener('submit', function (event) {
-            if (!form.checkValidity()) {
-              event.preventDefault()
-              event.stopPropagation()
-            }
+        // Reiniciar mensajes previos
+        archivoError.innerText = '';
 
-            form.classList.add('was-validated')
-          }, false)
-        })
+        // Validar que no se seleccione ambos checkboxes
+        if (autorCheckbox.checked && coautorCheckbox.checked) {
+          alert('No se puede seleccionar autor y coautor al mismo tiempo.');
+          customError = true;
+        }
+
+        // Validar que se haya subido un archivo PDF
+        if (archivoInput.files.length === 0) {
+          archivoError.innerText = "Debe subir un archivo PDF.";
+          customError = true;
+        } else {
+          // Opcional: validar extensión
+          const file = archivoInput.files[0];
+          const ext = file.name.split('.').pop().toLowerCase();
+          if(ext !== 'pdf'){
+            archivoError.innerText = "El archivo debe ser PDF.";
+            customError = true;
+          }
+        }
+
+        if (!form.checkValidity() || customError) {
+          event.preventDefault();
+          event.stopPropagation();
+          form.classList.add('was-validated');
+        }
+      }, false)
     })()
 </script>
 

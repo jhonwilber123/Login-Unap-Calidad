@@ -441,37 +441,24 @@ class ProduccionIntelectualForm(FlaskForm):
     fecha_publicacion = DateField(
         'Fecha de Publicación',
         format='%Y-%m-%d',
-        validators=[
-            Optional()
-        ]
+        validators=[Optional()]
     )
     autor = BooleanField('Autor')
     coautor = BooleanField('Coautor')
     archivo = FileField(
-        'Adjuntar Archivo (Imagen o PDF)',
+        'Adjuntar Archivo PDF',
         validators=[
             Optional(),
-            FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'pdf'], 'Solo se permiten imágenes y archivos PDF.'),
-            file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
+            FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
+            file_size_limit(10 * 1024 * 1024)
         ]
-    )
-    editorial_prestigiosa = SelectField(
-        'Editorial de Reconocido Prestigio',
-        choices=[
-            ('', '--- Seleccione una opción ---'),
-            ('No', 'Otro'),
-            ('Scopus', 'Scopus'),
-            ('Web of Science', 'Web of Science'),
-            ('SciELO', 'SciELO')
-        ],
-        validators=[DataRequired(message='Debe seleccionar una opción para la editorial.')]
     )
     submit = SubmitField('Guardar')
 
     def validate_isbn(self, field):
         if field.data:
             isbn_clean = field.data.replace('-', '').replace(' ', '')
-            if not (re.match(r'^\d{10}$', isbn_clean) or re.match(r'^\d{13}$', isbn_clean)):
+            if not (re.match(r'^\d{8}$', isbn_clean) or re.match(r'^\d{13}$', isbn_clean)):
                 raise ValidationError('ISBN inválido. Debe tener 10 o 13 dígitos.')
 
     def validate_fecha_publicacion(self, field):
@@ -544,6 +531,7 @@ class ParticipacionTesisForm(FlaskForm):
             raise ValidationError('La fecha no puede ser en el futuro.')
 
 
+# --- Clase de Formulario (InvestigacionesForm) ---
 class InvestigacionesForm(FlaskForm):
     tipo = SelectField(
         'Tipo de Investigación',
@@ -565,23 +553,9 @@ class InvestigacionesForm(FlaskForm):
             Length(max=255, message='Máximo 255 caracteres.')
         ]
     )
-    descripcion = TextAreaField(
-        'Descripción',
-        validators=[DataRequired(message='Este campo es obligatorio.')]
-    )
-    fecha_inicio = DateField(
-        'Fecha de Inicio',
-        format='%Y-%m-%d',
-        validators=[DataRequired(message='Este campo es obligatorio.')]
-    )
-    fecha_fin = DateField(
-        'Fecha de Fin',
-        format='%Y-%m-%d',
-        validators=[Optional()]
-    )
     revista = StringField(
         'Revista',
-        validators=[Optional(), Length(max=255, message='Máximo 255 caracteres.')]
+        validators=[DataRequired(message='Este campo es obligatorio.'), Length(max=255, message='Máximo 255 caracteres.')]
     )
     indice = SelectField(
         'Índice',
@@ -594,29 +568,25 @@ class InvestigacionesForm(FlaskForm):
             ('Latin Index', 'Latin Index'),
             ('Otro', 'Otro')
         ],
-        validators=[Optional()]
-    )
-    otro_indice = StringField(
-        'Otro Índice',
-        validators=[Optional(), Length(max=255, message='Máximo 255 caracteres.')]
+        validators=[DataRequired(message='Debe seleccionar un índice.')]
     )
     fecha_publicacion = DateField(
         'Fecha de Publicación',
         format='%Y-%m-%d',
-        validators=[Optional()]
+        validators=[DataRequired(message='Este campo es obligatorio.')]
     )
     autor = BooleanField('Autor')
     coautor = BooleanField('Coautor')
     archivo = FileField(
-        'Adjuntar Archivo (Imagen o PDF)',
+        'Adjuntar Archivo (Solo PDF)',
         validators=[
             Optional(),
-            FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'pdf'], 'Solo se permiten imágenes y archivos PDF.'),
-            file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
+            FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
+            file_size_limit(10 * 1024 * 1024)  # 10 MB máximo
         ]
     )
     submit = SubmitField('Guardar')
-
+    
     def validate_otro_indice(self, field):
         if self.indice.data == 'Otro' and (not field.data or not field.data.strip()):
             raise ValidationError('Debe ingresar el nombre del índice.')
@@ -766,53 +736,11 @@ class GradostitulosForm(FlaskForm):
 
 
 class ActividadesProyeccionSocialForm(FlaskForm):
-    tipo = SelectField(
-        'Tipo de Actividad',
-        choices=[
-            ('', '--- Seleccione una opción ---'),
-            ('Organización', 'Organización'),
-            ('Expositor', 'Expositor'),
-            ('Asistencia', 'Asistencia')
-        ],
-        validators=[DataRequired(message='Debe seleccionar un tipo de actividad.')]
-    )
-    evento = SelectField(
-        'Evento',
-        choices=[
-            ('', '--- Seleccione una opción ---'),
-            ('Congreso', 'Congreso'),
-            ('Convención', 'Convención'),
-            ('Simposio', 'Simposio'),
-            ('Foro', 'Foro'),
-            ('Seminario', 'Seminario'),
-            ('Curso Taller', 'Curso Taller'),
-            ('Charla', 'Charla')
-        ],
-        validators=[DataRequired(message='Debe seleccionar un evento.')]
-    )
-    descripcion = StringField(
-        'Descripción',
-        validators=[
-            DataRequired(message='Este campo es obligatorio.'),
-            Length(max=255, message='Máximo 255 caracteres.')
-        ]
-    )
     fecha = DateField(
         'Fecha',
         format='%Y-%m-%d',
-        validators=[
-            DataRequired(message='Este campo es obligatorio.')
-        ]
+        validators=[DataRequired(message='Este campo es obligatorio.')]
     )
-    archivo = FileField(
-        'Adjuntar Archivo (Imagen o PDF)',
-        validators=[
-            Optional(),
-            FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'pdf'], 'Solo se permiten imágenes y archivos PDF.'),
-            file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
-        ]
-    )
-
     Emitido_por = StringField(
         'Emitido por',
         validators=[
@@ -820,8 +748,17 @@ class ActividadesProyeccionSocialForm(FlaskForm):
             Length(max=100, message='Máximo 100 caracteres.')
         ]
     )
-
+    archivo = FileField(
+        'Adjuntar Archivo (PDF)',
+        validators=[
+            Optional(),
+            # Solo se permite la extensión 'pdf'
+            FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
+            file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
+        ]
+    )
     submit = SubmitField('Guardar')
+
 
     def validate_fecha(self, field):
         if field.data > date.today():
@@ -1058,12 +995,14 @@ class AcreditacionLicenciamientoForm(FlaskForm):
         validators=[DataRequired(message='Este campo es obligatorio.')]
     )
     
-    cargo_comite = StringField(
+    cargo_comite = SelectField(
         'Cargo en el Comité', 
-        validators=[
-            DataRequired(message='Este campo es obligatorio.'),
-            Length(max=255, message='Máximo 255 caracteres.')
-        ]
+        choices=[
+            ('', '--- Seleccione una opción ---'),            
+            ('PRESIDENTE DE COMITE', 'PRESIDENTE DE COMITE'),
+            ('MIEMBRO DE COMITE', 'MIEMBRO DE COMITE')
+        ],
+        validators=[DataRequired(message='Este campo es obligatorio.')]
     )
     
     archivo_resolucion = FileField(
@@ -1076,10 +1015,10 @@ class AcreditacionLicenciamientoForm(FlaskForm):
     )
     
     evidencias = FileField(
-        'Archivo de Evidencias', 
+        'Archivo de Evidencias (opcional)', 
         validators=[
             Optional(),
-            FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'pdf'], 'Solo se permiten imágenes o PDF.'),
+            FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
             file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
         ]
     )

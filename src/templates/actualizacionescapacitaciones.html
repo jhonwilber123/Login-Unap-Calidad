@@ -334,5 +334,44 @@
         });
     });
     </script>
+<!-- Agrega este código dentro del script existente, cerca de la validación del archivo -->
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.needs-validation');
+    const fechaInput = document.getElementById('fecha');
 
+    function validateFechaInput(input, feedbackElement) {
+        if (!input.value) {
+            input.classList.add('is-invalid');
+            feedbackElement.textContent = 'Debe ingresar una fecha.';
+            feedbackElement.style.display = 'block';
+            return false;
+        }
+        const selectedDate = new Date(input.value);
+        const now = new Date();
+        const threeYearsAgo = new Date(now.getFullYear() - 3, now.getMonth(), now.getDate());
+        
+        if (selectedDate < threeYearsAgo || selectedDate > now) {
+            input.classList.add('is-invalid');
+            feedbackElement.textContent = 'La fecha debe estar dentro de los últimos 3 años.';
+            feedbackElement.style.display = 'block';
+            return false;
+        }
+        input.classList.remove('is-invalid');
+        feedbackElement.style.display = 'none';
+        return true;
+    }
+
+    form.addEventListener('submit', function(event) {
+        if (!validateFechaInput(fechaInput, fechaInput.nextElementSibling)) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+    }, false);
+
+    fechaInput.addEventListener('change', function() {
+        validateFechaInput(fechaInput, fechaInput.nextElementSibling);
+    });
+});
+</script>
 {% endblock %}

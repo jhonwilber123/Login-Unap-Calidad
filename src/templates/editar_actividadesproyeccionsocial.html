@@ -5,7 +5,6 @@
 {% block title %}Editar Actividad de Proyección Social{% endblock %}
 
 {% block customCSS %}
-<!-- CSS específico para la página de Editar Actividad de Proyección Social -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
@@ -16,34 +15,15 @@
 <div class="container mt-5">
     <h1 class="h3 mb-4 text-center"><i class="bi bi-pencil-fill"></i> Editar Actividad de Proyección Social</h1>
 
-    <!-- Formulario para editar la actividad -->
     <div class="formularios-container">
         <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
             {{ form.hidden_tag() }}
 
-            <!-- Tipo de Actividad -->
+            <!-- Nombre de la Resolución -->
             <div class="mb-3">
-                {{ form.tipo.label(class="form-label") }}
-                {{ form.tipo(class="form-select", required=True) }}
-                {% for error in form.tipo.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
-
-            <!-- Evento -->
-            <div class="mb-3">
-                {{ form.evento.label(class="form-label") }}
-                {{ form.evento(class="form-select", required=True) }}
-                {% for error in form.evento.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
-
-            <!-- Descripción -->
-            <div class="mb-3">
-                {{ form.descripcion.label(class="form-label") }}
-                {{ form.descripcion(class="form-control", maxlength="255", placeholder="Descripción de la actividad", required=True) }}
-                {% for error in form.descripcion.errors %}
+                {{ form.Emitido_por.label(class="form-label") }}
+                {{ form.Emitido_por(class="form-control", maxlength="255", placeholder="Nombre de la resolución", required=True) }}
+                {% for error in form.Emitido_por.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </div>
@@ -57,21 +37,17 @@
                 {% endfor %}
             </div>
 
-            <!-- Archivo Actual -->
+            <!-- Archivo Actual (si existe) -->
             {% if actividad.ruta_imagen %}
             <div class="mb-3">
                 <label class="form-label">Archivo Actual:</label><br>
-                {% if actividad.categoria == 'imagen' %}
-                    <img src="{{ url_for('uploaded_file', filename=actividad.ruta_imagen) }}" alt="Imagen Actual" class="img-thumbnail" style="max-width: 200px;">
-                {% elif actividad.categoria == 'pdf' %}
-                    <a href="{{ url_for('uploaded_file', filename=actividad.ruta_imagen) }}" target="_blank" class="btn btn-info btn-sm">
-                        <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
-                    </a>
-                {% endif %}
+                <a href="{{ url_for('uploaded_file', filename=actividad.ruta_imagen) }}" target="_blank" class="btn btn-info btn-sm">
+                    <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
+                </a>
             </div>
             {% endif %}
 
-            <!-- Archivo -->
+            <!-- Adjuntar Nuevo Archivo -->
             <div class="mb-3">
                 {{ form.archivo.label(class="form-label") }}
                 {{ form.archivo(class="form-control") }}
@@ -88,14 +64,9 @@
 
 <!-- Validación de formularios con Bootstrap -->
 <script>
-    // Ejemplo de validación de formularios con Bootstrap
     (function () {
       'use strict'
-
-      // Fetch all the forms we want to apply custom Bootstrap validation styles to
       var forms = document.querySelectorAll('.needs-validation')
-
-      // Loop over them and prevent submission
       Array.prototype.slice.call(forms)
         .forEach(function (form) {
           form.addEventListener('submit', function (event) {
@@ -103,7 +74,6 @@
               event.preventDefault()
               event.stopPropagation()
             }
-
             form.classList.add('was-validated')
           }, false)
         })

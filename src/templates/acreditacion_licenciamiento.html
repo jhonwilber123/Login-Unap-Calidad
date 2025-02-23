@@ -4,7 +4,6 @@
 {% block title %}Acreditación y Licenciamiento{% endblock %}
 
 {% block customCSS %}
-<!-- CSS específico para la página de Acreditación y Licenciamiento -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
@@ -14,7 +13,6 @@
 {% endblock %}
 
 {% block body %}
-
 <div class="container mt-5">
     <h1 class="h3 mb-4 text-center"><i class="bi bi-award-fill"></i> Acreditación y Licenciamiento</h1>
 
@@ -28,6 +26,19 @@
         {% endfor %}
     {% endif %}
     {% endwith %}
+
+        <!-- Sección informativa si no se han registrado acreditaciones -->
+        {% if acreditaciones|length == 0 %}
+        <div class="card text-center mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Sin Acreditaciones Registradas</h5>
+                <p class="card-text">
+                    Este apartado no es obligatorio. Si usted no participó en la acreditación y licenciamiento, no es necesario que llene este apartado.
+                </p>
+                <a href="{{ url_for('home') }}" class="btn btn-primary">Volver al Menú</a>
+            </div>
+        </div>
+        {% endif %}
 
     <!-- Formulario para agregar una nueva acreditación -->
     <div class="formularios-container">
@@ -70,10 +81,10 @@
                 {% endfor %}
             </div>
 
-            <!-- Cargo en el Comité -->
+            <!-- Cargo en el Comité (SelectField) -->
             <div class="mb-3">
                 {{ form.cargo_comite.label(class="form-label") }}
-                {{ form.cargo_comite(class="form-control", maxlength="255", placeholder="Cargo en el Comité", required=True) }}
+                {{ form.cargo_comite(class="form-control", required=True) }}
                 {% for error in form.cargo_comite.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
@@ -82,21 +93,20 @@
             <!-- Archivo PDF de la Resolución -->
             <div class="mb-3">
                 {{ form.archivo_resolucion.label(class="form-label") }}
-                {{ form.archivo_resolucion(class="form-control") }}
+                {{ form.archivo_resolucion(class="form-control", required=True) }}
                 {% for error in form.archivo_resolucion.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
-                <div class="form-text">Deja este campo vacío si no deseas subir una nueva resolución.</div>
             </div>
 
-            <!-- Archivo de Evidencias -->
+            <!-- Archivo de Evidencias (solo PDF) -->
             <div class="mb-3">
                 {{ form.evidencias.label(class="form-label") }}
                 {{ form.evidencias(class="form-control") }}
                 {% for error in form.evidencias.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
-                <div class="form-text">Deja este campo vacío si no deseas subir nuevas evidencias.</div>
+                <div class="form-text">	Adjuntar documentos que sustenten dicha participación (informe, constancias, etc).</div>
             </div>
 
             {{ form.submit(class="btn btn-primary") }}
@@ -104,6 +114,7 @@
     </div>
 
     <!-- Lista de acreditaciones -->
+    {% if acreditaciones|length > 0 %}
     <div class="table-responsive mt-5">
         <h2 class="h4 mb-3"><i class="bi bi-list-ul"></i> Acreditaciones Registradas</h2>
         <table class="table table-striped table-hover">
@@ -144,16 +155,12 @@
                     </td>
                     <td>
                         {% if acreditacion.ruta_imagen_evidencias %}
-                            {% if acreditacion.ruta_imagen_evidencias.lower().endswith(('.jpg', '.jpeg', '.png', '.gif')) %}
-                                <img src="{{ url_for('uploaded_file', filename=acreditacion.ruta_imagen_evidencias) }}" alt="Evidencias" class="img-thumbnail" style="max-width: 100px;">
-                            {% elif acreditacion.ruta_imagen_evidencias.lower().endswith('.pdf') %}
+                            {% if acreditacion.ruta_imagen_evidencias.lower().endswith('.pdf') %}
                                 <a href="{{ url_for('uploaded_file', filename=acreditacion.ruta_imagen_evidencias) }}" target="_blank" class="btn btn-sm btn-info">
                                     <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
                                 </a>
                             {% else %}
-                                <a href="{{ url_for('uploaded_file', filename=acreditacion.ruta_imagen_evidencias) }}" target="_blank" class="btn btn-sm btn-secondary">
-                                    <i class="bi bi-file-earmark-fill"></i> Ver Archivo
-                                </a>
+                                N/A
                             {% endif %}
                         {% else %}
                             N/A
@@ -166,7 +173,6 @@
                         <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal-{{ acreditacion.id_acreditacion }}">
                             <i class="bi bi-trash-fill"></i> Eliminar
                         </button>
-
                         <!-- Modal de Confirmación de Eliminación -->
                         <div class="modal fade" id="confirmDeleteModal-{{ acreditacion.id_acreditacion }}" tabindex="-1" aria-labelledby="confirmDeleteLabel-{{ acreditacion.id_acreditacion }}" aria-hidden="true">
                           <div class="modal-dialog">
@@ -188,18 +194,18 @@
                             </div>
                           </div>
                         </div>
-                   </td>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+    {% endif %}
 </div>
 
 <!-- JavaScript para control de formularios y modales de eliminación -->
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function() {
-        // Validación de formularios Bootstrap
         var forms = document.querySelectorAll('.needs-validation');
         Array.prototype.slice.call(forms).forEach(function(form) {
             form.addEventListener('submit', function(event) {
@@ -212,5 +218,4 @@
         });
     });
 </script>
-
 {% endblock %}

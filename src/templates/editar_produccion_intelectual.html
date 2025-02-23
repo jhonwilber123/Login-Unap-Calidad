@@ -12,16 +12,13 @@
 
 <!-- Estilos adicionales para campos deshabilitados -->
 <style>
-    /* Asegura que las etiquetas de checkboxes deshabilitados no sean transparentes */
     .form-check-input:disabled + .form-check-label {
-        color: #6c757d; /* Color gris para indicar deshabilitado */
+        color: #6c757d;
         cursor: not-allowed;
-        opacity: 1; /* Mantiene la opacidad completa */
+        opacity: 1;
     }
-
-    /* Opcional: Evita que todo el contenedor del checkbox se vuelva transparente */
     .form-check-input:disabled {
-        opacity: 1; /* Mantiene la opacidad completa del checkbox */
+        opacity: 1;
     }
 </style>
 {% endblock %}
@@ -96,22 +93,11 @@
                 {% endfor %}
             </div>
 
-            <!-- Editorial Prestigiosa -->
-            <div class="mb-3">
-                {{ form.editorial_prestigiosa.label(class="form-label") }}
-                {{ form.editorial_prestigiosa(class="form-select", required=True) }}
-                {% for error in form.editorial_prestigiosa.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
-
             <!-- Archivo Actual -->
             {% if produccion.ruta_imagen %}
             <div class="mb-3">
                 <label class="form-label">Archivo Actual:</label><br>
-                {% if produccion.categoria == 'imagen' %}
-                    <img src="{{ url_for('uploaded_file', filename=produccion.ruta_imagen) }}" alt="Imagen Actual" class="img-thumbnail" style="max-width: 200px;">
-                {% elif produccion.categoria == 'pdf' %}
+                {% if produccion.categoria == 'pdf' %}
                     <a href="{{ url_for('uploaded_file', filename=produccion.ruta_imagen) }}" target="_blank" class="btn btn-info btn-sm">
                         <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
                     </a>
@@ -122,11 +108,13 @@
             <!-- Archivo Nuevo -->
             <div class="mb-3">
                 {{ form.archivo.label(class="form-label") }}
-                {{ form.archivo(class="form-control", placeholder="Subir nuevo archivo en PDF o imagen", required=False) }}
+                {{ form.archivo(class="form-control", placeholder="Adjuntar archivo PDF", required=False) }}
                 {% for error in form.archivo.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
-                <div class="form-text">Dejar en blanco para mantener el archivo actual.</div>
+                <div class="form-text">
+                    Solo se permite adjuntar un archivo en formato PDF. Dejar en blanco para mantener el archivo actual.
+                </div>
             </div>
 
             {{ form.submit(class="btn btn-primary") }}
@@ -136,14 +124,9 @@
 
 <!-- Validación de formularios con Bootstrap -->
 <script>
-    // Ejemplo de validación de formularios con Bootstrap
     (function () {
       'use strict'
-
-      // Fetch all the forms we want to apply custom Bootstrap validation styles to
       var forms = document.querySelectorAll('.needs-validation')
-
-      // Loop over them and prevent submission
       Array.prototype.slice.call(forms)
         .forEach(function (form) {
           form.addEventListener('submit', function (event) {
@@ -151,7 +134,6 @@
               event.preventDefault()
               event.stopPropagation()
             }
-
             form.classList.add('was-validated')
           }, false)
         })
@@ -180,10 +162,7 @@
             }
         }
 
-        // Inicializar el estado al cargar la página
         toggleCheckboxes();
-
-        // Asignar eventos
         autorCheckbox.addEventListener('change', toggleCheckboxes);
         coautorCheckbox.addEventListener('change', toggleCheckboxes);
     });

@@ -10,18 +10,14 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/Formularios.css') }}">
 
-<!-- Estilos adicionales para campos deshabilitados -->
 <style>
-    /* Asegura que las etiquetas de checkboxes deshabilitados no sean transparentes */
     .form-check-input:disabled + .form-check-label {
-        color: #6c757d; /* Color gris para indicar deshabilitado */
+        color: #6c757d;
         cursor: not-allowed;
-        opacity: 1; /* Mantiene la opacidad completa */
+        opacity: 1;
     }
-
-    /* Opcional: Evita que todo el contenedor del checkbox se vuelva transparente */
     .form-check-input:disabled {
-        opacity: 1; /* Mantiene la opacidad completa del checkbox */
+        opacity: 1;
     }
 </style>
 {% endblock %}
@@ -107,23 +103,16 @@
                 {% endfor %}
             </div>
 
-            <!-- Editorial Prestigiosa -->
-            <div class="mb-3">
-                {{ form.editorial_prestigiosa.label(class="form-label") }}
-                {{ form.editorial_prestigiosa(class="form-select", required=True) }}
-                {% for error in form.editorial_prestigiosa.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
-
             <!-- Archivo -->
             <div class="mb-3">
                 {{ form.archivo.label(class="form-label") }}
-                {{ form.archivo(class="form-control", placeholder="Subir archivo en PDF o imagen", required=False) }}
+                {{ form.archivo(class="form-control", placeholder="Adjuntar archivo PDF", required=True) }}
                 {% for error in form.archivo.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
-                <div class="form-text">Dejar en blanco si no deseas subir un archivo.</div>
+                <div class="form-text">
+                    Solo se permite adjuntar un archivo en formato PDF. Este campo es obligatorio.
+                </div>
             </div>
 
             {{ form.submit(class="btn btn-primary") }}
@@ -142,7 +131,6 @@
                     <th>Depósito Legal</th>
                     <th>Fecha de Publicación</th>
                     <th>Autor/Coautor</th>
-                    <th>Editorial Prestigiosa</th>
                     <th>Archivo</th>
                     <th>Acciones</th>
                 </tr>
@@ -156,20 +144,15 @@
                     <td>{{ 'Sí' if produccion.deposito_legal else 'No' }}</td>
                     <td>{{ produccion.fecha_publicacion.strftime('%Y-%m-%d') }}</td>
                     <td>
-                        {% if produccion.autor %}
-                            Autor
-                        {% endif %}
+                        {% if produccion.autor %}Autor{% endif %}
                         {% if produccion.coautor %}
                             {% if produccion.autor %}/{% endif %}
                             Coautor
                         {% endif %}
                     </td>
-                    <td>{{ produccion.editorial_prestigiosa }}</td>
                     <td>
                         {% if produccion.ruta_imagen %}
-                            {% if produccion.categoria == 'imagen' %}
-                                <img src="{{ url_for('uploaded_file', filename=produccion.ruta_imagen) }}" alt="Imagen" class="img-thumbnail" style="max-width: 100px;">
-                            {% elif produccion.categoria == 'pdf' %}
+                            {% if produccion.categoria == 'pdf' %}
                                 <a href="{{ url_for('uploaded_file', filename=produccion.ruta_imagen) }}" target="_blank" class="btn btn-sm btn-info">
                                     <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
                                 </a>
@@ -215,16 +198,10 @@
     </div>
 </div>
 
-<!-- Validación de formularios con Bootstrap -->
 <script>
-    // Ejemplo de validación de formularios con Bootstrap
     (function () {
       'use strict'
-
-      // Fetch all the forms we want to apply custom Bootstrap validation styles to
       var forms = document.querySelectorAll('.needs-validation')
-
-      // Loop over them and prevent submission
       Array.prototype.slice.call(forms)
         .forEach(function (form) {
           form.addEventListener('submit', function (event) {
@@ -232,14 +209,12 @@
               event.preventDefault()
               event.stopPropagation()
             }
-
             form.classList.add('was-validated')
           }, false)
         })
     })()
 </script>
 
-<!-- JavaScript para controlar la lógica de Autor/Coautor -->
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function() {
         const autorCheckbox = document.getElementById('autor');
@@ -252,7 +227,6 @@
             } else {
                 coautorCheckbox.disabled = false;
             }
-
             if (coautorCheckbox.checked) {
                 autorCheckbox.disabled = true;
                 autorCheckbox.checked = false;
@@ -260,11 +234,7 @@
                 autorCheckbox.disabled = false;
             }
         }
-
-        // Inicializar el estado al cargar la página
         toggleCheckboxes();
-
-        // Asignar eventos
         autorCheckbox.addEventListener('change', toggleCheckboxes);
         coautorCheckbox.addEventListener('change', toggleCheckboxes);
     });

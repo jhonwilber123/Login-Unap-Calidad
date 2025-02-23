@@ -10,217 +10,92 @@
 
 {% block body %}
 <div class="container mt-5">
-  <h1 class="h3 mb-4 text-center"><i class="bi bi-pencil-fill"></i> Editar Participación en Gestión Universitaria</h1>
-  <div class="formularios-container">
-    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
-      {{ form.hidden_tag() }}
-
-      <!-- Cargo -->
-      <div class="mb-3">
-        {{ form.cargo.label(class="form-label") }}
-        {{ form.cargo(class="form-control", placeholder="Cargo desempeñado", required=True) }}
-        {% for error in form.cargo.errors %}
-          <div class="text-danger">{{ error }}</div>
-        {% endfor %}
-      </div>
-
-      <!-- Fechas (limitadas a los últimos 5 años, se configurarán con JS) -->
-      <div class="mb-3">
-        {{ form.fecha_inicio.label(class="form-label") }}
-        {{ form.fecha_inicio(class="form-control", type="date", required=True) }}
-        {% for error in form.fecha_inicio.errors %}
-          <div class="text-danger">{{ error }}</div>
-        {% endfor %}
-      </div>
-      <div class="mb-3">
-        {{ form.fecha_fin.label(class="form-label") }}
-        {{ form.fecha_fin(class="form-control", type="date", required=True) }}
-        {% for error in form.fecha_fin.errors %}
-          <div class="text-danger">{{ error }}</div>
-        {% endfor %}
-      </div>
-
-      <!-- Nueva Pregunta: Curso en Gestión Pública o relevante -->
-      <div class="mb-3">
-        {{ form.curso_gestion.label(class="form-label") }}
-        <div>
-          {% for subfield in form.curso_gestion %}
-            <div class="form-check form-check-inline">
-              {{ subfield(class="form-check-input", required=True) }}
-              {{ subfield.label(class="form-check-label") }}
+    <h1 class="h3 mb-4 text-center"><i class="bi bi-pencil-fill"></i> Editar Participación en Gestión Universitaria</h1>
+    <div class="formularios-container">
+        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
+            <!-- Cargo -->
+            <div class="mb-3">
+                {{ form.cargo.label(class="form-label") }}
+                {{ form.cargo(class="form-control", placeholder="Cargo desempeñado", required=True) }}
+                {% for error in form.cargo.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
             </div>
-          {% endfor %}
-        </div>
-        {% for error in form.curso_gestion.errors %}
-          <div class="text-danger">{{ error }}</div>
-        {% endfor %}
-      </div>
-
-      <!-- Curso Relevante (opcional) -->
-      <div class="mb-3">
-        {{ form.curso_relevante.label(class="form-label") }}
-        {{ form.curso_relevante(class="form-control", placeholder="Nombre del curso relevante (opcional)") }}
-        {% for error in form.curso_relevante.errors %}
-          <div class="text-danger">{{ error }}</div>
-        {% endfor %}
-      </div>
-
-      <!-- Adjuntar Plan (obligatorio) -->
-      <div class="mb-3">
-        {{ form.adjuntar_plan.label(class="form-label") }}
-        {{ form.adjuntar_plan(class="form-control", id="adjuntar_plan", required=True) }}
-        <div id="plan-feedback" class="invalid-feedback" style="display: none;"></div>
-        <div class="form-text">Dejar en blanco para mantener el archivo actual del plan.</div>
-        {% for error in form.adjuntar_plan.errors %}
-          <div class="text-danger">{{ error }}</div>
-        {% endfor %}
-      </div>
-
-      <!-- Adjuntar Informe (obligatorio) -->
-      <div class="mb-3">
-        {{ form.adjuntar_informe.label(class="form-label") }}
-        {{ form.adjuntar_informe(class="form-control", id="adjuntar_informe", required=True) }}
-        <div id="informe-feedback" class="invalid-feedback" style="display: none;"></div>
-        <div class="form-text">Dejar en blanco para mantener el archivo actual del informe.</div>
-        {% for error in form.adjuntar_informe.errors %}
-          <div class="text-danger">{{ error }}</div>
-        {% endfor %}
-      </div>
-
-      <!-- Adjuntar Curso Relevante (opcional) -->
-      <div class="mb-3">
-        {{ form.adjuntar_curso.label(class="form-label") }}
-        {{ form.adjuntar_curso(class="form-control") }}
-        <div class="form-text">Dejar en blanco para mantener el archivo actual del curso relevante.</div>
-        {% for error in form.adjuntar_curso.errors %}
-          <div class="text-danger">{{ error }}</div>
-        {% endfor %}
-      </div>
-
-      <div class="d-flex justify-content-between">
-        <button type="submit" class="btn btn-primary"><i class="bi bi-save-fill"></i> Guardar</button>
-        <a href="{{ url_for('participaciongestionuniversitaria') }}" class="btn btn-secondary">
-          <i class="bi bi-arrow-left-circle-fill"></i> Cancelar
-        </a>
-      </div>
-    </form>
-  </div>
+            <!-- Fechas -->
+            <div class="mb-3">
+                {{ form.fecha_inicio.label(class="form-label") }}
+                {{ form.fecha_inicio(class="form-control", type="date", required=True) }}
+                {% for error in form.fecha_inicio.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.fecha_fin.label(class="form-label") }}
+                {{ form.fecha_fin(class="form-control", type="date", required=True) }}
+                {% for error in form.fecha_fin.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <!-- Curso Relevante -->
+            <div class="mb-3">
+                {{ form.curso_relevante.label(class="form-label") }}
+                {{ form.curso_relevante(class="form-control", placeholder="Nombre del curso relevante (opcional)") }}
+                {% for error in form.curso_relevante.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <!-- Adjuntar Plan -->
+            <div class="mb-3">
+                {{ form.adjuntar_plan.label(class="form-label") }}
+                {{ form.adjuntar_plan(class="form-control") }}
+                {% for error in form.adjuntar_plan.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+                <div class="form-text">Dejar en blanco para mantener el archivo actual del plan.</div>
+            </div>
+            <!-- Adjuntar Informe -->
+            <div class="mb-3">
+                {{ form.adjuntar_informe.label(class="form-label") }}
+                {{ form.adjuntar_informe(class="form-control") }}
+                {% for error in form.adjuntar_informe.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+                <div class="form-text">Dejar en blanco para mantener el archivo actual del informe.</div>
+            </div>
+            <!-- Adjuntar Curso Relevante -->
+            <div class="mb-3">
+                {{ form.adjuntar_curso.label(class="form-label") }}
+                {{ form.adjuntar_curso(class="form-control") }}
+                {% for error in form.adjuntar_curso.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+                <div class="form-text">Dejar en blanco para mantener el archivo actual del curso relevante.</div>
+            </div>
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save-fill"></i> Guardar</button>
+                <a href="{{ url_for('participaciongestionuniversitaria') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left-circle-fill"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
 </div>
 
-<!-- Script para restringir fechas a los últimos 5 años -->
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    var today = new Date();
-    var dd = String(today.getDate()).padStart(2, '0');
-    var mm = String(today.getMonth() + 1).padStart(2, '0');
-    var yyyy = today.getFullYear();
-    // Fecha máxima: hoy
-    var maxDate = yyyy + '-' + mm + '-' + dd;
-    // Fecha mínima: hace 5 años
-    var minYear = yyyy - 5;
-    var minDate = minYear + '-' + mm + '-' + dd;  // Aproximación
-    
-    var fechaInicioInput = document.querySelector('input[name="fecha_inicio"]');
-    var fechaFinInput = document.querySelector('input[name="fecha_fin"]');
-    if(fechaInicioInput) {
-      fechaInicioInput.setAttribute('max', maxDate);
-      fechaInicioInput.setAttribute('min', minDate);
-    }
-    if(fechaFinInput) {
-      fechaFinInput.setAttribute('max', maxDate);
-      fechaFinInput.setAttribute('min', minDate);
-    }
-  });
-</script>
-
-<!-- Validación de formularios con Bootstrap y validación personalizada para archivos -->
-<script>
-  (function () {
-    'use strict';
-
-    // Función que valida que un input de archivo tenga un PDF seleccionado
-    function validatePDFInput(input, feedbackElement) {
-      if (input.files.length === 0) {
-        feedbackElement.textContent = (input.id === 'adjuntar_plan')
-          ? 'Por favor, adjunte el plan.'
-          : 'Por favor, adjunte el informe.';
-        feedbackElement.style.display = 'block';
-        return false;
-      }
-      var file = input.files[0];
-      var fileType = file.type;
-      var fileName = file.name.toLowerCase();
-      if (fileType !== 'application/pdf' && !fileName.endsWith('.pdf')) {
-        feedbackElement.textContent = 'Solo se admiten archivos PDF.';
-        feedbackElement.style.display = 'block';
-        return false;
-      }
-      feedbackElement.style.display = 'none';
-      return true;
-    }
-
-    var forms = document.querySelectorAll('.needs-validation');
-    Array.prototype.slice.call(forms).forEach(function(form) {
-      form.addEventListener('submit', function(event) {
-        if (!form.checkValidity()) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-        // Obtener los inputs y sus feedbacks
-        var planInput = form.querySelector('#adjuntar_plan');
-        var informeInput = form.querySelector('#adjuntar_informe');
-        var planFeedback = document.getElementById('plan-feedback');
-        var informeFeedback = document.getElementById('informe-feedback');
-        
-        var planValid = validatePDFInput(planInput, planFeedback);
-        var informeValid = validatePDFInput(informeInput, informeFeedback);
-        
-        // Si alguno falla, marcar ambos como inválidos
-        if (!planValid || !informeValid) {
-          planInput.classList.remove('is-valid');
-          informeInput.classList.remove('is-valid');
-          planInput.classList.add('is-invalid');
-          informeInput.classList.add('is-invalid');
-          event.preventDefault();
-          event.stopPropagation();
-        } else {
-          planInput.classList.remove('is-invalid');
-          informeInput.classList.remove('is-invalid');
-          planInput.classList.add('is-valid');
-          informeInput.classList.add('is-valid');
-        }
-        form.classList.add('was-validated');
-      }, false);
+<!-- JavaScript para validación de formularios -->
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        // Validación de formularios Bootstrap
+        var forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
     });
-
-    // Validación en tiempo real
-    var planInput = document.getElementById('adjuntar_plan');
-    var informeInput = document.getElementById('adjuntar_informe');
-    if (planInput) {
-      planInput.addEventListener('change', function() {
-        var feedback = document.getElementById('plan-feedback');
-        if (!validatePDFInput(planInput, feedback)) {
-          planInput.classList.remove('is-valid');
-          planInput.classList.add('is-invalid');
-        } else {
-          planInput.classList.remove('is-invalid');
-          planInput.classList.add('is-valid');
-        }
-      });
-    }
-    if (informeInput) {
-      informeInput.addEventListener('change', function() {
-        var feedback = document.getElementById('informe-feedback');
-        if (!validatePDFInput(informeInput, feedback)) {
-          informeInput.classList.remove('is-valid');
-          informeInput.classList.add('is-invalid');
-        } else {
-          informeInput.classList.remove('is-invalid');
-          informeInput.classList.add('is-valid');
-        }
-      });
-    }
-  })();
 </script>
-
 {% endblock %}
