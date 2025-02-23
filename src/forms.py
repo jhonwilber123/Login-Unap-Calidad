@@ -611,6 +611,8 @@ class IdiomasForm(FlaskForm):
         'Idioma',
         choices=[
             ('', '--- Seleccione una opción ---'),
+            ('Ayamara', 'Ayamara'),
+            ('Quechua', 'Quechua'),
             ('Inglés', 'Inglés'),
             ('Francés', 'Francés'),
             ('Alemán', 'Alemán'),
