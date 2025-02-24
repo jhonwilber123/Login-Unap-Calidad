@@ -16,7 +16,6 @@
 <div class="container mt-5">
     <h1 class="h3 mb-4 text-center"><i class="bi bi-pencil-fill"></i> Editar Reconocimiento</h1>
 
-    <!-- Formulario para editar el reconocimiento -->
     <div class="formularios-container">
         <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
             {{ form.hidden_tag() }}
@@ -48,15 +47,6 @@
                 {% endfor %}
             </div>
 
-            <!-- Descripción -->
-            <div class="mb-3">
-                {{ form.descripcion.label(class="form-label") }}
-                {{ form.descripcion(class="form-control", maxlength="255", placeholder="Descripción del reconocimiento", required=True) }}
-                {% for error in form.descripcion.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
-
             <!-- Fecha -->
             <div class="mb-3">
                 {{ form.fecha.label(class="form-label") }}
@@ -70,9 +60,7 @@
             {% if reconocimiento.ruta_imagen %}
             <div class="mb-3">
                 <label class="form-label">Archivo Actual:</label><br>
-                {% if reconocimiento.categoria == 'imagen' %}
-                    <img src="{{ url_for('uploaded_file', filename=reconocimiento.ruta_imagen) }}" alt="Imagen Actual" class="img-thumbnail" style="max-width: 200px;">
-                {% elif reconocimiento.categoria == 'pdf' %}
+                {% if reconocimiento.categoria == 'pdf' %}
                     <a href="{{ url_for('uploaded_file', filename=reconocimiento.ruta_imagen) }}" target="_blank" class="btn btn-info btn-sm">
                         <i class="bi bi-file-earmark-pdf-fill"></i> Ver PDF
                     </a>
@@ -82,12 +70,12 @@
 
             <!-- Archivo Nuevo -->
             <div class="mb-3">
-                {{ form.archivo.label(class="form-label") }}
-                {{ form.archivo(class="form-control", placeholder="Subir nuevo archivo en PDF o imagen", required=False) }}
+                {{ form.archivo.label(class="form-label", label="Adjuntar Archivo (PDF)") }}
+                {{ form.archivo(class="form-control", placeholder="Subir nuevo archivo en PDF", required=False) }}
                 {% for error in form.archivo.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
-                <div class="form-text">Dejar en blanco para mantener el archivo actual.</div>
+                <div class="form-text">Dejar en blanco para mantener el archivo actual. Solo se permite PDF.</div>
             </div>
 
             {{ form.submit(class="btn btn-primary") }}
@@ -97,14 +85,9 @@
 
 <!-- Validación de formularios con Bootstrap -->
 <script>
-    // Ejemplo de validación de formularios con Bootstrap
     (function () {
       'use strict'
-
-      // Fetch all the forms we want to apply custom Bootstrap validation styles to
       var forms = document.querySelectorAll('.needs-validation')
-
-      // Loop over them and prevent submission
       Array.prototype.slice.call(forms)
         .forEach(function (form) {
           form.addEventListener('submit', function (event) {
@@ -112,42 +95,10 @@
               event.preventDefault()
               event.stopPropagation()
             }
-
             form.classList.add('was-validated')
           }, false)
         })
     })()
-</script>
-
-<!-- JavaScript para controlar la lógica de Autor/Coautor -->
-<script type="text/javascript">
-    document.addEventListener('DOMContentLoaded', function() {
-        const autorCheckbox = document.getElementById('autor');
-        const coautorCheckbox = document.getElementById('coautor');
-
-        function toggleCheckboxes() {
-            if (autorCheckbox.checked) {
-                coautorCheckbox.disabled = true;
-                coautorCheckbox.checked = false;
-            } else {
-                coautorCheckbox.disabled = false;
-            }
-
-            if (coautorCheckbox.checked) {
-                autorCheckbox.disabled = true;
-                autorCheckbox.checked = false;
-            } else {
-                autorCheckbox.disabled = false;
-            }
-        }
-
-        // Inicializar el estado al cargar la página
-        toggleCheckboxes();
-
-        // Asignar eventos
-        autorCheckbox.addEventListener('change', toggleCheckboxes);
-        coautorCheckbox.addEventListener('change', toggleCheckboxes);
-    });
 </script>
 
 {% endblock %}

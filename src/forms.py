@@ -250,18 +250,30 @@ class CargaAcademicaLectivaForm(FlaskForm):
         # Por ejemplo, cargar opciones dinámicas desde una API
 
 class TutoriaForm(FlaskForm):
-    descripcion = TextAreaField('Descripción', validators=[DataRequired(message='Este campo es obligatorio.')])
-    anio = IntegerField('Año', validators=[
-        DataRequired(message='Este campo es obligatorio.'),
-        NumberRange(min=2020, max=datetime.now().year, message=f"El año no puede ser mayor a {datetime.now().year}.")
-    ])
-    archivo = FileField('Adjuntar Archivo (Imagen o PDF)', validators=[
-        Optional(),
-        FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
-        file_size_limit(10 * 1024 * 1024)  # 10 MB
-    ])
+    semestre = SelectField(
+        'Semestre',
+        choices=[
+            ('', '--- Seleccione una opción ---'),
+            ('2022-I', '2022-I'),
+            ('2022-II', '2022-II'),
+            ('2023-I', '2023-I'),
+            ('2023-II', '2023-II'),
+            ('2024-I', '2024-I'),
+            ('2024-II', '2024-II'),
+            ('2025-I', '2025-I'),
+            ('2025-II', '2025-II')
+        ],
+        validators=[DataRequired(message='Este campo es obligatorio.')]
+    )
+    archivo = FileField(
+        'Adjuntar Archivo (solo PDF)',
+        validators=[
+            Optional(),
+            FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
+            file_size_limit(10 * 1024 * 1024)  # 10 MB
+        ]
+    )
     submit = SubmitField('Guardar')
-
 
 class SoftwareEspecializadoForm(FlaskForm):
     nombre_curso = StringField(
@@ -372,37 +384,28 @@ class ReconocimientosForm(FlaskForm):
         ],
         validators=[DataRequired(message='Debe seleccionar un tipo de institución.')]
     )
-    descripcion = StringField(
-        'Descripción',
-        validators=[
-            DataRequired(message='Este campo es obligatorio.'),
-            Length(max=255, message='Máximo 255 caracteres.')
-        ]
-    )
     institucion = StringField(
         'Nombre de la Institución',
         validators=[
-            Optional(),
+            DataRequired(message='Este campo es obligatorio.'),
             Length(max=255, message='Máximo 255 caracteres.')
         ]
     )
     fecha = DateField(
         'Fecha',
         format='%Y-%m-%d',
-        validators=[
-            DataRequired(message='Este campo es obligatorio.')
-        ]
+        validators=[DataRequired(message='Este campo es obligatorio.')]
     )
     archivo = FileField(
-        'Adjuntar Archivo (Imagen o PDF)',
+        'Adjuntar Archivo (PDF)',
         validators=[
             Optional(),
-            FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'pdf'], 'Solo se permiten imágenes y archivos PDF.'),
+            FileAllowed(['pdf'], 'Solo se permiten archivos PDF.'),
             file_size_limit(10 * 1024 * 1024)  # Límite de 10 MB
         ]
     )
     submit = SubmitField('Guardar')
-
+    
     def validate_institucion(self, field):
         if self.tipo_institucion.data == 'Otra' and (not field.data or not field.data.strip()):
             raise ValidationError('Debe ingresar el nombre de la institución.')
