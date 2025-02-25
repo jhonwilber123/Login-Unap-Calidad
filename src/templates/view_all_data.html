@@ -131,10 +131,8 @@
                         <table class="table table-bordered table-hover">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>ID Grado</th>
                                     <th>Título</th>
                                     <th>Tipo</th>
-                                    <th>Puntaje</th>
                                     <th>Universidad</th>
                                     <th>País</th>
                                     <th>Fecha Expedición</th>
@@ -145,10 +143,8 @@
                             <tbody>
                                 {% for grado in gradostitulos %}
                                     <tr>
-                                        <td>{{ grado[0] }}</td>
                                         <td>{{ grado[2] }}</td>
                                         <td>{{ grado[3] }}</td>
-                                        <td>{{ grado[4] or 'N/A' }}</td>
                                         <td>{{ grado[5] }}</td>
                                         <td>{{ grado[6] }}</td>
                                         <td>{{ grado[7] }}</td>
@@ -197,23 +193,18 @@
                         <table class="table table-bordered table-hover">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>ID Carga</th>
                                     <th>Periodo Académico</th>
                                     <th>Número Memorándum</th>
-                                    <th>Categoría Docente</th>
                                     <th>Horas Asignadas</th>
                                     <th>Memorándum</th>
-                                    <th>Observaciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for carga in carga_academica %}
                                     <tr>
-                                        <td>{{ carga[0] }}</td>
                                         <td>{{ carga[2] }}</td>
                                         <td>{{ carga[3] }}</td>
                                         <td>{{ carga[5] }}</td>
-                                        <td>{{ carga[6] }}</td>
                                         <td>
                                             {% if carga[4] and carga[4] in imagenes_dict %}
                                                 <a href="{{ url_for('uploaded_file', filename=imagenes_dict[carga[4]]) }}" target="_blank" class="btn btn-primary btn-sm">
@@ -223,7 +214,6 @@
                                                 <span class="text-muted">No disponible</span>
                                             {% endif %}
                                         </td>
-                                        <td>{{ carga[7] }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -251,11 +241,7 @@
                         <table class="table table-bordered table-hover">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>ID Actividad</th>
-                                    <th>Tipo</th>
-                                    <th>Nivel</th>
-                                    <th>Evento</th>
-                                    <th>Descripción</th>
+
                                     <th>Fecha</th>
                                     <th>Emitido Por</th>
                                     <th>Archivo</th>
@@ -264,16 +250,11 @@
                             <tbody>
                                 {% for actividad in actividades_proyeccion_social %}
                                     <tr>
-                                        <td>{{ actividad[0] }}</td>
-                                        <td>{{ actividad[2] }}</td>
-                                        <td>{{ actividad[3] or 'N/A' }}</td>
                                         <td>{{ actividad[4] }}</td>
-                                        <td>{{ actividad[5] }}</td>
-                                        <td>{{ actividad[6] }}</td>
-                                        <td>{{ actividad[9] or 'N/A' }}</td>
+                                        <td>{{ actividad[2] or 'N/A' }}</td>
                                         <td>
-                                            {% if actividad[8] and actividad[8] in imagenes_dict %}
-                                                <a href="{{ url_for('uploaded_file', filename=imagenes_dict[actividad[8]]) }}" target="_blank" class="btn btn-primary btn-sm">
+                                            {% if actividad[3] and actividad[3] in imagenes_dict %}
+                                                <a href="{{ url_for('uploaded_file', filename=imagenes_dict[actividad[3]]) }}" target="_blank" class="btn btn-primary btn-sm">
                                                     <i class="fas fa-file-alt"></i> Ver Archivo
                                                 </a>
                                             {% else %}
@@ -307,13 +288,9 @@
                         <table class="table table-bordered table-hover">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>ID Capacitación</th>
                                     <th>Tipo</th>
                                     <th>Descripción</th>
-                                    <th>Horas</th>
-                                    <th>Créditos</th>
-                                    <th>Semestres Concluidos</th>
-                                    <th>Puntaje</th>
+                                    <th>Información</th>
                                     <th>Institución Otorga</th>
                                     <th>Archivo</th>
                                 </tr>
@@ -321,13 +298,13 @@
                             <tbody>
                                 {% for actualizacion in actualizaciones_capacitaciones %}
                                     <tr>
-                                        <td>{{ actualizacion[0] }}</td>
                                         <td>{{ actualizacion[2] }}</td>
                                         <td>{{ actualizacion[3] }}</td>
-                                        <td>{{ actualizacion[4] or 'N/A' }}</td>
-                                        <td>{{ actualizacion[5] or 'N/A' }}</td>
-                                        <td>{{ actualizacion[6] or 'N/A' }}</td>
-                                        <td>{{ actualizacion[7] or 'N/A' }}</td>
+                                        <td>
+                                            <strong>Horas:</strong> {{ actualizacion[4] or 'N/A' }}<br>
+                                            <strong>Créditos:</strong> {{ actualizacion[5] or 'N/A' }}<br>
+                                            <strong>Semestres Concluidos:</strong> {{ actualizacion[6] or 'N/A' }}
+                                        </td>
                                         <td>{{ actualizacion[9] or 'N/A' }}</td>
                                         <td>
                                             {% if actualizacion[8] and actualizacion[8] in imagenes_dict %}
