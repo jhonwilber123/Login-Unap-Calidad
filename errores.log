@@ -35,3 +35,5 @@ cannot import name 'COMMAND' from 'MySQLdb.constants' (D:\UNAP CCS CURRICULUM\Ma
 (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
 (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
 (1045, "Access denied for user 'root'@'localhost' (using password: YES)")
+(2002, "Can't connect to server on 'localhost' (10061)")
+(2002, "Can't connect to server on 'localhost' (10061)")

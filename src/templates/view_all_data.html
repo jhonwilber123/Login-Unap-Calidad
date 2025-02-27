@@ -226,53 +226,6 @@
         </div>
     </div>
 
-    <!-- Actividades de Proyección Social -->
-    <div id="actividadesProyeccionSocial" class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <div><i class="fas fa-handshake"></i> Actividades de Proyección Social</div>
-            <button class="btn btn-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseActividadesProyeccionSocial" aria-expanded="true" aria-controls="collapseActividadesProyeccionSocial">
-                <i class="fas fa-chevron-down"></i>
-            </button>
-        </div>
-        <div id="collapseActividadesProyeccionSocial" class="collapse show">
-            <div class="card-body">
-                {% if actividades_proyeccion_social %}
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover">
-                            <thead class="table-dark">
-                                <tr>
-
-                                    <th>Fecha</th>
-                                    <th>Emitido Por</th>
-                                    <th>Archivo</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for actividad in actividades_proyeccion_social %}
-                                    <tr>
-                                        <td>{{ actividad[4] }}</td>
-                                        <td>{{ actividad[2] or 'N/A' }}</td>
-                                        <td>
-                                            {% if actividad[3] and actividad[3] in imagenes_dict %}
-                                                <a href="{{ url_for('uploaded_file', filename=imagenes_dict[actividad[3]]) }}" target="_blank" class="btn btn-primary btn-sm">
-                                                    <i class="fas fa-file-alt"></i> Ver Archivo
-                                                </a>
-                                            {% else %}
-                                                <span class="text-muted">No disponible</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <p>No hay datos de Actividades de Proyección Social disponibles.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
     <!-- Actualizaciones y Capacitaciones -->
     <div id="actualizacionesCapacitaciones" class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -342,23 +295,35 @@
                         <table class="table table-bordered table-hover">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>ID Acreditación</th>
-                                    <th>Descripción</th>
-                                    <th>Fecha</th>
-                                    <th>Puntaje</th>
+                                    <th>Número de Resolución</th>
+                                    <th>Fecha de Resolución</th>
+                                    <th>Fecha Inicio</th>
+                                    <th>Fecha Fin</th>
+                                    <th>Cargo en el Comité</th>
+                                    <th>Resolución</th>
                                     <th>Evidencias</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for acreditacion in acreditacion_licenciamiento %}
                                     <tr>
-                                        <td>{{ acreditacion[0] }}</td>
-                                        <td>{{ acreditacion[2] }}</td>
-                                        <td>{{ acreditacion[3] }}</td>
+                                        <td>{{ acreditacion[6] }}</td>
+                                        <td>{{ acreditacion[7] }}</td>
                                         <td>{{ acreditacion[4] or 'N/A' }}</td>
+                                        <td>{{ acreditacion[5] or 'N/A' }}</td>
+                                        <td>{{ acreditacion[8] or 'N/A' }}</td>
                                         <td>
-                                            {% if acreditacion[5] and acreditacion[5] in imagenes_dict %}
-                                                <a href="{{ url_for('uploaded_file', filename=imagenes_dict[acreditacion[5]]) }}" target="_blank" class="btn btn-primary btn-sm">
+                                            {% if acreditacion[2] and acreditacion[2] in imagenes_dict %}
+                                                <a href="{{ url_for('uploaded_file', filename=imagenes_dict[acreditacion[2]]) }}" target="_blank" class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-file-alt"></i> Ver Evidencia
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">No disponible</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if acreditacion[3] and acreditacion[3] in imagenes_dict %}
+                                                <a href="{{ url_for('uploaded_file', filename=imagenes_dict[acreditacion[3]]) }}" target="_blank" class="btn btn-primary btn-sm">
                                                     <i class="fas fa-file-alt"></i> Ver Evidencia
                                                 </a>
                                             {% else %}
@@ -377,39 +342,59 @@
         </div>
     </div>
 
-    <!-- Cargos Directivos -->
-    <div id="cargosDirectivos" class="card mb-4">
+    <!-- Participación Gestión Universitaria -->
+    <div id="participacionGestionUniversitaria" class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <div><i class="fas fa-user-tie"></i> Cargos Directivos</div>
-            <button class="btn btn-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCargosDirectivos" aria-expanded="true" aria-controls="collapseCargosDirectivos">
+            <div><i class="fas fa-users"></i> Participación Gestión Universitaria</div>
+            <button class="btn btn-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseParticipacionGestionUniversitaria" aria-expanded="true" aria-controls="collapseParticipacionGestionUniversitaria">
                 <i class="fas fa-chevron-down"></i>
             </button>
         </div>
-        <div id="collapseCargosDirectivos" class="collapse show">
+        <div id="collapseParticipacionGestionUniversitaria" class="collapse show">
             <div class="card-body">
-                {% if cargos_directivos %}
+                {% if participaciongestionuniversitaria %}
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>ID Cargo</th>
                                     <th>Cargo</th>
-                                    <th>Institución</th>
-                                    <th>Fecha</th>
-                                    <th>Archivo</th>
+                                    <th>Fecha Inicio</th>
+                                    <th>Fecha Fin</th>
+                                    <th>Curso Relevante</th>
+                                    <th>Plan</th>
+                                    <th>Informe</th>
+                                    <th>Curso</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for cargo in cargos_directivos %}
+                                {% for participation in participaciongestionuniversitaria %}
                                     <tr>
-                                        <td>{{ cargo[0] }}</td>
-                                        <td>{{ cargo[2] or 'N/A' }}</td>
-                                        <td>{{ cargo[3] or 'N/A' }}</td>
-                                        <td>{{ cargo[4] or 'N/A' }}</td>
+                                        <td>{{ participation[2] }}</td>
+                                        <td>{{ participation[3] }}</td>
+                                        <td>{{ participation[4] }}</td>
+                                        <td>{{ participation[5] }}</td>
                                         <td>
-                                            {% if cargo[5] and cargo[5] in imagenes_dict %}
-                                                <a href="{{ url_for('uploaded_file', filename=imagenes_dict[cargo[5]]) }}" target="_blank" class="btn btn-primary btn-sm">
-                                                    <i class="fas fa-file-alt"></i> Ver Archivo
+                                            {% if participation[6] and participation[6] in imagenes_dict %}
+                                                <a href="{{ url_for('uploaded_file', filename=imagenes_dict[participation[6]]) }}" target="_blank" class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-file-alt"></i> Ver Plan
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">No disponible</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if participation[7] and participation[7] in imagenes_dict %}
+                                                <a href="{{ url_for('uploaded_file', filename=imagenes_dict[participation[7]]) }}" target="_blank" class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-file-alt"></i> Ver Informe
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">No disponible</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if participation[8] and participation[8] in imagenes_dict %}
+                                                <a href="{{ url_for('uploaded_file', filename=imagenes_dict[participation[8]]) }}" target="_blank" class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-file-alt"></i> Ver Curso
                                                 </a>
                                             {% else %}
                                                 <span class="text-muted">No disponible</span>
@@ -421,48 +406,41 @@
                         </table>
                     </div>
                 {% else %}
-                    <p>No hay datos de Cargos Directivos disponibles.</p>
+                    <p>No hay registros de participación en gestión universitaria.</p>
                 {% endif %}
             </div>
         </div>
     </div>
 
-    <!-- Experiencia Docente -->
-    <div id="experienciaDocente" class="card mb-4">
+    <!-- Actividades de Proyección Social -->
+    <div id="actividadesProyeccionSocial" class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <div><i class="fas fa-chalkboard-teacher"></i> Experiencia Docente</div>
-            <button class="btn btn-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExperienciaDocente" aria-expanded="true" aria-controls="collapseExperienciaDocente">
+            <div><i class="fas fa-handshake"></i> Actividades de Proyección Social</div>
+            <button class="btn btn-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseActividadesProyeccionSocial" aria-expanded="true" aria-controls="collapseActividadesProyeccionSocial">
                 <i class="fas fa-chevron-down"></i>
             </button>
         </div>
-        <div id="collapseExperienciaDocente" class="collapse show">
+        <div id="collapseActividadesProyeccionSocial" class="collapse show">
             <div class="card-body">
-                {% if experiencia_docente %}
+                {% if actividades_proyeccion_social %}
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>ID Experiencia</th>
-                                    <th>Tipo</th>
-                                    <th>Descripción</th>
-                                    <th>Años</th>
-                                    <th>Cursos</th>
-                                    <th>Puntaje</th>
+
+                                    <th>Fecha</th>
+                                    <th>Emitido Por</th>
                                     <th>Archivo</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for experiencia in experiencia_docente %}
+                                {% for actividad in actividades_proyeccion_social %}
                                     <tr>
-                                        <td>{{ experiencia[0] }}</td>
-                                        <td>{{ experiencia[2] }}</td>
-                                        <td>{{ experiencia[3] }}</td>
-                                        <td>{{ experiencia[4] }}</td>
-                                        <td>{{ experiencia[5] }}</td>
-                                        <td>{{ experiencia[6] or 'N/A' }}</td>
+                                        <td>{{ actividad[4] }}</td>
+                                        <td>{{ actividad[2] or 'N/A' }}</td>
                                         <td>
-                                            {% if experiencia[7] and experiencia[7] in imagenes_dict %}
-                                                <a href="{{ url_for('uploaded_file', filename=imagenes_dict[experiencia[7]]) }}" target="_blank" class="btn btn-primary btn-sm">
+                                            {% if actividad[3] and actividad[3] in imagenes_dict %}
+                                                <a href="{{ url_for('uploaded_file', filename=imagenes_dict[actividad[3]]) }}" target="_blank" class="btn btn-primary btn-sm">
                                                     <i class="fas fa-file-alt"></i> Ver Archivo
                                                 </a>
                                             {% else %}
@@ -475,7 +453,123 @@
                         </table>
                     </div>
                 {% else %}
-                    <p>No hay datos de Experiencia Docente disponibles.</p>
+                    <p>No hay datos de Actividades de Proyección Social disponibles.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Producción Intelectual -->
+    <div id="produccionIntelectual" class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div><i class="fas fa-book"></i> Producción Intelectual</div>
+            <button class="btn btn-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProduccionIntelectual" aria-expanded="true" aria-controls="collapseProduccionIntelectual">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </div>
+        <div id="collapseProduccionIntelectual" class="collapse show">
+            <div class="card-body">
+                {% if produccionintelectual %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Título</th>
+                                    <th>ISBN</th>
+                                    <th>Depósito Legal</th>
+                                    <th>Fecha Publicación</th>
+                                    <th>Autor</th>
+                                    <th>Coautor</th>
+                                    <th>Archivo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for prod in produccionintelectual %}
+                                    <tr>
+                                        <td>{{ prod[2] }}</td>
+                                        <td>{{ prod[3] }}</td>
+                                        <td>{{ prod[4] }}</td>
+                                        <td>{{ 'Sí' if prod[5] else 'No' }}</td>
+                                        <td>{{ prod[6] }}</td>
+                                        <td>{{ 'Sí' if prod[7] else 'No' }}</td>
+                                        <td>{{ 'Sí' if prod[8] else 'No' }}</td>
+                                        <td>
+                                            {% if prod[10] and prod[10] in imagenes_dict %}
+                                                <a href="{{ url_for('uploaded_file', filename=imagenes_dict[prod[10]]) }}" target="_blank" class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-file-alt"></i> Ver Archivo
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">No disponible</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p>No hay registros de producción intelectual.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>   
+
+    <!-- Investigaciones -->
+    <div id="investigaciones" class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div><i class="fas fa-flask"></i> Investigaciones</div>
+            <button class="btn btn-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInvestigaciones" aria-expanded="true" aria-controls="collapseInvestigaciones">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </div>
+        <div id="collapseInvestigaciones" class="collapse show">
+            <div class="card-body">
+                {% if investigaciones %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Título</th>
+                                    <th>Revista</th>
+                                    <th>Índice</th>
+                                    <th>Fecha de Publicación</th>
+                                    <th>Autor</th>
+                                    <th>Investigacion adjunta</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for investigacion in investigaciones %}
+                                    <tr>
+                                        <td>{{ investigacion[2] }}</td>
+                                        <td>{{ investigacion[3] }}</td>
+                                        <td>{{ investigacion[7] }}</td>
+                                        <td>{{ investigacion[8] }}</td>
+                                        <td>{{ investigacion[9] or 'N/A' }}</td>
+                                        <td> 
+                                            {% if investigacion[10] == 1 %}
+                                              Si
+                                            {% else %}
+                                              {{ investigacion[10] or 'N/A' }}
+                                            {% endif %}
+                                          </td>
+                                        <td>
+                                            {% if investigacion[13] and investigacion[13] in imagenes_dict %}
+                                                <a href="{{ url_for('uploaded_file', filename=imagenes_dict[investigacion[13]]) }}" target="_blank" class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-file-alt"></i> Ver Archivo
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">No disponible</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p>No hay datos de Investigaciones disponibles.</p>
                 {% endif %}
             </div>
         </div>
@@ -496,22 +590,18 @@
                         <table class="table table-bordered table-hover">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>ID Idioma</th>
                                     <th>Idioma</th>
                                     <th>Nivel</th>
                                     <th>Certificado</th>
-                                    <th>Puntaje</th>
                                     <th>Archivo</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for idioma in idiomas %}
                                     <tr>
-                                        <td>{{ idioma[0] }}</td>
                                         <td>{{ idioma[2] }}</td>
                                         <td>{{ idioma[3] }}</td>
-                                        <td>{{ idioma[4] or 'N/A' }}</td>
-                                        <td>{{ idioma[5] or 'N/A' }}</td>
+                                        <td>{{ 'Sí' if idioma[4] == 1 else 'No' }}</td>
                                         <td>
                                             {% if idioma[6] and idioma[6] in imagenes_dict %}
                                                 <a href="{{ url_for('uploaded_file', filename=imagenes_dict[idioma[6]]) }}" target="_blank" class="btn btn-primary btn-sm">
@@ -533,40 +623,32 @@
         </div>
     </div>
 
-    <!-- Investigaciones -->
-    <div id="investigaciones" class="card mb-4">
+    <!-- Apoyo al estudiante -->
+    <div id="tutorias" class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <div><i class="fas fa-flask"></i> Investigaciones</div>
-            <button class="btn btn-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInvestigaciones" aria-expanded="true" aria-controls="collapseInvestigaciones">
+            <div><i class="fas fa-chalkboard-teacher"></i> Tutorías</div>
+            <button class="btn btn-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTutorias" aria-expanded="true" aria-controls="collapseTutorias">
                 <i class="fas fa-chevron-down"></i>
             </button>
         </div>
-        <div id="collapseInvestigaciones" class="collapse show">
+        <div id="collapseTutorias" class="collapse show">
             <div class="card-body">
-                {% if investigaciones %}
+                {% if tutorias %}
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>ID Investigación</th>
-                                    <th>Título</th>
-                                    <th>Descripción</th>
-                                    <th>Fecha</th>
-                                    <th>Puntaje</th>
+                                    <th>Semestre</th>
                                     <th>Archivo</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for investigacion in investigaciones %}
+                                {% for tutoria in tutorias %}
                                     <tr>
-                                        <td>{{ investigacion[0] }}</td>
-                                        <td>{{ investigacion[2] }}</td>
-                                        <td>{{ investigacion[3] }}</td>
-                                        <td>{{ investigacion[4] }}</td>
-                                        <td>{{ investigacion[5] or 'N/A' }}</td>
+                                        <td>{{ tutoria[2] }}</td>
                                         <td>
-                                            {% if investigacion[6] and investigacion[6] in imagenes_dict %}
-                                                <a href="{{ url_for('uploaded_file', filename=imagenes_dict[investigacion[6]]) }}" target="_blank" class="btn btn-primary btn-sm">
+                                            {% if tutoria[6] and tutoria[6] in imagenes_dict %}
+                                                <a href="{{ url_for('uploaded_file', filename=imagenes_dict[tutoria[6]]) }}" target="_blank" class="btn btn-primary btn-sm">
                                                     <i class="fas fa-file-alt"></i> Ver Archivo
                                                 </a>
                                             {% else %}
@@ -579,117 +661,13 @@
                         </table>
                     </div>
                 {% else %}
-                    <p>No hay datos de Investigaciones disponibles.</p>
+                    <p>No hay datos de Tutorías disponibles.</p>
                 {% endif %}
             </div>
         </div>
     </div>
 
-    <!-- Participación en Tesis -->
-    <div id="participacionTesis" class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <div><i class="fas fa-book-open"></i> Participación en Tesis</div>
-            <button class="btn btn-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseParticipacionTesis" aria-expanded="true" aria-controls="collapseParticipacionTesis">
-                <i class="fas fa-chevron-down"></i>
-            </button>
-        </div>
-        <div id="collapseParticipacionTesis" class="collapse show">
-            <div class="card-body">
-                {% if participacion_tesis %}
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>ID Tesis</th>
-                                    <th>Título</th>
-                                    <th>Tipo de Participación</th>
-                                    <th>Fecha</th>
-                                    <th>Puntaje</th>
-                                    <th>Archivo</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for tesis in participacion_tesis %}
-                                    <tr>
-                                        <td>{{ tesis[0] }}</td>
-                                        <td>{{ tesis[2] }}</td>
-                                        <td>{{ tesis[3] }}</td>
-                                        <td>{{ tesis[4] }}</td>
-                                        <td>{{ tesis[5] or 'N/A' }}</td>
-                                        <td>
-                                            {% if tesis[6] and tesis[6] in imagenes_dict %}
-                                                <a href="{{ url_for('uploaded_file', filename=imagenes_dict[tesis[6]]) }}" target="_blank" class="btn btn-primary btn-sm">
-                                                    <i class="fas fa-file-alt"></i> Ver Archivo
-                                                </a>
-                                            {% else %}
-                                                <span class="text-muted">No disponible</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <p>No hay datos de Participación en Tesis disponibles.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
 
-    <!-- Producción Intelectual -->
-    <div id="produccionIntelectual" class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <div><i class="fas fa-lightbulb"></i> Producción Intelectual</div>
-            <button class="btn btn-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProduccionIntelectual" aria-expanded="true" aria-controls="collapseProduccionIntelectual">
-                <i class="fas fa-chevron-down"></i>
-            </button>
-        </div>
-        <div id="collapseProduccionIntelectual" class="collapse show">
-            <div class="card-body">
-                {% if produccion_intelectual %}
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>ID Producción</th>
-                                    <th>Título</th>
-                                    <th>Tipo</th>
-                                    <th>Editorial</th>
-                                    <th>Fecha</th>
-                                    <th>Puntaje</th>
-                                    <th>Archivo</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for produccion in produccion_intelectual %}
-                                    <tr>
-                                        <td>{{ produccion[0] }}</td>
-                                        <td>{{ produccion[2] }}</td>
-                                        <td>{{ produccion[3] }}</td>
-                                        <td>{{ produccion[4] }}</td>
-                                        <td>{{ produccion[5] }}</td>
-                                        <td>{{ produccion[6] or 'N/A' }}</td>
-                                        <td>
-                                            {% if produccion[7] and produccion[7] in imagenes_dict %}
-                                                <a href="{{ url_for('uploaded_file', filename=imagenes_dict[produccion[7]]) }}" target="_blank" class="btn btn-primary btn-sm">
-                                                    <i class="fas fa-file-alt"></i> Ver Archivo
-                                                </a>
-                                            {% else %}
-                                                <span class="text-muted">No disponible</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <p>No hay datos de Producción Intelectual disponibles.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
 
     <!-- Reconocimientos -->
     <div id="reconocimientos" class="card mb-4">
@@ -706,25 +684,23 @@
                         <table class="table table-bordered table-hover">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>ID Reconocimiento</th>
-                                    <th>Título</th>
-                                    <th>Descripción</th>
+                                    <th>Tipo</th>
+                                    <th>Tipo de Institución</th>
+                                    <th>Institución</th>
                                     <th>Fecha</th>
-                                    <th>Puntaje</th>
                                     <th>Archivo</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for reconocimiento in reconocimientos %}
                                     <tr>
-                                        <td>{{ reconocimiento[0] }}</td>
                                         <td>{{ reconocimiento[2] }}</td>
-                                        <td>{{ reconocimiento[3] }}</td>
-                                        <td>{{ reconocimiento[4] }}</td>
-                                        <td>{{ reconocimiento[5] or 'N/A' }}</td>
+                                        <td>{{ reconocimiento[8] }}</td>
+                                        <td>{{ reconocimiento[4] if reconocimiento[4] else 'N/A' }}</td>
+                                        <td>{{ reconocimiento[5] if reconocimiento[5] else 'N/A' }}</td>
                                         <td>
-                                            {% if reconocimiento[6] and reconocimiento[6] in imagenes_dict %}
-                                                <a href="{{ url_for('uploaded_file', filename=imagenes_dict[reconocimiento[6]]) }}" target="_blank" class="btn btn-primary btn-sm">
+                                            {% if reconocimiento[7] and reconocimiento[7] in imagenes_dict %}
+                                                <a href="{{ url_for('uploaded_file', filename=imagenes_dict[reconocimiento[7]]) }}" target="_blank" class="btn btn-primary btn-sm">
                                                     <i class="fas fa-file-alt"></i> Ver Archivo
                                                 </a>
                                             {% else %}
@@ -742,7 +718,6 @@
             </div>
         </div>
     </div>
-
     <!-- Agregar más secciones siguiendo la misma estructura -->
     
 </div>

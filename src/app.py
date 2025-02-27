@@ -1733,10 +1733,13 @@ def eliminar_carga_academica(id_carga):
 def actividadesproyeccionsocial():
     form = ActividadesProyeccionSocialForm()
     if form.validate_on_submit():
+        tipo = form.tipo.data
+        evento = form.evento.data
+        descripcion = form.descripcion.data
         fecha = form.fecha.data
         Emitido_por = form.Emitido_por.data
 
-        # Manejo de archivos (únicamente PDF)
+        # Manejo de archivos (imagen o PDF)
         archivo = form.archivo.data
         id_imagen = None
         if archivo:
@@ -1746,12 +1749,14 @@ def actividadesproyeccionsocial():
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 archivo.save(file_path)
 
-                # Verificar extensión (únicamente pdf)
+                # Determinar el tipo de archivo
                 file_extension = filename.rsplit('.', 1)[1].lower()
-                if file_extension == 'pdf':
+                if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
+                    categoria = 'imagen'
+                elif file_extension == 'pdf':
                     categoria = 'pdf'
                 else:
-                    flash('Debe seleccionar un archivo PDF válido.', 'danger')
+                    flash('Debe seleccionar un archivo válido (imagen o PDF).', 'danger')
                     return redirect(request.url)
 
                 # Insertar el archivo y obtener su id_imagen
@@ -1759,31 +1764,31 @@ def actividadesproyeccionsocial():
                 cur.execute("""
                     INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
                     VALUES (%s, %s, %s, %s)
-                """, (current_user.id, categoria, Emitido_por, unique_filename))
+                """, (current_user.id, categoria, descripcion, unique_filename))
                 db.connection.commit()
                 id_imagen = cur.lastrowid
                 cur.close()
             else:
-                flash('Archivo no permitido. Solo se aceptan archivos PDF.', 'danger')
+                flash('Archivo no permitido.', 'danger')
                 return redirect(request.url)
 
-        # Insertar la actividad (id_usuario, fecha, id_imagen y Emitido_por)
+        # Insertar la actividad de proyección social sin 'nivel'
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
-            INSERT INTO actividadesproyeccionsocial (id_usuario, fecha, id_imagen, Emitido_por)
-            VALUES (%s, %s, %s, %s)
-        """, (current_user.id, fecha, id_imagen, Emitido_por))
+            INSERT INTO actividadesproyeccionsocial (id_usuario, tipo, evento, descripcion, fecha, id_imagen, Emitido_por)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (current_user.id, tipo, evento, descripcion, fecha, id_imagen, Emitido_por))
         db.connection.commit()
         cur.close()
 
         flash('Actividad de proyección social agregada correctamente', 'success')
         return redirect(url_for('actividadesproyeccionsocial'))
 
-    # Obtener las actividades del usuario actual
+    # Obtener las actividades de proyección social del usuario actual
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
     cur.execute("""
-        SELECT aps.id_actividad, aps.fecha, aps.Emitido_por,
-               ia.ruta_imagen, ia.categoria
+        SELECT aps.id_actividad, aps.tipo, aps.evento, aps.descripcion, aps.fecha,
+               ia.ruta_imagen, ia.categoria, aps.Emitido_por
         FROM actividadesproyeccionsocial aps
         LEFT JOIN imagenesadjuntas ia ON aps.id_imagen = ia.id_imagen
         WHERE aps.id_usuario = %s
@@ -1792,7 +1797,6 @@ def actividadesproyeccionsocial():
     cur.close()
 
     return render_template('actividadesproyeccionsocial.html', actividades=actividades, form=form)
-
 
 # --- RUTA PARA EDITAR UNA ACTIVIDAD DE PROYECCIÓN SOCIAL ---
 @app.route('/editar_actividadesproyeccionsocial/<int:id_actividad>', methods=['GET', 'POST'])
@@ -1803,7 +1807,7 @@ def editar_actividadesproyeccionsocial(id_actividad):
 
     # Obtener los datos actuales de la actividad
     cur.execute("""
-        SELECT aps.id_actividad, aps.fecha, aps.Emitido_por,
+        SELECT aps.id_actividad, aps.tipo, aps.evento, aps.descripcion, aps.fecha,
                ia.id_imagen, ia.ruta_imagen, ia.categoria
         FROM actividadesproyeccionsocial aps
         LEFT JOIN imagenesadjuntas ia ON aps.id_imagen = ia.id_imagen
@@ -1817,23 +1821,29 @@ def editar_actividadesproyeccionsocial(id_actividad):
         return redirect(url_for('actividadesproyeccionsocial'))
 
     if form.validate_on_submit():
+        tipo = form.tipo.data
+        evento = form.evento.data
+        descripcion = form.descripcion.data
         fecha = form.fecha.data
-        Emitido_por = form.Emitido_por.data
         archivo = form.archivo.data
         id_imagen_actual = actividad['id_imagen']
 
-        # Manejo del archivo adjunto (solo PDF)
+        # Manejo del archivo adjunto
         if archivo:
             if allowed_file(archivo.filename):
                 filename = secure_filename(archivo.filename)
                 unique_filename = f"{int(time.time())}_{filename}"
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 archivo.save(file_path)
+
+                # Determinar el tipo de archivo
                 file_extension = filename.rsplit('.', 1)[1].lower()
-                if file_extension == 'pdf':
+                if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
+                    categoria = 'imagen'
+                elif file_extension == 'pdf':
                     categoria = 'pdf'
                 else:
-                    flash('Debe seleccionar un archivo PDF válido.', 'danger')
+                    flash('Debe seleccionar un archivo válido (imagen o PDF).', 'danger')
                     return redirect(request.url)
 
                 cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -1843,15 +1853,17 @@ def editar_actividadesproyeccionsocial(id_actividad):
                         UPDATE imagenesadjuntas
                         SET ruta_imagen = %s, categoria = %s, descripcion = %s, fecha_subida = NOW()
                         WHERE id_imagen = %s AND id_usuario = %s
-                    """, (unique_filename, categoria, Emitido_por, id_imagen_actual, current_user.id))
+                    """, (unique_filename, categoria, descripcion, id_imagen_actual, current_user.id))
                 else:
-                    # Insertar un nuevo archivo y actualizar la actividad
+                    # Insertar un nuevo archivo
                     cur.execute("""
                         INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
                         VALUES (%s, %s, %s, %s)
-                    """, (current_user.id, categoria, Emitido_por, unique_filename))
+                    """, (current_user.id, categoria, descripcion, unique_filename))
                     db.connection.commit()
                     id_imagen_nueva = cur.lastrowid
+
+                    # Actualizar la actividad con el nuevo id_imagen
                     cur.execute("""
                         UPDATE actividadesproyeccionsocial
                         SET id_imagen = %s
@@ -1860,16 +1872,16 @@ def editar_actividadesproyeccionsocial(id_actividad):
                 db.connection.commit()
                 cur.close()
             else:
-                flash('Archivo no permitido. Solo se aceptan archivos PDF.', 'danger')
+                flash('Archivo no permitido.', 'danger')
                 return redirect(request.url)
 
-        # Actualizar la actividad (fecha y Emitido_por)
+        # Actualizar los datos de la actividad de proyección social sin 'nivel'
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
             UPDATE actividadesproyeccionsocial
-            SET fecha = %s, Emitido_por = %s
+            SET tipo = %s, evento = %s, descripcion = %s, fecha = %s
             WHERE id_actividad = %s AND id_usuario = %s
-        """, (fecha, Emitido_por, id_actividad, current_user.id))
+        """, (tipo, evento, descripcion, fecha, id_actividad, current_user.id))
         db.connection.commit()
         cur.close()
 
@@ -1878,8 +1890,10 @@ def editar_actividadesproyeccionsocial(id_actividad):
 
     # Prellenar el formulario con los datos actuales
     if request.method == 'GET':
+        form.tipo.data = actividad['tipo']
+        form.evento.data = actividad['evento']
+        form.descripcion.data = actividad['descripcion']
         form.fecha.data = actividad['fecha']
-        form.Emitido_por.data = actividad['Emitido_por']
 
     return render_template('editar_actividadesproyeccionsocial.html', actividad=actividad, form=form)
 
@@ -2121,6 +2135,8 @@ def eliminar_actualizacioncapacitacion(id_capacitacion):
 
 #ruta para participacion en acreditacion y licenciamiento
 # --- RUTA PARA AGREGAR Y LISTAR PARTICIPACIONES EN ACREDITACIÓN Y LICENCIAMIENTO ---
+# --- RUTA PARA AGREGAR Y LISTAR ACREDITACIÓN Y LICENCAMIENIENTO ---
+
 @app.route('/acreditacionlicenciamiento', methods=['GET', 'POST'])
 @login_required
 def acreditacion_licenciamiento():
@@ -2130,7 +2146,7 @@ def acreditacion_licenciamiento():
         fecha_resolucion = form.fecha_resolucion.data
         fecha_inicio = form.fecha_inicio.data
         fecha_fin = form.fecha_fin.data
-        cargo_comite = form.cargo_comite.data  # Ahora es un SelectField con opciones limitadas
+        cargo_comite = form.cargo_comite.data
 
         # Manejo del archivo PDF de la Resolución
         archivo_resolucion = form.archivo_resolucion.data
@@ -2142,6 +2158,7 @@ def acreditacion_licenciamiento():
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 archivo_resolucion.save(file_path)
 
+                # Insertar el archivo en la tabla imagenesadjuntas
                 cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
                 cur.execute("""
                     INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
@@ -2154,17 +2171,22 @@ def acreditacion_licenciamiento():
                 flash('Archivo no permitido. Debe ser un PDF válido.', 'danger')
                 return redirect(request.url)
 
-        # Manejo del archivo de Evidencias (ahora solo se permiten PDF)
+        # Manejo del archivo de Evidencias
         archivo_evidencias = form.evidencias.data
         id_evidencias = None
         if archivo_evidencias:
-            if allowed_file(archivo_evidencias.filename) and archivo_evidencias.filename.lower().endswith('.pdf'):
+            if allowed_file(archivo_evidencias.filename):
                 filename = secure_filename(archivo_evidencias.filename)
                 unique_filename = f"{int(time.time())}_{filename}"
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 archivo_evidencias.save(file_path)
 
-                categoria = 'evidencias_pdf'
+                if archivo_evidencias.filename.lower().endswith('.pdf'):
+                    categoria = 'evidencias_pdf'
+                else:
+                    categoria = 'evidencias_imagen'
+
+                # Insertar el archivo en la tabla imagenesadjuntas
                 cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
                 cur.execute("""
                     INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
@@ -2174,10 +2196,10 @@ def acreditacion_licenciamiento():
                 id_evidencias = cur.lastrowid
                 cur.close()
             else:
-                flash('Archivo de evidencias no permitido. Solo se permiten archivos PDF.', 'danger')
+                flash('Archivo de evidencias no permitido. Solo imágenes o PDF.', 'danger')
                 return redirect(request.url)
 
-        # Insertar el registro de Acreditación y Licenciamiento
+        # Insertar el registro de acreditación y licenciamiento
         cur = db.connection.cursor()
         cur.execute("""
             INSERT INTO acreditacionlicenciamiento
@@ -2190,7 +2212,7 @@ def acreditacion_licenciamiento():
         flash('Acreditación y Licenciamiento agregados correctamente', 'success')
         return redirect(url_for('acreditacion_licenciamiento'))
 
-    # Obtener acreditaciones existentes del usuario
+    # Obtener las acreditaciones existentes del usuario actual
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
     cur.execute("""
         SELECT al.*,
@@ -2203,22 +2225,23 @@ def acreditacion_licenciamiento():
     """, [current_user.id])
     acreditaciones = cur.fetchall()
     cur.close()
-    return render_template('acreditacion_licenciamiento.html', acreditaciones=acreditaciones, form=form)
 
+    return render_template('acreditacion_licenciamiento.html', acreditaciones=acreditaciones, form=form)
 
 @app.route('/editar_acreditacion_licenciamiento/<int:id_acreditacion>', methods=['GET', 'POST'])
 @login_required
 def editar_acreditacion_licenciamiento(id_acreditacion):
     form = AcreditacionLicenciamientoForm()
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+
     cur.execute("""
-         SELECT al.*,
-                ia_ruta.ruta_imagen AS ruta_imagen_resolucion,
-                ia_evidencias.ruta_imagen AS ruta_imagen_evidencias
-         FROM acreditacionlicenciamiento al
-         LEFT JOIN imagenesadjuntas ia_ruta ON al.id_imagen = ia_ruta.id_imagen
-         LEFT JOIN imagenesadjuntas ia_evidencias ON al.id_imagen_evidencias = ia_evidencias.id_imagen
-         WHERE al.id_acreditacion = %s AND al.id_usuario = %s
+        SELECT al.*,
+               ia_ruta.ruta_imagen AS ruta_imagen_resolucion,
+               ia_evidencias.ruta_imagen AS ruta_imagen_evidencias
+        FROM acreditacionlicenciamiento al
+        LEFT JOIN imagenesadjuntas ia_ruta ON al.id_imagen = ia_ruta.id_imagen
+        LEFT JOIN imagenesadjuntas ia_evidencias ON al.id_imagen_evidencias = ia_evidencias.id_imagen
+        WHERE al.id_acreditacion = %s AND al.id_usuario = %s
     """, (id_acreditacion, current_user.id))
     acreditacion = cur.fetchone()
     cur.close()
@@ -2234,9 +2257,9 @@ def editar_acreditacion_licenciamiento(id_acreditacion):
         fecha_fin = form.fecha_fin.data
         cargo_comite = form.cargo_comite.data
 
-        # Actualización del archivo de Resolución
         archivo_resolucion = form.archivo_resolucion.data
         id_resolucion_actual = acreditacion['id_imagen']
+
         if archivo_resolucion:
             if allowed_file(archivo_resolucion.filename) and archivo_resolucion.filename.lower().endswith('.pdf'):
                 filename = secure_filename(archivo_resolucion.filename)
@@ -2269,17 +2292,21 @@ def editar_acreditacion_licenciamiento(id_acreditacion):
                 flash('Archivo no permitido. Debe ser un PDF válido.', 'danger')
                 return redirect(request.url)
 
-        # Actualización del archivo de Evidencias (solo se permiten PDF)
         archivo_evidencias = form.evidencias.data
         id_evidencias_actual = acreditacion['id_imagen_evidencias']
+
         if archivo_evidencias:
-            if allowed_file(archivo_evidencias.filename) and archivo_evidencias.filename.lower().endswith('.pdf'):
+            if allowed_file(archivo_evidencias.filename):
                 filename = secure_filename(archivo_evidencias.filename)
                 unique_filename = f"{int(time.time())}_{filename}"
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 archivo_evidencias.save(file_path)
 
-                categoria = 'evidencias_pdf'
+                if archivo_evidencias.filename.lower().endswith('.pdf'):
+                    categoria = 'evidencias_pdf'
+                else:
+                    categoria = 'evidencias_imagen'
+
                 cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
                 if id_evidencias_actual:
                     cur.execute("""
@@ -2302,10 +2329,9 @@ def editar_acreditacion_licenciamiento(id_acreditacion):
                 db.connection.commit()
                 cur.close()
             else:
-                flash('Archivo de evidencias no permitido. Solo se permiten archivos PDF.', 'danger')
+                flash('Archivo de evidencias no permitido. Solo imágenes o PDF.', 'danger')
                 return redirect(request.url)
 
-        # Actualizar datos principales
         cur = db.connection.cursor()
         cur.execute("""
             UPDATE acreditacionlicenciamiento
@@ -3058,7 +3084,6 @@ def eliminar_idioma(id_idioma):
 # --- NUEVA RUTA PARA INVESTIGACIONES ---
 
 # --- RUTA PARA AGREGAR Y LISTAR INVESTIGACIONES ---
-# --- RUTA PARA AGREGAR Y LISTAR INVESTIGACIONES ---
 @app.route('/investigaciones', methods=['GET', 'POST'])
 @login_required
 def investigaciones():
@@ -3066,13 +3091,16 @@ def investigaciones():
     if form.validate_on_submit():
         tipo = form.tipo.data
         titulo = form.titulo.data
+        descripcion = form.descripcion.data
+        fecha_inicio = form.fecha_inicio.data
+        fecha_fin = form.fecha_fin.data
         revista = form.revista.data
         indice = form.indice.data
         fecha_publicacion = form.fecha_publicacion.data
         autor = form.autor.data
         coautor = form.coautor.data
 
-        # Manejo de archivos (solo PDF)
+        # Manejo de archivos (imagen o PDF)
         archivo = form.archivo.data
         id_imagen = None
         if archivo:
@@ -3082,19 +3110,22 @@ def investigaciones():
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 archivo.save(file_path)
 
-                # Solo se permite PDF
+                # Determinar el tipo de archivo
                 file_extension = filename.rsplit('.', 1)[1].lower()
-                if file_extension == 'pdf':
+                if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
+                    categoria = 'imagen'
+                elif file_extension == 'pdf':
                     categoria = 'pdf'
                 else:
-                    flash('Debe seleccionar un archivo válido (solo PDF).', 'danger')
+                    flash('Debe seleccionar un archivo válido (imagen o PDF).', 'danger')
                     return redirect(request.url)
 
+                # Insertar el archivo y obtener su id_imagen
                 cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
                 cur.execute("""
                     INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
                     VALUES (%s, %s, %s, %s)
-                """, (current_user.id, categoria, '', unique_filename))
+                """, (current_user.id, categoria, descripcion, unique_filename))
                 db.connection.commit()
                 id_imagen = cur.lastrowid
                 cur.close()
@@ -3102,13 +3133,14 @@ def investigaciones():
                 flash('Archivo no permitido.', 'danger')
                 return redirect(request.url)
 
-        # Insertar la investigación (sin descripción, fecha_inicio ni fecha_fin)
+        # Insertar la investigación
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
-            INSERT INTO investigaciones (id_usuario, tipo, titulo, revista, indice, fecha_publicacion, autor, coautor, id_imagen)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO investigaciones (id_usuario, tipo, titulo, descripcion, fecha_inicio, fecha_fin, revista, indice, fecha_publicacion, autor, coautor, id_imagen)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (
-            current_user.id, tipo, titulo, revista, indice,
+            current_user.id, tipo, titulo, descripcion,
+            fecha_inicio, fecha_fin, revista, indice,
             fecha_publicacion, autor, coautor, id_imagen
         ))
         db.connection.commit()
@@ -3117,9 +3149,11 @@ def investigaciones():
         flash('Investigación agregada correctamente', 'success')
         return redirect(url_for('investigaciones'))
 
+    # Obtener las investigaciones del usuario actual
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
     cur.execute("""
-        SELECT i.id_investigacion, i.tipo, i.titulo, i.revista, i.indice, i.fecha_publicacion, i.autor, i.coautor,
+        SELECT i.id_investigacion, i.tipo, i.titulo, i.descripcion, i.fecha_inicio, i.fecha_fin,
+               i.revista, i.indice, i.fecha_publicacion, i.autor, i.coautor,
                ia.ruta_imagen, ia.categoria
         FROM investigaciones i
         LEFT JOIN imagenesadjuntas ia ON i.id_imagen = ia.id_imagen
@@ -3136,8 +3170,11 @@ def investigaciones():
 def editar_investigacion(id_investigacion):
     form = InvestigacionesForm()
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    # Obtener los datos actuales de la investigación
     cur.execute("""
-        SELECT i.id_investigacion, i.tipo, i.titulo, i.revista, i.indice, i.fecha_publicacion, i.autor, i.coautor,
+        SELECT i.id_investigacion, i.tipo, i.titulo, i.descripcion, i.fecha_inicio, i.fecha_fin,
+               i.revista, i.indice, i.fecha_publicacion, i.autor, i.coautor,
                ia.id_imagen, ia.ruta_imagen, ia.categoria
         FROM investigaciones i
         LEFT JOIN imagenesadjuntas ia ON i.id_imagen = ia.id_imagen
@@ -3153,6 +3190,9 @@ def editar_investigacion(id_investigacion):
     if form.validate_on_submit():
         tipo = form.tipo.data
         titulo = form.titulo.data
+        descripcion = form.descripcion.data
+        fecha_inicio = form.fecha_inicio.data
+        fecha_fin = form.fecha_fin.data
         revista = form.revista.data
         indice = form.indice.data
         fecha_publicacion = form.fecha_publicacion.data
@@ -3161,33 +3201,42 @@ def editar_investigacion(id_investigacion):
         archivo = form.archivo.data
         id_imagen_actual = investigacion['id_imagen']
 
+        # Manejo del archivo adjunto
         if archivo:
             if allowed_file(archivo.filename):
                 filename = secure_filename(archivo.filename)
                 unique_filename = f"{int(time.time())}_{filename}"
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 archivo.save(file_path)
+
+                # Determinar el tipo de archivo
                 file_extension = filename.rsplit('.', 1)[1].lower()
-                if file_extension == 'pdf':
+                if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
+                    categoria = 'imagen'
+                elif file_extension == 'pdf':
                     categoria = 'pdf'
                 else:
-                    flash('Debe seleccionar un archivo válido (solo PDF).', 'danger')
+                    flash('Debe seleccionar un archivo válido (imagen o PDF).', 'danger')
                     return redirect(request.url)
 
                 cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
                 if id_imagen_actual:
+                    # Actualizar el archivo existente
                     cur.execute("""
                         UPDATE imagenesadjuntas
                         SET ruta_imagen = %s, categoria = %s, descripcion = %s, fecha_subida = NOW()
                         WHERE id_imagen = %s AND id_usuario = %s
-                    """, (unique_filename, categoria, '', id_imagen_actual, current_user.id))
+                    """, (unique_filename, categoria, descripcion, id_imagen_actual, current_user.id))
                 else:
+                    # Insertar un nuevo archivo
                     cur.execute("""
                         INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
                         VALUES (%s, %s, %s, %s)
-                    """, (current_user.id, categoria, '', unique_filename))
+                    """, (current_user.id, categoria, descripcion, unique_filename))
                     db.connection.commit()
                     id_imagen_nueva = cur.lastrowid
+
+                    # Actualizar la investigación con el nuevo id_imagen
                     cur.execute("""
                         UPDATE investigaciones
                         SET id_imagen = %s
@@ -3199,13 +3248,18 @@ def editar_investigacion(id_investigacion):
                 flash('Archivo no permitido.', 'danger')
                 return redirect(request.url)
 
+        # Actualizar los datos de la investigación
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
             UPDATE investigaciones
-            SET tipo = %s, titulo = %s, revista = %s, indice = %s, fecha_publicacion = %s, autor = %s, coautor = %s
+            SET tipo = %s, titulo = %s, descripcion = %s, fecha_inicio = %s,
+                fecha_fin = %s, revista = %s, indice = %s,
+                fecha_publicacion = %s, autor = %s, coautor = %s
             WHERE id_investigacion = %s AND id_usuario = %s
         """, (
-            tipo, titulo, revista, indice, fecha_publicacion, autor, coautor,
+            tipo, titulo, descripcion, fecha_inicio,
+            fecha_fin, revista, indice,
+            fecha_publicacion, autor, coautor,
             id_investigacion, current_user.id
         ))
         db.connection.commit()
@@ -3214,9 +3268,13 @@ def editar_investigacion(id_investigacion):
         flash('Investigación actualizada correctamente', 'success')
         return redirect(url_for('investigaciones'))
 
+    # Prellenar el formulario con los datos actuales
     if request.method == 'GET':
         form.tipo.data = investigacion['tipo']
         form.titulo.data = investigacion['titulo']
+        form.descripcion.data = investigacion['descripcion']
+        form.fecha_inicio.data = investigacion['fecha_inicio']
+        form.fecha_fin.data = investigacion['fecha_fin']
         form.revista.data = investigacion['revista']
         form.indice.data = investigacion['indice']
         form.fecha_publicacion.data = investigacion['fecha_publicacion']
@@ -3489,24 +3547,29 @@ def produccion_intelectual():
         fecha_publicacion = form.fecha_publicacion.data
         autor = form.autor.data
         coautor = form.coautor.data
+        editorial_prestigiosa = form.editorial_prestigiosa.data  # Nuevo campo
 
-        # Manejo de archivos (solo PDF)
+        # Manejo de archivos (imagen o PDF)
         archivo = form.archivo.data
         id_imagen = None
         if archivo:
-            if allowed_file(archivo.filename):  # allowed_file ahora solo permite PDF
+            if allowed_file(archivo.filename):
                 filename = secure_filename(archivo.filename)
                 unique_filename = f"{int(time.time())}_{filename}"
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 archivo.save(file_path)
 
+                # Determinar el tipo de archivo
                 file_extension = filename.rsplit('.', 1)[1].lower()
-                if file_extension == 'pdf':
+                if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
+                    categoria = 'imagen'
+                elif file_extension == 'pdf':
                     categoria = 'pdf'
                 else:
-                    flash('Debe seleccionar un archivo PDF.', 'danger')
+                    flash('Debe seleccionar un archivo válido (imagen o PDF).', 'danger')
                     return redirect(request.url)
 
+                # Insertar el archivo y obtener su id_imagen
                 cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
                 cur.execute("""
                     INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
@@ -3519,22 +3582,24 @@ def produccion_intelectual():
                 flash('Archivo no permitido.', 'danger')
                 return redirect(request.url)
 
+        # Insertar la producción intelectual
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
             INSERT INTO produccionintelectual
-            (id_usuario, tipo, titulo, isbn, deposito_legal, fecha_publicacion, autor, coautor, id_imagen)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (current_user.id, tipo, titulo, isbn, deposito_legal, fecha_publicacion, autor, coautor, id_imagen))
+            (id_usuario, tipo, titulo, isbn, deposito_legal, fecha_publicacion, autor, coautor, editorial_prestigiosa, id_imagen)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (current_user.id, tipo, titulo, isbn, deposito_legal, fecha_publicacion, autor, coautor, editorial_prestigiosa, id_imagen))
         db.connection.commit()
         cur.close()
 
         flash('Producción intelectual agregada correctamente', 'success')
         return redirect(url_for('produccion_intelectual'))
 
+    # Obtener las producciones intelectuales del usuario actual
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
     cur.execute("""
         SELECT p.id_produccion, p.tipo, p.titulo, p.isbn, p.deposito_legal, p.fecha_publicacion, p.autor, p.coautor,
-               ia.ruta_imagen, ia.categoria
+               p.editorial_prestigiosa, ia.ruta_imagen, ia.categoria
         FROM produccionintelectual p
         LEFT JOIN imagenesadjuntas ia ON p.id_imagen = ia.id_imagen
         WHERE p.id_usuario = %s
@@ -3544,15 +3609,17 @@ def produccion_intelectual():
 
     return render_template('produccion_intelectual.html', producciones=producciones, form=form)
 
-
+# Ruta para editar una producción intelectual
 @app.route('/editar_produccion_intelectual/<int:id_produccion>', methods=['GET', 'POST'])
 @login_required
 def editar_produccion_intelectual(id_produccion):
     form = ProduccionIntelectualForm()
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    # Obtener los datos actuales de la producción intelectual
     cur.execute("""
         SELECT p.id_produccion, p.tipo, p.titulo, p.isbn, p.deposito_legal, p.fecha_publicacion, p.autor, p.coautor,
-               ia.id_imagen, ia.ruta_imagen, ia.categoria
+               p.editorial_prestigiosa, ia.id_imagen, ia.ruta_imagen, ia.categoria
         FROM produccionintelectual p
         LEFT JOIN imagenesadjuntas ia ON p.id_imagen = ia.id_imagen
         WHERE p.id_produccion = %s AND p.id_usuario = %s
@@ -3572,9 +3639,11 @@ def editar_produccion_intelectual(id_produccion):
         fecha_publicacion = form.fecha_publicacion.data
         autor = form.autor.data
         coautor = form.coautor.data
+        editorial_prestigiosa = form.editorial_prestigiosa.data  # Nuevo campo
         archivo = form.archivo.data
-        id_imagen_actual = produccion.get('id_imagen')
+        id_imagen_actual = produccion['id_imagen']
 
+        # Manejo del archivo adjunto
         if archivo:
             if allowed_file(archivo.filename):
                 filename = secure_filename(archivo.filename)
@@ -3582,27 +3651,34 @@ def editar_produccion_intelectual(id_produccion):
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 archivo.save(file_path)
 
+                # Determinar el tipo de archivo
                 file_extension = filename.rsplit('.', 1)[1].lower()
-                if file_extension == 'pdf':
+                if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
+                    categoria = 'imagen'
+                elif file_extension == 'pdf':
                     categoria = 'pdf'
                 else:
-                    flash('Debe seleccionar un archivo PDF.', 'danger')
+                    flash('Debe seleccionar un archivo válido (imagen o PDF).', 'danger')
                     return redirect(request.url)
 
                 cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
                 if id_imagen_actual:
+                    # Actualizar el archivo existente
                     cur.execute("""
                         UPDATE imagenesadjuntas
                         SET ruta_imagen = %s, categoria = %s, descripcion = %s, fecha_subida = NOW()
                         WHERE id_imagen = %s AND id_usuario = %s
                     """, (unique_filename, categoria, titulo, id_imagen_actual, current_user.id))
                 else:
+                    # Insertar un nuevo archivo
                     cur.execute("""
                         INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
                         VALUES (%s, %s, %s, %s)
                     """, (current_user.id, categoria, titulo, unique_filename))
                     db.connection.commit()
                     id_imagen_nueva = cur.lastrowid
+
+                    # Actualizar la producción intelectual con el nuevo id_imagen
                     cur.execute("""
                         UPDATE produccionintelectual
                         SET id_imagen = %s
@@ -3614,18 +3690,20 @@ def editar_produccion_intelectual(id_produccion):
                 flash('Archivo no permitido.', 'danger')
                 return redirect(request.url)
 
+        # Actualizar los datos de la producción intelectual
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
             UPDATE produccionintelectual
-            SET tipo = %s, titulo = %s, isbn = %s, deposito_legal = %s, fecha_publicacion = %s, autor = %s, coautor = %s
+            SET tipo = %s, titulo = %s, isbn = %s, deposito_legal = %s, fecha_publicacion = %s, autor = %s, coautor = %s, editorial_prestigiosa = %s
             WHERE id_produccion = %s AND id_usuario = %s
-        """, (tipo, titulo, isbn, deposito_legal, fecha_publicacion, autor, coautor, id_produccion, current_user.id))
+        """, (tipo, titulo, isbn, deposito_legal, fecha_publicacion, autor, coautor, editorial_prestigiosa, id_produccion, current_user.id))
         db.connection.commit()
         cur.close()
 
         flash('Producción intelectual actualizada correctamente', 'success')
         return redirect(url_for('produccion_intelectual'))
 
+    # Prellenar el formulario con los datos actuales
     if request.method == 'GET':
         form.tipo.data = produccion['tipo']
         form.titulo.data = produccion['titulo']
@@ -3634,6 +3712,7 @@ def editar_produccion_intelectual(id_produccion):
         form.fecha_publicacion.data = produccion['fecha_publicacion']
         form.autor.data = bool(produccion['autor'])
         form.coautor.data = bool(produccion['coautor'])
+        form.editorial_prestigiosa.data = produccion['editorial_prestigiosa']  # Nuevo campo
 
     return render_template('editar_produccion_intelectual.html', produccion=produccion, form=form)
 
@@ -3687,9 +3766,11 @@ def reconocimientos():
     if form.validate_on_submit():
         tipo = form.tipo.data
         tipo_institucion = form.tipo_institucion.data
+        descripcion = form.descripcion.data
         institucion = form.institucion.data
         fecha = form.fecha.data
 
+        # Manejo de archivos (imagen o PDF)
         archivo = form.archivo.data
         id_imagen = None
         if archivo:
@@ -3699,19 +3780,22 @@ def reconocimientos():
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 archivo.save(file_path)
 
-                # Solo se permite PDF
+                # Determinar el tipo de archivo
                 file_extension = filename.rsplit('.', 1)[1].lower()
-                if file_extension == 'pdf':
+                if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
+                    categoria = 'imagen'
+                elif file_extension == 'pdf':
                     categoria = 'pdf'
                 else:
-                    flash('Solo se permite subir archivos PDF.', 'danger')
+                    flash('Debe seleccionar un archivo válido (imagen o PDF).', 'danger')
                     return redirect(request.url)
 
+                # Insertar el archivo y obtener su id_imagen
                 cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
                 cur.execute("""
-                    INSERT INTO imagenesadjuntas (id_usuario, categoria, ruta_imagen)
-                    VALUES (%s, %s, %s)
-                """, (current_user.id, categoria, unique_filename))
+                    INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
+                    VALUES (%s, %s, %s, %s)
+                """, (current_user.id, categoria, descripcion, unique_filename))
                 db.connection.commit()
                 id_imagen = cur.lastrowid
                 cur.close()
@@ -3719,20 +3803,22 @@ def reconocimientos():
                 flash('Archivo no permitido.', 'danger')
                 return redirect(request.url)
 
+        # Insertar el reconocimiento
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
-            INSERT INTO reconocimientos (id_usuario, tipo, institucion, tipo_institucion, fecha, id_imagen)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (current_user.id, tipo, institucion, tipo_institucion, fecha, id_imagen))
+            INSERT INTO reconocimientos (id_usuario, tipo, descripcion, institucion, tipo_institucion, fecha, id_imagen)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (current_user.id, tipo, descripcion, institucion, tipo_institucion, fecha, id_imagen))
         db.connection.commit()
         cur.close()
 
         flash('Reconocimiento agregado correctamente', 'success')
         return redirect(url_for('reconocimientos'))
 
+    # Obtener los reconocimientos del usuario actual
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
     cur.execute("""
-        SELECT r.id_reconocimiento, r.tipo, r.institucion, r.tipo_institucion, r.fecha,
+        SELECT r.id_reconocimiento, r.tipo, r.descripcion, r.institucion, r.tipo_institucion, r.fecha,
                ia.ruta_imagen, ia.categoria
         FROM reconocimientos r
         LEFT JOIN imagenesadjuntas ia ON r.id_imagen = ia.id_imagen
@@ -3743,14 +3829,16 @@ def reconocimientos():
 
     return render_template('reconocimientos.html', reconocimientos=reconocimientos, form=form)
 
-
+# --- RUTA PARA EDITAR UN RECONOCIMIENTO ---
 @app.route('/editar_reconocimiento/<int:id_reconocimiento>', methods=['GET', 'POST'])
 @login_required
 def editar_reconocimiento(id_reconocimiento):
     form = ReconocimientosForm()
     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    # Obtener los datos actuales del reconocimiento
     cur.execute("""
-        SELECT r.id_reconocimiento, r.tipo, r.institucion, r.tipo_institucion, r.fecha,
+        SELECT r.id_reconocimiento, r.tipo, r.descripcion, r.institucion, r.tipo_institucion, r.fecha,
                ia.id_imagen, ia.ruta_imagen, ia.categoria
         FROM reconocimientos r
         LEFT JOIN imagenesadjuntas ia ON r.id_imagen = ia.id_imagen
@@ -3766,11 +3854,13 @@ def editar_reconocimiento(id_reconocimiento):
     if form.validate_on_submit():
         tipo = form.tipo.data
         tipo_institucion = form.tipo_institucion.data
+        descripcion = form.descripcion.data
         institucion = form.institucion.data
         fecha = form.fecha.data
         archivo = form.archivo.data
-        id_imagen_actual = reconocimiento.get('id_imagen')
+        id_imagen_actual = reconocimiento['id_imagen']
 
+        # Manejo del archivo adjunto
         if archivo:
             if allowed_file(archivo.filename):
                 filename = secure_filename(archivo.filename)
@@ -3778,27 +3868,34 @@ def editar_reconocimiento(id_reconocimiento):
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 archivo.save(file_path)
 
+                # Determinar el tipo de archivo
                 file_extension = filename.rsplit('.', 1)[1].lower()
-                if file_extension == 'pdf':
+                if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
+                    categoria = 'imagen'
+                elif file_extension == 'pdf':
                     categoria = 'pdf'
                 else:
-                    flash('Solo se permite subir archivos PDF.', 'danger')
+                    flash('Debe seleccionar un archivo válido (imagen o PDF).', 'danger')
                     return redirect(request.url)
 
                 cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
                 if id_imagen_actual:
+                    # Actualizar el archivo existente
                     cur.execute("""
                         UPDATE imagenesadjuntas
-                        SET ruta_imagen = %s, categoria = %s, fecha_subida = NOW()
+                        SET ruta_imagen = %s, categoria = %s, descripcion = %s, fecha_subida = NOW()
                         WHERE id_imagen = %s AND id_usuario = %s
-                    """, (unique_filename, categoria, id_imagen_actual, current_user.id))
+                    """, (unique_filename, categoria, descripcion, id_imagen_actual, current_user.id))
                 else:
+                    # Insertar un nuevo archivo
                     cur.execute("""
-                        INSERT INTO imagenesadjuntas (id_usuario, categoria, ruta_imagen)
-                        VALUES (%s, %s, %s)
-                    """, (current_user.id, categoria, unique_filename))
+                        INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen)
+                        VALUES (%s, %s, %s, %s)
+                    """, (current_user.id, categoria, descripcion, unique_filename))
                     db.connection.commit()
                     id_imagen_nueva = cur.lastrowid
+
+                    # Actualizar el reconocimiento con el nuevo id_imagen
                     cur.execute("""
                         UPDATE reconocimientos
                         SET id_imagen = %s
@@ -3810,25 +3907,29 @@ def editar_reconocimiento(id_reconocimiento):
                 flash('Archivo no permitido.', 'danger')
                 return redirect(request.url)
 
+        # Actualizar los datos del reconocimiento
         cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("""
             UPDATE reconocimientos
-            SET tipo = %s, institucion = %s, tipo_institucion = %s, fecha = %s
+            SET tipo = %s, descripcion = %s, institucion = %s, tipo_institucion = %s, fecha = %s
             WHERE id_reconocimiento = %s AND id_usuario = %s
-        """, (tipo, institucion, tipo_institucion, fecha, id_reconocimiento, current_user.id))
+        """, (tipo, descripcion, institucion, tipo_institucion, fecha, id_reconocimiento, current_user.id))
         db.connection.commit()
         cur.close()
 
         flash('Reconocimiento actualizado correctamente', 'success')
         return redirect(url_for('reconocimientos'))
 
+    # Prellenar el formulario con los datos actuales
     if request.method == 'GET':
         form.tipo.data = reconocimiento['tipo']
         form.tipo_institucion.data = reconocimiento['tipo_institucion']
+        form.descripcion.data = reconocimiento['descripcion']
         form.institucion.data = reconocimiento['institucion']
         form.fecha.data = reconocimiento['fecha']
 
     return render_template('editar_reconocimiento.html', reconocimiento=reconocimiento, form=form)
+
 # --- RUTA PARA ELIMINAR UN RECONOCIMIENTO ---
 @app.route('/eliminar_reconocimiento/<int:id_reconocimiento>', methods=['POST'])
 @login_required
@@ -4035,14 +4136,16 @@ def eliminar_softwareespecializado(id_software):
     return redirect(url_for('softwareespecializado'))
 
 # --- NUEVA RUTA PARA TUTORÍAS ---
+
 @app.route('/tutorias', methods=['GET', 'POST'])
 @login_required
 def tutorias():
     form = TutoriaForm()
     if form.validate_on_submit():
-        semestre = form.semestre.data
+        descripcion = form.descripcion.data
+        anio = form.anio.data
 
-        # Manejo del archivo (solo PDF)
+        # Manejo de archivos (imagen o PDF)
         file = form.archivo.data
         id_imagen = None
         if file:
@@ -4052,13 +4155,22 @@ def tutorias():
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 file.save(file_path)
 
-                # Ya que solo se admiten PDF, se asigna la categoría
-                categoria = 'pdf'
+                # Determinar el tipo de archivo (imagen o PDF)
+                file_extension = filename.rsplit('.', 1)[1].lower()
+                if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
+                    categoria = 'imagen'
+                elif file_extension == 'pdf':
+                    categoria = 'pdf'
+                else:
+                    flash('Debe seleccionar un archivo válido (imagen o PDF).')
+                    return redirect(request.url)
+
                 cur = db.connection.cursor()
+                # Insertar el archivo y obtener su id_imagen
                 cur.execute("""
                     INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen) 
                     VALUES (%s, %s, %s, %s)
-                """, (current_user.id, categoria, '', unique_filename))
+                """, (current_user.id, categoria, descripcion, unique_filename))
                 db.connection.commit()
                 id_imagen = cur.lastrowid
                 cur.close()
@@ -4066,20 +4178,22 @@ def tutorias():
                 flash('Archivo no permitido.')
                 return redirect(request.url)
 
+        # Insertar la tutoría
         cur = db.connection.cursor()
         cur.execute("""
-            INSERT INTO tutorias (id_usuario, semestre, id_imagen)
-            VALUES (%s, %s, %s)
-        """, (current_user.id, semestre, id_imagen))
+            INSERT INTO tutorias (id_usuario, descripcion, anio, id_imagen)
+            VALUES (%s, %s, %s, %s)
+        """, (current_user.id, descripcion, anio, id_imagen))
         db.connection.commit()
         cur.close()
 
         flash('Tutoría agregada correctamente')
         return redirect(url_for('tutorias'))
 
+    # Obtener las tutorías del usuario actual
     cur = db.connection.cursor()
     cur.execute("""
-        SELECT t.id_tutoria, t.semestre, 
+        SELECT t.id_tutoria, t.descripcion, t.anio, 
                ia.ruta_imagen, ia.categoria
         FROM tutorias t
         LEFT JOIN imagenesadjuntas ia ON t.id_imagen = ia.id_imagen
@@ -4095,8 +4209,10 @@ def tutorias():
 def editar_tutoria(id_tutoria):
     form = TutoriaForm()
     cur = db.connection.cursor()
+
+    # Updated SELECT statement to include id_imagen
     cur.execute("""
-        SELECT t.id_tutoria, t.semestre, 
+        SELECT t.id_tutoria, t.descripcion, t.anio, 
                ia.id_imagen, ia.ruta_imagen, ia.categoria
         FROM tutorias t
         LEFT JOIN imagenesadjuntas ia ON t.id_imagen = ia.id_imagen
@@ -4110,9 +4226,10 @@ def editar_tutoria(id_tutoria):
         return redirect(url_for('tutorias'))
 
     if form.validate_on_submit():
-        semestre = form.semestre.data
+        descripcion = form.descripcion.data
+        anio = form.anio.data
         file = form.archivo.data
-        id_imagen_actual = tutoria[2]
+        id_imagen_actual = tutoria[3]  # ia.id_imagen (integer)
 
         if file:
             if allowed_file(file.filename):
@@ -4120,21 +4237,35 @@ def editar_tutoria(id_tutoria):
                 unique_filename = f"{int(time.time())}_{filename}"
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 file.save(file_path)
-                categoria = 'pdf'
+
+                # Determine file type
+                file_extension = filename.rsplit('.', 1)[1].lower()
+                if file_extension in ['jpg', 'jpeg', 'png', 'gif']:
+                    categoria = 'imagen'
+                elif file_extension == 'pdf':
+                    categoria = 'pdf'
+                else:
+                    flash('Debe seleccionar un archivo válido (imagen o PDF).')
+                    return redirect(request.url)
+
                 cur = db.connection.cursor()
                 if id_imagen_actual:
+                    # Update existing imagenesadjuntas row
                     cur.execute("""
                         UPDATE imagenesadjuntas 
                         SET ruta_imagen = %s, categoria = %s, descripcion = %s, fecha_subida = NOW()
                         WHERE id_imagen = %s AND id_usuario = %s
-                    """, (unique_filename, categoria, '', id_imagen_actual, current_user.id))
+                    """, (unique_filename, categoria, descripcion, id_imagen_actual, current_user.id))
                 else:
+                    # Insert new imagenesadjuntas row
                     cur.execute("""
                         INSERT INTO imagenesadjuntas (id_usuario, categoria, descripcion, ruta_imagen) 
                         VALUES (%s, %s, %s, %s)
-                    """, (current_user.id, categoria, '', unique_filename))
+                    """, (current_user.id, categoria, descripcion, unique_filename))
                     db.connection.commit()
                     id_imagen_nueva = cur.lastrowid
+
+                    # Update the tutoria with the new id_imagen
                     cur.execute("""
                         UPDATE tutorias 
                         SET id_imagen = %s 
@@ -4146,22 +4277,26 @@ def editar_tutoria(id_tutoria):
                 flash('Archivo no permitido.')
                 return redirect(request.url)
 
+        # Update the tutoria details
         cur = db.connection.cursor()
         cur.execute("""
             UPDATE tutorias 
-            SET semestre = %s
+            SET descripcion = %s, anio = %s
             WHERE id_tutoria = %s AND id_usuario = %s
-        """, (semestre, id_tutoria, current_user.id))
+        """, (descripcion, anio, id_tutoria, current_user.id))
         db.connection.commit()
         cur.close()
 
         flash('Tutoría actualizada correctamente')
         return redirect(url_for('tutorias'))
 
+    # Pre-fill the form with existing data on GET request
     if request.method == 'GET':
-        form.semestre.data = tutoria[1]
+        form.descripcion.data = tutoria[1]
+        form.anio.data = tutoria[2]
 
     return render_template('editar_tutoria.html', tutoria=tutoria, form=form)
+
 
 # Ruta para eliminar una tutoría
 @app.route('/eliminar_tutoria/<int:id_tutoria>', methods=['POST'])
