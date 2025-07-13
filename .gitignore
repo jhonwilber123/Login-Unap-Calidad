@@ -1,3 +1,22 @@
+# Entorno Virtual - ¡La que pediste!
 /env/
+
+# Caché de Python - ¡La que pediste!
 __pycache__/
 *.py[cod]
+
+# Archivos de entorno (para contraseñas, etc.)
+.env
+.venv
+instance/
+
+# Archivos de logs
+*.log
+
+# Archivos del espacio de trabajo de VSCode
+.vscode/
+*.code-workspace
+
+# Otros
+.pytest_cache/
+.webassets-cache
