@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte Docente - {{ datos.datos_personales.nombres }} {{ datos.datos_personales.apellido_paterno }}</title>
+    <style>
+        /* --- Estilos CSS optimizados para WeasyPrint y formato de CV --- */
+
+        /* Importar una fuente clásica para documentos formales */
+        @font-face {
+            font-family: 'CenturyGothic';
+            src: url('{{ base_url }}/static/fonts/GOTHIC.TTF'); /* Asegúrate de tener la fuente en esta ruta */
+        }
+
+        /* Configuración de la página del PDF */
+        @page {
+            size: A4;
+            margin: 1.5cm; /* Márgenes generosos */
+
+            /* Pie de página con contador */
+            @bottom-center {
+                content: "Página " counter(page) " de " counter(pages);
+                font-family: 'CenturyGothic', sans-serif;
+                font-size: 9pt;
+                color: #888;
+                border-top: 1px solid #ccc;
+                padding-top: 5px;
+                width: 100%;
+            }
+        }
+
+        body {
+            font-family: 'CenturyGothic', sans-serif;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: #333;
+        }
+
+        /* Encabezado del documento */
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #4A5568; /* Un gris oscuro profesional */
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+
+        .header img {
+            max-height: 70px; /* Tamaño del logo */
+            margin-bottom: 5px;
+        }
+
+        .header .school-name {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #2D3748;
+        }
+
+        .header .report-title {
+            font-size: 16pt;
+            font-weight: bold;
+            margin-top: 15px;
+            color: #1A202C;
+        }
+
+        /* Títulos de las secciones del CV */
+        .cv-section-title {
+            font-size: 13pt;
+            font-weight: bold;
+            color: #2D3748;
+            border-bottom: 1px solid #718096;
+            padding-bottom: 4px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            page-break-after: avoid; /* Evitar saltos de página justo después de un título */
+        }
+
+        /* Tabla para los datos */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            page-break-inside: avoid; /* Intentar mantener las tablas en una sola página */
+        }
+
+        th, td {
+            border: 1px solid #CBD5E0;
+            padding: 6px 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #E2E8F0;
+            font-weight: bold;
+            font-size: 9.5pt;
+        }
+
+        td {
+            font-size: 9.5pt;
+        }
+        
+        /* Estilo para la tabla de datos personales */
+        .personal-data-table th {
+            width: 35%;
+            background-color: transparent;
+            border: none;
+            font-weight: bold;
+            padding-left: 0;
+        }
+        .personal-data-table td {
+            border: none;
+        }
+
+        .no-data {
+            font-style: italic;
+            color: #718096;
+            padding: 10px;
+            text-align: center;
+            border: 1px dashed #ccc;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Encabezado del Documento -->
+    <div class="header">
+        <img src="{{ base_url }}/static/img/logo_ccs_una.png" alt="Logo EPCCSS">
+        <div class="school-name">Escuela Profesional de Ciencias de la Comunicación Social</div>
+        <div class="report-title">Hoja de Vida del Docente</div>
+    </div>
+
+    <!-- Datos Personales -->
+    {% if datos.datos_personales %}
+        <div class="cv-section-title">I. Datos Personales</div>
+        <table class="personal-data-table">
+            <tr>
+                <th>Nombres y Apellidos:</th>
+                <td>{{ datos.datos_personales.nombres }} {{ datos.datos_personales.apellido_paterno }} {{ datos.datos_personales.apellido_materno }}</td>
+            </tr>
+            <tr>
+                <th>Documento Nacional de Identidad (DNI):</th>
+                <td>{{ datos.datos_personales.dni or 'No registrado' }}</td>
+            </tr>
+            <tr>
+                <th>Código de Docente (UNAP):</th>
+                <td>{{ datos.datos_personales.codigo or 'No registrado' }}</td>
+            </tr>
+            <tr>
+                <th>Correo Electrónico Institucional:</th>
+                <td>{{ datos.datos_personales.email_usuario or 'No registrado' }}</td>
+            </tr>
+        </table>
+    {% endif %}
+
+    <!-- Diccionario para Títulos y Numeración de Secciones -->
+    {% set secciones = {
+        'grados_titulos': 'II. Grados y Títulos',
+        'experiencia_docente': 'III. Experiencia Docente',
+        'investigaciones': 'IV. Investigaciones y Publicaciones',
+        'produccion_intelectual': 'V. Producción Intelectual',
+        'actualizaciones_capacitaciones': 'VI. Actualizaciones y Capacitaciones',
+        'carga_academica': 'VII. Carga Académica',
+        'participacion_gestion_universitaria': 'VIII. Participación en Gestión Universitaria',
+        'reconocimientos': 'IX. Distinciones y Reconocimientos',
+        'participacion_tesis': 'X. Asesoría y Jurado de Tesis',
+        'idiomas': 'XI. Dominio de Idiomas',
+        'software_especializado': 'XII. Manejo de Software Especializado',
+        'tutorias': 'XIII. Tutoría y Apoyo al Estudiante',
+        'evaluacion_desempeno': 'XIV. Evaluación de Desempeño',
+        'acreditacion_licenciamiento': 'XV. Participación en Acreditación y Licenciamiento',
+        'actividades_proyeccion_social': 'XVI. Actividades de Proyección Social'
+    } %}
+
+    <!-- Bucle para renderizar cada sección del CV -->
+    {% for nombre_tabla, titulo in secciones.items() %}
+        {% if datos[nombre_tabla] %}
+            <div class="cv-section-title">{{ titulo }}</div>
+            <table>
+                <thead>
+                    <tr>
+                        <!-- Generamos encabezados dinámicos y legibles -->
+                        {% for key in datos[nombre_tabla][0].keys() if key.lower() not in ['id_usuario', 'id_imagen', 'id_imagen_sunedu', 'id_memorandum', 'adjuntar_plan', 'adjuntar_informe', 'adjuntar_curso', 'puntaje'] and 'id_' not in key.lower() %}
+                            <th>{{ key.replace('_', ' ')|title }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in datos[nombre_tabla] %}
+                    <tr>
+                        <!-- Mostramos los datos de cada registro -->
+                        {% for key, value in item.items() if key.lower() not in ['id_usuario', 'id_imagen', 'id_imagen_sunedu', 'id_memorandum', 'adjuntar_plan', 'adjuntar_informe', 'adjuntar_curso', 'puntaje'] and 'id_' not in key.lower() %}
+                            <td>
+                                {% if value is sameas true %}Sí
+                                {% elif value is sameas false %}No
+                                {% else %}{{ value or '' }}
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    {% endfor %}
+
+</body>
+</html>

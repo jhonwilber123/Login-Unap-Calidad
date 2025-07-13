@@ -16,22 +16,22 @@
 
     <!-- Sección de Bienvenida -->
     <div class="welcome-section mb-4 text-center">
-        <h2 class="h4">Bienvenido, {{ current_user.username }}</h2>
-        <p class="text-muted">¿Qué deseas hacer hoy?</p>
+        <h2 class="h4">Bienvenido, Administrador</h2> <!-- Puedes mantener el nombre del usuario o poner un título genérico -->
+        <p class="text-muted">Utilice este formulario para registrar un nuevo docente o administrativo en el sistema.</p>
         <div class="d-flex justify-content-center gap-3 mt-3">
-            <a href="{{ url_for('ver_datos_personal') }}" class="btn btn-primary">
-                <i class="bi bi-person-plus-fill me-2"></i> Reporte
+            <a href="{{ url_for('admin.ver_datos_personal') }}" class="btn btn-primary">
+                <i class="bi bi-file-earmark-text-fill me-2"></i> Ver Reportes
             </a>
-            <a href="{{ url_for('list_users') }}" class="btn btn-secondary">
+            <a href="{{ url_for('admin.list_users') }}" class="btn btn-secondary">
                 <i class="bi bi-people-fill me-2"></i> Gestionar Usuarios
             </a>
         </div>
     </div>
 
-    {% with messages = get_flashed_messages() %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-primary alert-dismissible fade show" role="alert">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
                     <strong>{{ message }}</strong>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
@@ -41,42 +41,87 @@
 
     <!-- Formulario de Creación de Usuario -->
     <div class="formularios-container">
-        <form action="{{ url_for('create_user') }}" method="POST" class="needs-validation" novalidate>
+        <!-- ======================= INICIO DEL CAMBIO ======================== -->
+        <!-- La acción del formulario ahora apunta a la ruta dentro del blueprint 'admin' -->
+        <form action="{{ url_for('admin.create_user') }}" method="POST" class="needs-validation" novalidate>
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <div class="mb-3">
                 <label for="username" class="form-label">
-                    <i class="bi bi-person me-1"></i> Nombre de Usuario
+                    <i class="bi bi-envelope-fill me-1"></i> Correo Electrónico (Usuario)
                 </label>
-                <input type="text" class="form-control" id="username" name="username" placeholder="Nombre de Usuario" required>
+                <!-- Es buena práctica usar el correo como nombre de usuario -->
+                <input type="email" class="form-control" id="username" name="username" placeholder="ejemplo@unap.edu.pe" required>
                 <div class="invalid-feedback">
-                    Por favor, ingresa un nombre de usuario.
+                    Por favor, ingresa un correo electrónico válido como nombre de usuario.
                 </div>
             </div>
 
-            <div class="mb-3">
-                <label for="fullname" class="form-label">
-                    <i class="bi bi-card-text me-1"></i> Nombre Completo
-                </label>
-                <input type="text" class="form-control" id="fullname" name="fullname" placeholder="Nombre Completo">
+            <!-- ANTES: Tenías un solo campo 'fullname'. -->
+            <!-- AHORA: Lo reemplazamos por tres campos separados. -->
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <label for="nombres" class="form-label">
+                        <i class="bi bi-card-text me-1"></i> Nombres
+                    </label>
+                    <input type="text" class="form-control" id="nombres" name="nombres" placeholder="Nombres del usuario" required>
+                    <div class="invalid-feedback">
+                        Por favor, ingresa los nombres.
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="apellido_paterno" class="form-label">
+                        <i class="bi bi-card-text me-1"></i> Apellido Paterno
+                    </label>
+                    <input type="text" class="form-control" id="apellido_paterno" name="apellido_paterno" placeholder="Apellido paterno" required>
+                    <div class="invalid-feedback">
+                        Por favor, ingresa el apellido paterno.
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="apellido_materno" class="form-label">
+                        <i class="bi bi-card-text me-1"></i> Apellido Materno
+                    </label>
+                    <input type="text" class="form-control" id="apellido_materno" name="apellido_materno" placeholder="Apellido materno" required>
+                    <div class="invalid-feedback">
+                        Por favor, ingresa el apellido materno.
+                    </div>
+                </div>
             </div>
-
+            
+            <!-- CAMPOS ADICIONALES para que coincida con el nuevo ModelUser -->
+             <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="dni" class="form-label">
+                        <i class="bi bi-person-badge-fill me-1"></i> DNI
+                    </label>
+                    <input type="text" class="form-control" id="dni" name="dni" placeholder="DNI (8 dígitos)">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="codigo" class="form-label">
+                        <i class="bi bi-hash me-1"></i> Código de Docente
+                    </label>
+                    <input type="text" class="form-control" id="codigo" name="codigo" placeholder="Código de la UNAP">
+                </div>
+            </div>
+            <!-- ======================= FIN DEL CAMBIO ======================== -->
+            
             <div class="mb-3">
                 <label for="password" class="form-label">
                     <i class="bi bi-lock me-1"></i> Contraseña
                 </label>
                 <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña" required>
-                <div id="password_feedback" class="form-text text-danger"></div>
+                <div id="password_feedback" class="form-text"></div>
             </div>
-
+            
             <div class="mb-4">
                 <label for="role" class="form-label">
                     <i class="bi bi-gear-fill me-1"></i> Rol
                 </label>
                 <select class="form-select" id="role" name="role">
-                    <option value="docente">Docente</option>
-                    <option value="administrativo">Administrativo</option>
-                    <option value="administrador">Administrador</option>
+                    <option value="Docente" selected>Docente</option>
+                    <option value="Administrativo">Administrativo</option>
+                    <option value="Administrador">Administrador</option>
                 </select>
             </div>
 
@@ -96,7 +141,7 @@
 
         passwordInput.addEventListener('input', function () {
             const password = passwordInput.value;
-            fetch('/validate-password', {
+            fetch("{{ url_for('auth.validate_password') }}", { // Apunta a la ruta en el blueprint de auth
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -108,16 +153,25 @@
             .then(data => {
                 feedback.innerHTML = '';
                 if (!data.valid) {
+                    feedback.classList.add('text-danger'); // Añade color rojo
+                    feedback.classList.remove('text-success');
                     data.reasons.forEach(reason => {
                         const p = document.createElement('p');
-                        p.textContent = reason;
+                        p.textContent = '❌ ' + reason;
                         feedback.appendChild(p);
                     });
+                } else {
+                    feedback.classList.remove('text-danger');
+                    feedback.classList.add('text-success'); // Añade color verde
+                    const p = document.createElement('p');
+                    p.textContent = '✅ Contraseña segura.';
+                    feedback.appendChild(p);
                 }
             })
             .catch(error => console.error('Error:', error));
         });
 
+        // Bootstrap 5 validation script
         const form = document.querySelector('.needs-validation');
         form.addEventListener('submit', function (event) {
             if (!form.checkValidity()) {

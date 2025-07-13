@@ -1,0 +1,152 @@
+<!-- src/templates/admin/view_all_data.html -->
+{% extends "base.html" %}
+
+{% block title %}Reporte Completo del Docente{% endblock %}
+
+{% block customCSS %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+    <!-- Font Awesome para los iconos que ya usabas -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Estilos para hacer la vista más limpia y profesional */
+        .card-header {
+            font-weight: bold;
+            background-color: #e9ecef;
+        }
+        .card {
+            border: 1px solid #dee2e6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .table-responsive {
+            margin-top: 1rem;
+        }
+        th {
+            width: 30%; /* Da más espacio a las etiquetas */
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    
+    <!-- VERIFICAMOS SI HAY DATOS ANTES DE MOSTRAR NADA -->
+    {% if datos and datos.datos_personales %}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3"><i class="fas fa-database me-2"></i>Reporte del Docente: {{ datos.datos_personales.nombres }} {{ datos.datos_personales.apellido_paterno }}</h1>
+            
+            <!-- ESTE ES EL CAMBIO CLAVE -->
+            <!-- El botón ahora es un simple enlace a la ruta de Flask que genera el PDF en el servidor. -->
+            <a href="{{ url_for('admin.generar_reporte_pdf', user_id=datos.datos_personales.id_usuario) }}" class="btn btn-danger">
+                <i class="fas fa-file-pdf me-2"></i>Descargar Reporte Oficial (PDF)
+            </a>
+        </div>
+
+        <!-- Datos Personales -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#collapseDatosPersonales" style="cursor: pointer;">
+                <span><i class="fas fa-user me-2"></i>Datos Personales</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div id="collapseDatosPersonales" class="collapse show">
+                <div class="card-body">
+                    <!-- Usamos el nuevo objeto 'datos' que viene del ModelCV -->
+                    <!-- Accedemos a los datos por nombre (ej. dato.nombres) en lugar de por índice (ej. dato[4]) -->
+                    <table class="table table-striped table-bordered">
+                        <tbody>
+                            <tr><th>Nombre Completo</th><td>{{ datos.datos_personales.nombres }} {{ datos.datos_personales.apellido_paterno }} {{ datos.datos_personales.apellido_materno }}</td></tr>
+                            <tr><th>Código UNA</th><td>{{ datos.datos_personales.codigo or 'No registrado' }}</td></tr>
+                            <tr><th>DNI</th><td>{{ datos.datos_personales.dni or 'No registrado' }}</td></tr>
+                            <tr><th>Correo Institucional</th><td>{{ datos.datos_personales.email_usuario or 'No registrado' }}</td></tr>
+                            <!-- Añade aquí cualquier otro dato personal que quieras mostrar -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- SECCIÓN DINÁMICA PARA MOSTRAR TODAS LAS TABLAS DEL CV -->
+        <!-- ===================================================================== -->
+
+        <!-- Creamos un diccionario para mapear los nombres de tabla a títulos legibles -->
+        {% set titulos_secciones = {
+            'grados_titulos': 'Grados y Títulos',
+            'experiencia_docente': 'Experiencia Docente',
+            'investigaciones': 'Investigaciones',
+            'produccion_intelectual': 'Producción Intelectual',
+            'actualizaciones_capacitaciones': 'Actualizaciones y Capacitaciones',
+            'cargos_directivos': 'Cargos Directivos',
+            'participacion_tesis': 'Participación en Tesis',
+            'reconocimientos': 'Reconocimientos',
+            'idiomas': 'Idiomas',
+            'software_especializado': 'Software Especializado',
+            'tutorias': 'Tutorías',
+            'carga_academica': 'Carga Académica',
+            'participacion_gestion_universitaria': 'Participación en Gestión',
+            'evaluacion_desempeno': 'Evaluación de Desempeño',
+            'acreditacion_licenciamiento': 'Acreditación y Licenciamiento',
+            'actividades_proyeccion_social': 'Proyección Social'
+        } %}
+
+        <!-- Iteramos sobre el diccionario 'datos' que nos pasó el ModelCV -->
+        {% for nombre_tabla, items in datos.items() %}
+            <!-- Solo mostramos la sección si tiene registros y no es la de datos_personales (que ya mostramos) -->
+            {% if items and nombre_tabla != 'datos_personales' %}
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#collapse_{{ nombre_tabla }}" style="cursor: pointer;">
+                        <span><i class="fas fa-chevron-right me-2"></i>{{ titulos_secciones.get(nombre_tabla, nombre_tabla.replace('_', ' ')|title) }}</span>
+                        <span class="badge bg-primary rounded-pill">{{ items|length }}</span>
+                    </div>
+                    <div id="collapse_{{ nombre_tabla }}" class="collapse">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover table-sm">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <!-- Generamos los encabezados dinámicamente, excluyendo los IDs -->
+                                            {% for key in items[0].keys() if key not in ['id_usuario', 'id_imagen', 'id_imagen_sunedu', 'id_memorandum', 'adjuntar_plan', 'adjuntar_informe', 'adjuntar_curso', 'id_grado', 'id_experiencia', 'id_investigacion', 'id_produccion', 'id_capacitacion', 'id_cargo', 'id_participaciontesis', 'id_reconocimiento', 'id_idioma', 'id_software', 'id_tutoria', 'id_carga', 'id', 'id_evaluacion', 'id_acreditacion', 'id_actividad'] %}
+                                                <th>{{ key.replace('_', ' ')|title }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in items %}
+                                        <tr>
+                                            <!-- Mostramos los datos de cada registro -->
+                                            {% for key, value in item.items() if key not in ['id_usuario', 'id_imagen', 'id_imagen_sunedu', 'id_memorandum', 'adjuntar_plan', 'adjuntar_informe', 'adjuntar_curso', 'id_grado', 'id_experiencia', 'id_investigacion', 'id_produccion', 'id_capacitacion', 'id_cargo', 'id_participaciontesis', 'id_reconocimiento', 'id_idioma', 'id_software', 'id_tutoria', 'id_carga', 'id', 'id_evaluacion', 'id_acreditacion', 'id_actividad'] %}
+                                                <td>
+                                                    {% if value is sameas true %}Sí
+                                                    {% elif value is sameas false %}No
+                                                    {% else %}{{ value or 'N/A' }}
+                                                    {% endif %}
+                                                </td>
+                                            {% endfor %}
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    
+    {% else %}
+        <!-- Mensaje si el usuario no tiene ningún dato registrado -->
+        <div class="alert alert-warning text-center">
+            <h4 class="alert-heading">Sin Datos</h4>
+            <p>No se encontraron datos para mostrar para este usuario. El docente aún no ha completado su información.</p>
+            <hr>
+            <a href="{{ url_for('admin.ver_datos_personal') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Volver a la lista de personal
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block customJS %}
+    <!-- No se necesita más JavaScript para la generación del PDF. ¡Mucho más limpio! -->
+{% endblock %}
