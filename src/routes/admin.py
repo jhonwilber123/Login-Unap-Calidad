@@ -1,19 +1,22 @@
-# src/routes/admin.py
+# src/routes/admin.py (Versión Completa y Corregida)
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, Response
 from flask_login import login_required, current_user
-from weasyprint import HTML  # Para la generación de PDF
+from weasyprint import HTML
 
 # Importa tus modelos y la instancia de la base de datos
 from models.ModelUser import ModelUser
-from models.ModelCV import ModelCV  # Necesitarás crear este modelo
-from forms import EditUserForm  # Asumiendo que tienes un formulario para editar
-from app import db, app # Importamos 'db' y 'app'
+from models.ModelCV import ModelCV
+# Asegúrate de que tu EditUserForm en forms.py tenga todos los campos necesarios
+from forms import EditUserForm
+from app import db, app
 
 # Creamos el Blueprint para las rutas de administración
 admin_bp = Blueprint('admin', __name__)
 
-# --- GESTIÓN DE USUARIOS ---
+# ============================
+# === GESTIÓN DE USUARIOS ===
+# ============================
 
 @admin_bp.route('/users')
 @login_required
@@ -72,33 +75,38 @@ def edit_user(user_id):
         return redirect(url_for('docente.home'))
     
     try:
-        user = ModelUser.get_by_id(db, user_id)
-        if not user:
+        # Usamos el nuevo método del modelo que obtiene los datos combinados
+        user_data = ModelUser.get_user_with_details_by_id(db, user_id)
+        if not user_data:
             flash('Usuario no encontrado.', 'warning')
             return redirect(url_for('admin.list_users'))
 
-        form = EditUserForm(request.form)
+        # Pre-poblamos el formulario con los datos recuperados
+        form = EditUserForm(data=user_data)
 
-        if request.method == 'POST' and form.validate():
-            # Actualizar datos básicos del usuario
-            ModelUser.update_user(db, user_id, form.username.data, user.role) # Rol no se edita aquí, o sí? Decide tu lógica
+        if form.validate_on_submit():
+            # La lógica de actualización ahora está centralizada en el modelo
+            ModelUser.update_user_with_details(
+                db, user_id, 
+                form.username.data, 
+                form.nombres.data, 
+                form.apellido_paterno.data, 
+                form.apellido_materno.data
+            )
 
-            # Si se proporcionó una nueva contraseña, actualizarla
+            # Si se proporcionó una nueva contraseña, la actualizamos por separado
             if form.password.data:
-                # La validación de la fortaleza de la contraseña debe estar en la ruta
                 is_strong, reason = ModelUser.is_password_strong(form.password.data)
                 if not is_strong:
                     flash(reason, 'warning')
-                    return render_template('users/edit_user.html', form=form, user=user)
+                    return render_template('users/edit_user.html', form=form, user=user_data)
                 
                 ModelUser.update_password(db, user_id, form.password.data)
             
             flash('Usuario actualizado correctamente.', 'success')
             return redirect(url_for('admin.list_users'))
         
-        # Para la solicitud GET, pre-populamos el formulario
-        form.username.data = user.username
-        return render_template('users/edit_user.html', form=form, user=user)
+        return render_template('users/edit_user.html', form=form, user=user_data)
 
     except Exception as ex:
         flash(f'Ocurrió un error al editar el usuario: {ex}', 'danger')
@@ -120,44 +128,28 @@ def delete_user(user_id):
         
     return redirect(url_for('admin.list_users'))
 
-# --- VISUALIZACIÓN DE REPORTES ---
+# =============================
+# === VISUALIZACIÓN DE REPORTES ===
+# =============================
 
 @admin_bp.route('/reports/personal_data', defaults={'page': 1})
 @admin_bp.route('/reports/personal_data/page/<int:page>')
 @login_required
 def ver_datos_personal(page):
-    """Muestra una lista paginada de todos los docentes para que el admin pueda ver sus datos."""
+    """Muestra una lista paginada de todos los docentes."""
     if current_user.role != 'Administrador':
         flash('No tienes permisos para acceder a esta página.', 'danger')
         return redirect(url_for('docente.home'))
 
     try:
-        # La lógica de paginación se mantiene aquí, pero la consulta se va al modelo
+        # La lógica de paginación ahora vive en el modelo.
         resultados_por_pagina = 10
+        paginated_data = ModelUser.get_paginated_docentes(db, page, resultados_por_pagina)
         
-        # En el futuro, idealmente esto sería una llamada a un método del modelo:
-        # paginated_data = ModelUser.get_paginated_users_with_details(db, page, resultados_por_pagina)
-        # usuarios = paginated_data['users']
-        # total_paginas = paginated_data['total_pages']
-        
-        # Por ahora, mantenemos tu lógica original aquí
-        cur = db.connection.cursor()
-        cur.execute("SELECT COUNT(*) FROM usuarios WHERE rol='Docente'")
-        total_usuarios = cur.fetchone()[0]
-        total_paginas = (total_usuarios // resultados_por_pagina) + (1 if total_usuarios % resultados_por_pagina > 0 else 0)
-        offset = (page - 1) * resultados_por_pagina
-        cur.execute("""
-            SELECT u.id_usuario, u.usuario, dp.nombres, dp.apellido_paterno, dp.apellido_materno, dp.dni, dp.codigo
-            FROM usuarios u LEFT JOIN datospersonales dp ON u.id_usuario = dp.id_usuario
-            WHERE u.rol='Docente' LIMIT %s OFFSET %s
-        """, (resultados_por_pagina, offset))
-        usuarios = cur.fetchall()
-        cur.close()
-
         return render_template('admin/ver_datos_personal.html', 
-                               usuarios=usuarios, 
+                               usuarios=paginated_data['usuarios'], 
                                page=page, 
-                               total_paginas=total_paginas)
+                               total_paginas=paginated_data['total_paginas'])
     except Exception as ex:
         flash(f'Ocurrió un error al obtener los datos del personal: {ex}', 'danger')
         return redirect(url_for('docente.home'))
@@ -171,8 +163,7 @@ def view_all_data(user_id):
         return redirect(url_for('docente.home'))
 
     try:
-        # Aquí es donde el ModelCV se vuelve muy poderoso.
-        # En lugar de hacer 10 consultas aquí, hacemos una llamada al modelo.
+        # Usamos el método del ModelCV que obtiene todos los datos
         datos_completos = ModelCV.get_cv_completo_por_usuario(db, user_id)
         
         if not datos_completos.get('datos_personales'):
@@ -200,15 +191,15 @@ def generar_reporte_pdf(user_id):
              flash('No se pueden generar reportes para usuarios sin datos.', 'warning')
              return redirect(url_for('admin.ver_datos_personal'))
 
-        # Renderizamos una plantilla HTML especial, diseñada para ser un PDF (sin navbars, etc.)
+        # Renderizamos la plantilla HTML especial para PDF
         html_renderizado = render_template('pdf/reporte_template.html', 
                                            datos=datos_completos,
                                            base_url=request.host_url)
 
-        # Usamos WeasyPrint para convertir el HTML a PDF
+        # Usamos WeasyPrint para la conversión
         pdf = HTML(string=html_renderizado, base_url=request.host_url).write_pdf()
 
-        # Creamos una respuesta de Flask para que el navegador descargue el archivo
+        # Creamos una respuesta de Flask para la descarga
         return Response(pdf,
                         mimetype='application/pdf',
                         headers={'Content-Disposition': f'attachment;filename=reporte_docente_{user_id}.pdf'})

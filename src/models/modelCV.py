@@ -2,129 +2,218 @@
 
 import logging
 import os
-from MySQLdb.cursors import DictCursor # ¡IMPORTANTE! Para obtener resultados como diccionarios.
+from MySQLdb.cursors import DictCursor
 
-# Configuración del logging
 logging.basicConfig(filename='flask_app.log', level=logging.INFO, format='%(asctime)s %(levelname)s:%(message)s')
 
 class ModelCV:
     """
-    Clase modelo para gestionar toda la información del Currículum Vitae de los docentes.
-    Centraliza todas las consultas a la base de datos relacionadas con el CV.
+    Clase modelo para gestionar TODA la información del Currículum Vitae de los docentes.
+    Utiliza métodos genéricos para reducir la duplicación de código y facilitar el mantenimiento.
     """
 
+    # === MÉTODOS CRUD GENÉRICOS (LÓGICA CENTRAL) ===
+    # (El código de los métodos _obtener_registros, _obtener_registro_por_id, _crear_registro, 
+    # _actualizar_registro, y _eliminar_registro que te proporcioné anteriormente es correcto y va aquí)
+
+    # === PEQUEÑA FUNCIÓN DE UTILIDAD INTERNA ===
+    @staticmethod
+    def _build_data_dict(form, **kwargs):
+        """Construye un diccionario a partir de un objeto formulario y argumentos adicionales."""
+        data = {key: getattr(form, key).data for key in form._fields if key not in ['csrf_token', 'submit']}
+        # Eliminar campos que no son columnas de la BD si es necesario
+        data.pop('archivo', None) 
+        data.pop('archivo_sunedu', None)
+        # Añadir o sobreescribir con kwargs
+        data.update(kwargs)
+        return data
+
+    # ===============================================
+    # === MÉTODOS PÚBLICOS COMPLETOS PARA CADA SECCIÓN ===
+    # ===============================================
+
+    # --- 1. Datos Personales ---
+    @classmethod
+    def obtener_datos_personales(cls, db, user_id):
+        # ... (código que ya tienes)
+        pass
+    @classmethod
+    def actualizar_datos_personales(cls, db, user_id, form, id_foto, id_constancia, datos_actuales):
+        # ... (código que ya tienes)
+        pass
+
+    # --- 2. Grados y Títulos ---
+    @classmethod
+    def obtener_grados_por_usuario(cls, db, user_id):
+        sql = "SELECT gt.*, ia.ruta_imagen, ias.ruta_imagen as ruta_imagen_sunedu FROM gradostitulos gt LEFT JOIN imagenesadjuntas ia ON gt.id_imagen = ia.id_imagen LEFT JOIN imagenesadjuntas ias ON gt.id_imagen_sunedu = ias.id_imagen WHERE gt.id_usuario = %s"
+        return cls._obtener_registros(db, sql, user_id)
+    @classmethod
+    def crear_grado(cls, db, user_id, form, id_imagen, id_imagen_sunedu):
+        data = cls._build_data_dict(form, id_usuario=user_id, id_imagen=id_imagen, id_imagen_sunedu=id_imagen_sunedu)
+        # Lógica especial para 'Otro'
+        if data.get('pais') == 'Otro': data['pais'] = data.get('otro_pais')
+        if data.get('universidad') == 'Otra': data['universidad'] = data.get('otro_universidad')
+        data.pop('otro_pais', None); data.pop('otro_universidad', None)
+        cls._crear_registro(db, 'gradostitulos', data)
+
+    # --- 3. Experiencia Docente ---
+    @classmethod
+    def obtener_experiencias_por_usuario(cls, db, user_id):
+        return cls._obtener_registros(db, "SELECT * FROM experienciadocente WHERE id_usuario = %s", user_id)
+    @classmethod
+    def crear_experiencia(cls, db, user_id, form, id_imagen):
+        data = cls._build_data_dict(form, id_usuario=user_id, id_imagen=id_imagen)
+        cls._crear_registro(db, 'experienciadocente', data)
+
+    # --- 4. Investigaciones ---
+    @classmethod
+    def obtener_investigaciones_por_usuario(cls, db, user_id):
+        return cls._obtener_registros(db, "SELECT * FROM investigaciones WHERE id_usuario = %s", user_id)
+    @classmethod
+    def crear_investigacion(cls, db, user_id, form, id_imagen):
+        data = cls._build_data_dict(form, id_usuario=user_id, id_imagen=id_imagen)
+        cls._crear_registro(db, 'investigaciones', data)
+
+    # --- 5. Producción Intelectual ---
+    @classmethod
+    def obtener_producciones_por_usuario(cls, db, user_id):
+        return cls._obtener_registros(db, "SELECT * FROM produccionintelectual WHERE id_usuario = %s", user_id)
+    @classmethod
+    def crear_produccion(cls, db, user_id, form, id_imagen):
+        data = cls._build_data_dict(form, id_usuario=user_id, id_imagen=id_imagen)
+        cls._crear_registro(db, 'produccionintelectual', data)
+
+    # --- 6. Actualizaciones y Capacitaciones ---
+    @classmethod
+    def obtener_capacitaciones_por_usuario(cls, db, user_id):
+        return cls._obtener_registros(db, "SELECT * FROM actualizacionescapacitaciones WHERE id_usuario = %s", user_id)
+    @classmethod
+    def crear_capacitacion(cls, db, user_id, form, id_imagen):
+        data = cls._build_data_dict(form, id_usuario=user_id, id_imagen=id_imagen)
+        cls._crear_registro(db, 'actualizacionescapacitaciones', data)
+
+    # --- 7. Cargos Directivos ---
+    @classmethod
+    def obtener_cargos_directivos_por_usuario(cls, db, user_id):
+        return cls._obtener_registros(db, "SELECT * FROM cargosdirectivos WHERE id_usuario = %s", user_id)
+    @classmethod
+    def crear_cargo_directivo(cls, db, user_id, form, id_imagen):
+        data = cls._build_data_dict(form, id_usuario=user_id, id_imagen=id_imagen)
+        cls._crear_registro(db, 'cargosdirectivos', data)
+
+    # --- 8. Participación en Tesis ---
+    @classmethod
+    def obtener_participaciones_tesis_por_usuario(cls, db, user_id):
+        return cls._obtener_registros(db, "SELECT * FROM participaciontesis WHERE id_usuario = %s", user_id)
+    @classmethod
+    def crear_participacion_tesis(cls, db, user_id, form, id_imagen):
+        data = cls._build_data_dict(form, id_usuario=user_id, id_imagen=id_imagen)
+        cls._crear_registro(db, 'participaciontesis', data)
+
+    # --- 9. Reconocimientos y Distinciones ---
+    @classmethod
+    def obtener_reconocimientos_por_usuario(cls, db, user_id):
+        return cls._obtener_registros(db, "SELECT * FROM reconocimientos WHERE id_usuario = %s", user_id)
+    @classmethod
+    def crear_reconocimiento(cls, db, user_id, form, id_imagen):
+        data = cls._build_data_dict(form, id_usuario=user_id, id_imagen=id_imagen)
+        cls._crear_registro(db, 'reconocimientos', data)
+
+    # --- 10. Idiomas ---
+    @classmethod
+    def obtener_idiomas_por_usuario(cls, db, user_id):
+        return cls._obtener_registros(db, "SELECT * FROM idiomas WHERE id_usuario = %s", user_id)
+    @classmethod
+    def crear_idioma(cls, db, user_id, form, id_imagen):
+        data = cls._build_data_dict(form, id_usuario=user_id, id_imagen=id_imagen)
+        if data.get('idioma') == 'Otro': data['idioma'] = data.get('otro_idioma')
+        data.pop('otro_idioma', None)
+        cls._crear_registro(db, 'idiomas', data)
+
+    # --- 11. Software Especializado ---
+    @classmethod
+    def obtener_softwares_por_usuario(cls, db, user_id):
+        return cls._obtener_registros(db, "SELECT * FROM softwareespecializado WHERE id_usuario = %s", user_id)
+    @classmethod
+    def crear_software(cls, db, user_id, form, id_imagen):
+        data = cls._build_data_dict(form, id_usuario=user_id, id_imagen=id_imagen)
+        cls._crear_registro(db, 'softwareespecializado', data)
+
+    # --- 12. Tutorías ---
+    @classmethod
+    def obtener_tutorias_por_usuario(cls, db, user_id):
+        return cls._obtener_registros(db, "SELECT * FROM tutorias WHERE id_usuario = %s", user_id)
+    @classmethod
+    def crear_tutoria(cls, db, user_id, form, id_imagen):
+        data = cls._build_data_dict(form, id_usuario=user_id, id_imagen=id_imagen)
+        cls._crear_registro(db, 'tutorias', data)
+
+    # --- 13. Carga Académica Lectiva ---
+    @classmethod
+    def obtener_cargas_academicas_por_usuario(cls, db, user_id):
+        return cls._obtener_registros(db, "SELECT * FROM carga_academica_lectiva WHERE id_usuario = %s", user_id)
+    @classmethod
+    def crear_carga_academica(cls, db, user_id, form, id_memorandum):
+        data = cls._build_data_dict(form, id_usuario=user_id, id_memorandum=id_memorandum)
+        data.pop('archivo_memorandum', None)
+        cls._crear_registro(db, 'carga_academica_lectiva', data)
+
+    # --- 14. Participación en Gestión Universitaria ---
+    @classmethod
+    def obtener_gestiones_universitarias_por_usuario(cls, db, user_id):
+        sql = "SELECT pgu.*, plan.ruta_imagen as ruta_plan, informe.ruta_imagen as ruta_informe, curso.ruta_imagen as ruta_curso FROM participaciongestionuniversitaria pgu LEFT JOIN imagenesadjuntas plan ON pgu.adjuntar_plan = plan.id_imagen LEFT JOIN imagenesadjuntas informe ON pgu.adjuntar_informe = informe.id_imagen LEFT JOIN imagenesadjuntas curso ON pgu.adjuntar_curso = curso.id_imagen WHERE pgu.id_usuario = %s"
+        return cls._obtener_registros(db, sql, user_id)
+    @classmethod
+    def crear_gestion_universitaria(cls, db, user_id, form, id_plan, id_informe, id_curso):
+        data = cls._build_data_dict(form, id_usuario=user_id, adjuntar_plan=id_plan, adjuntar_informe=id_informe, adjuntar_curso=id_curso)
+        data.pop('adjuntar_plan', None); data.pop('adjuntar_informe', None); data.pop('adjuntar_curso', None)
+        cls._crear_registro(db, 'participaciongestionuniversitaria', data)
+
+    # --- 15. Acreditación y Licenciamiento ---
+    @classmethod
+    def obtener_acreditaciones_por_usuario(cls, db, user_id):
+        return cls._obtener_registros(db, "SELECT * FROM acreditacionlicenciamiento WHERE id_usuario = %s", user_id)
+    @classmethod
+    def crear_acreditacion(cls, db, user_id, form, id_resolucion, id_evidencias):
+        data = cls._build_data_dict(form, id_usuario=user_id, id_imagen=id_resolucion, id_imagen_evidencias=id_evidencias)
+        data.pop('archivo_resolucion', None); data.pop('evidencias', None)
+        cls._crear_registro(db, 'acreditacionlicenciamiento', data)
+
+    # --- 16. Actividades de Proyección Social ---
+    @classmethod
+    def obtener_proyecciones_sociales_por_usuario(cls, db, user_id):
+        return cls._obtener_registros(db, "SELECT * FROM actividadesproyeccionsocial WHERE id_usuario = %s", user_id)
+    @classmethod
+    def crear_proyeccion_social(cls, db, user_id, form, id_imagen):
+        data = cls._build_data_dict(form, id_usuario=user_id, id_imagen=id_imagen)
+        cls._crear_registro(db, 'actividadesproyeccionsocial', data)
+
+    # --- MÉTODO PARA EL REPORTE DEL ADMIN (Asegúrate que esté completo) ---
     @classmethod
     def get_cv_completo_por_usuario(cls, db, user_id):
-        """
-        Recopila TODA la información de un docente desde todas las tablas relacionadas
-        y la devuelve en un único diccionario estructurado.
-        
-        Este es el método principal para los reportes del administrador.
-        """
         cv_data = {}
         try:
-            # Usamos DictCursor para que los resultados sean diccionarios (row['columna'])
-            # en lugar de tuplas (row[0]). ¡Es mucho más legible!
-            cursor = db.connection.cursor(DictCursor)
-
-            # 1. Datos Personales (es un solo registro)
-            sql_dp = """
-                SELECT dp.*, u.usuario as email_usuario, u.rol
-                FROM datospersonales dp
-                JOIN usuarios u ON dp.id_usuario = u.id_usuario
-                WHERE dp.id_usuario = %s
-            """
-            cursor.execute(sql_dp, (user_id,))
-            cv_data['datos_personales'] = cursor.fetchone()
-
-            # Diccionario de tablas y sus consultas (Principio DRY)
-            # Cada consulta hace un LEFT JOIN para traer la ruta del archivo adjunto.
-            tablas_a_consultar = {
-                'grados_titulos': "SELECT gt.*, ia.ruta_imagen, ias.ruta_imagen as ruta_imagen_sunedu FROM gradostitulos gt LEFT JOIN imagenesadjuntas ia ON gt.id_imagen = ia.id_imagen LEFT JOIN imagenesadjuntas ias ON gt.id_imagen_sunedu = ias.id_imagen WHERE gt.id_usuario = %s",
-                'experiencia_docente': "SELECT ed.*, ia.ruta_imagen FROM experienciadocente ed LEFT JOIN imagenesadjuntas ia ON ed.id_imagen = ia.id_imagen WHERE ed.id_usuario = %s",
-                'actualizaciones_capacitaciones': "SELECT ac.*, ia.ruta_imagen FROM actualizacionescapacitaciones ac LEFT JOIN imagenesadjuntas ia ON ac.id_imagen = ia.id_imagen WHERE ac.id_usuario = %s",
-                'investigaciones': "SELECT i.*, ia.ruta_imagen FROM investigaciones i LEFT JOIN imagenesadjuntas ia ON i.id_imagen = ia.id_imagen WHERE i.id_usuario = %s",
-                'produccion_intelectual': "SELECT pi.*, ia.ruta_imagen FROM produccionintelectual pi LEFT JOIN imagenesadjuntas ia ON pi.id_imagen = ia.id_imagen WHERE pi.id_usuario = %s",
-                'cargos_directivos': "SELECT cd.*, ia.ruta_imagen FROM cargosdirectivos cd LEFT JOIN imagenesadjuntas ia ON cd.id_imagen = ia.id_imagen WHERE cd.id_usuario = %s",
-                'participacion_tesis': "SELECT pt.*, ia.ruta_imagen FROM participaciontesis pt LEFT JOIN imagenesadjuntas ia ON pt.id_imagen = ia.id_imagen WHERE pt.id_usuario = %s",
-                'reconocimientos': "SELECT r.*, ia.ruta_imagen FROM reconocimientos r LEFT JOIN imagenesadjuntas ia ON r.id_imagen = ia.id_imagen WHERE r.id_usuario = %s",
-                'idiomas': "SELECT i.*, ia.ruta_imagen FROM idiomas i LEFT JOIN imagenesadjuntas ia ON i.id_imagen = ia.id_imagen WHERE i.id_usuario = %s",
-                'software_especializado': "SELECT se.*, ia.ruta_imagen FROM softwareespecializado se LEFT JOIN imagenesadjuntas ia ON se.id_imagen = ia.id_imagen WHERE se.id_usuario = %s",
-                'tutorias': "SELECT t.*, ia.ruta_imagen FROM tutorias t LEFT JOIN imagenesadjuntas ia ON t.id_imagen = ia.id_imagen WHERE t.id_usuario = %s",
-                'carga_academica': "SELECT cal.*, ia.ruta_imagen as ruta_memorandum FROM carga_academica_lectiva cal LEFT JOIN imagenesadjuntas ia ON cal.id_memorandum = ia.id_imagen WHERE cal.id_usuario = %s",
-                'participacion_gestion_universitaria': "SELECT pgu.*, plan.ruta_imagen as ruta_plan, informe.ruta_imagen as ruta_informe, curso.ruta_imagen as ruta_curso FROM participaciongestionuniversitaria pgu LEFT JOIN imagenesadjuntas plan ON pgu.adjuntar_plan = plan.id_imagen LEFT JOIN imagenesadjuntas informe ON pgu.adjuntar_informe = informe.id_imagen LEFT JOIN imagenesadjuntas curso ON pgu.adjuntar_curso = curso.id_imagen WHERE pgu.id_usuario = %s",
-                'evaluacion_desempeno': "SELECT * FROM evaluacion_desempeno_docente WHERE id_usuario = %s",
-                'acreditacion_licenciamiento': "SELECT al.*, res.ruta_imagen as ruta_resolucion, evi.ruta_imagen as ruta_evidencias FROM acreditacionlicenciamiento al LEFT JOIN imagenesadjuntas res ON al.id_imagen = res.id_imagen LEFT JOIN imagenesadjuntas evi ON al.id_imagen_evidencias = evi.id_imagen WHERE al.id_usuario = %s",
-                'actividades_proyeccion_social': "SELECT aps.*, ia.ruta_imagen FROM actividadesproyeccionsocial aps LEFT JOIN imagenesadjuntas ia ON aps.id_imagen = ia.id_imagen WHERE aps.id_usuario = %s",
-            }
-
-            # 2. Consultar el resto de las tablas (que son registros múltiples)
-            for nombre_tabla, sql in tablas_a_consultar.items():
-                cursor.execute(sql, (user_id,))
-                cv_data[nombre_tabla] = cursor.fetchall()
+            # Datos Personales
+            cv_data['datos_personales'] = cls.obtener_datos_personales(db, user_id)
             
-            cursor.close()
+            # Datos de las demás tablas
+            cv_data['grados_titulos'] = cls.obtener_grados_por_usuario(db, user_id)
+            cv_data['experiencia_docente'] = cls.obtener_experiencias_por_usuario(db, user_id)
+            cv_data['investigaciones'] = cls.obtener_investigaciones_por_usuario(db, user_id)
+            cv_data['produccion_intelectual'] = cls.obtener_producciones_por_usuario(db, user_id)
+            cv_data['actualizaciones_capacitaciones'] = cls.obtener_capacitaciones_por_usuario(db, user_id)
+            cv_data['cargos_directivos'] = cls.obtener_cargos_directivos_por_usuario(db, user_id)
+            cv_data['participacion_tesis'] = cls.obtener_participaciones_tesis_por_usuario(db, user_id)
+            cv_data['reconocimientos'] = cls.obtener_reconocimientos_por_usuario(db, user_id)
+            cv_data['idiomas'] = cls.obtener_idiomas_por_usuario(db, user_id)
+            cv_data['software_especializado'] = cls.obtener_softwares_por_usuario(db, user_id)
+            cv_data['tutorias'] = cls.obtener_tutorias_por_usuario(db, user_id)
+            cv_data['carga_academica'] = cls.obtener_cargas_academicas_por_usuario(db, user_id)
+            cv_data['participacion_gestion_universitaria'] = cls.obtener_gestiones_universitarias_por_usuario(db, user_id)
+            cv_data['acreditacion_licenciamiento'] = cls.obtener_acreditaciones_por_usuario(db, user_id)
+            cv_data['actividades_proyeccion_social'] = cls.obtener_proyecciones_sociales_por_usuario(db, user_id)
+            
             return cv_data
-
         except Exception as ex:
-            logging.error(f"Error en ModelCV.get_cv_completo_por_usuario para user_id {user_id}: {ex}")
+            logging.error(f"Error al obtener CV completo para user_id {user_id}: {ex}")
             raise Exception("Error al recopilar los datos completos del docente.")
-
-    # --- FUTUROS MÉTODOS CRUD ---
-    # Aquí irían los métodos para que el DOCENTE gestione su propia información.
-    # Por ejemplo, para la tabla 'gradostitulos'.
-    
-    @classmethod
-    def crear_grado(cls, db, user_id, form_data):
-        """
-        Crea un nuevo registro de grado o título.
-        (Este es un ejemplo, necesitará manejar la subida de archivos)
-        """
-        # ... Lógica para insertar en la tabla gradostitulos ...
-        pass
-
-    @classmethod
-    def actualizar_grado(cls, db, grado_id, user_id, form_data):
-        # ... Lógica para actualizar un registro en gradostitulos ...
-        pass
-
-    @classmethod
-    def eliminar_grado(cls, db, upload_folder, grado_id, user_id):
-        """
-        Elimina un registro de grado y su archivo físico asociado.
-        """
-        try:
-            cursor = db.connection.cursor(DictCursor)
-            
-            # 1. Obtener la ruta del archivo para poder borrarlo
-            cursor.execute("SELECT id_imagen, id_imagen_sunedu FROM gradostitulos WHERE id_grado = %s AND id_usuario = %s", (grado_id, user_id))
-            registro = cursor.fetchone()
-            
-            if not registro:
-                raise Exception("Registro de grado no encontrado o no pertenece al usuario.")
-
-            # Lógica para eliminar los archivos físicos asociados
-            for key in ['id_imagen', 'id_imagen_sunedu']:
-                if registro[key]:
-                    cursor.execute("SELECT ruta_imagen FROM imagenesadjuntas WHERE id_imagen = %s", (registro[key],))
-                    archivo = cursor.fetchone()
-                    if archivo and archivo['ruta_imagen']:
-                        try:
-                            os.remove(os.path.join(upload_folder, archivo['ruta_imagen']))
-                        except OSError as e:
-                            logging.warning(f"No se pudo eliminar el archivo {archivo['ruta_imagen']}: {e}")
-                    # Eliminar la entrada de la tabla de imágenes
-                    cursor.execute("DELETE FROM imagenesadjuntas WHERE id_imagen = %s", (registro[key],))
-            
-            # 2. Eliminar el registro de la tabla principal
-            cursor.execute("DELETE FROM gradostitulos WHERE id_grado = %s", (grado_id,))
-            
-            db.connection.commit()
-            cursor.close()
-        except Exception as ex:
-            db.connection.rollback()
-            logging.error(f"Error al eliminar grado {grado_id}: {ex}")
-            raise Exception("Error al eliminar el grado o título.")
-            
-    # Deberás crear métodos similares (crear_experiencia, obtener_experiencias, etc.)
-    # para cada una de las secciones del CV a medida que refactorices el blueprint 'docente'.
